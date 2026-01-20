@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  title        String
+  description  String   @db.Text
+  technologies Json     // Array of technologies
+  imageUrl     String?
+  githubUrl    String?
+  liveUrl      String?
+  category     String
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("projects")
+  @@index([category])
+  @@index([featured])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  date        DateTime
+  imageUrl    String?
+  position    String   // e.g., "1st Place", "Winner", "Runner-up"
+  competition String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("achievements")
+  @@index([date])
+}
+
+model TeamMember {
+  id         String   @id @default(uuid())
+  name       String
+  role       String   // e.g., "Team Lead", "Developer", "Designer"
+  imageUrl   String?
+  bio        String?  @db.Text
+  linkedinUrl String?
+  githubUrl  String?
+  email      String?
+  joinedDate DateTime @default(now())
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("team_members")
+  @@index([isActive])
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}

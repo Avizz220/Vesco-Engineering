@@ -1,0 +1,77 @@
+import express, { Application, Request, Response } from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import compression from 'compression'
+import dotenv from 'dotenv'
+import rateLimit from 'express-rate-limit'
+import { errorHandler } from './middleware/errorHandler'
+import authRoutes from './routes/authRoutes'
+import projectRoutes from './routes/projectRoutes'
+import achievementRoutes from './routes/achievementRoutes'
+import teamRoutes from './routes/teamRoutes'
+
+// Load environment variables
+dotenv.config()
+
+const app: Application = express()
+const PORT = process.env.PORT || 5000
+
+// Security middleware
+app.use(helmet())
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+}))
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+})
+app.use('/api', limiter)
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// Compression middleware
+app.use(compression())
+
+// Static files (for uploaded images)
+app.use('/uploads', express.static('uploads'))
+
+// Health check route
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'success', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// API routes
+app.use('/api/auth', authRoutes)
+app.use('/api/projects', projectRoutes)
+app.use('/api/achievements', achievementRoutes)
+app.use('/api/team', teamRoutes)
+
+// 404 handler
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ 
+    status: 'error', 
+    message: 'Route not found' 
+  })
+})
+
+// Global error handler
+app.use(errorHandler)
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`)
+  console.log(`📝 Environment: ${process.env.NODE_ENV}`)
+  console.log(`🔗 API: http://localhost:${PORT}/api`)
+})
+
+export default app

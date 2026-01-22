@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -49,14 +49,88 @@ interface Course {
 }
 
 export default function CoursesPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [showAddCourseModal, setShowAddCourseModal] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [coursesList, setCoursesList] = useState<Course[]>([])
+  const [newCourse, setNewCourse] = useState({
+    name: '',
+    description: '',
+    conductedBy: '',
+    duration: '',
+    learningOutcomes: '',
+    courseFee: '',
+  })
   const router = useRouter()
+
+  const handleEditCourse = (index: number) => {
+    const course = coursesList[index]
+    setNewCourse({
+      name: course.title,
+      description: course.description,
+      conductedBy: course.instructor,
+      duration: course.duration,
+      learningOutcomes: course.features.join(', '),
+      courseFee: course.price,
+    })
+    setEditingIndex(index)
+    setShowAddCourseModal(true)
+  }
+
+  const handleDeleteCourse = (index: number) => {
+    setCoursesList(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmitCourse = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Course Data:', newCourse)
+    
+    if (editingIndex !== null) {
+      // Update existing course
+      setCoursesList(prev => prev.map((item, i) => 
+        i === editingIndex ? {
+          ...item,
+          title: newCourse.name,
+          description: newCourse.description,
+          instructor: newCourse.conductedBy,
+          duration: newCourse.duration,
+          features: newCourse.learningOutcomes.split(',').map(s => s.trim()),
+          price: newCourse.courseFee,
+        } : item
+      ))
+      setEditingIndex(null)
+    } else {
+      // Add new course
+      const newItem: Course = {
+        title: newCourse.name,
+        description: newCourse.description,
+        instructor: newCourse.conductedBy,
+        duration: newCourse.duration,
+        features: newCourse.learningOutcomes.split(',').map(s => s.trim()),
+        price: newCourse.courseFee,
+        category: 'New Course',
+        level: 'Intermediate',
+        image: defaultImage,
+      }
+      setCoursesList(prev => [...prev, newItem])
+    }
+    
+    setShowAddCourseModal(false)
+    setNewCourse({
+      name: '',
+      description: '',
+      conductedBy: '',
+      duration: '',
+      learningOutcomes: '',
+      courseFee: '',
+    })
+  }
 
   const defaultImage = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
 
-  const courses = useMemo<Course[]>(
+  const initialCourses = useMemo<Course[]>(
     () => [
       {
         title: 'Full-Stack Web Development',
@@ -127,7 +201,9 @@ export default function CoursesPage() {
     ],
     []
   )
-
+  React.useEffect(() => {
+    setCoursesList(initialCourses)
+  }, [initialCourses])
   if (!authLoading && !isAuthenticated) {
     return (
       <>
@@ -148,18 +224,37 @@ export default function CoursesPage() {
     <>
       <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-white via-slate-50 to-white text-slate-900">
         <div className="container mx-auto px-6">
-          <div className="mb-10 text-center">
-            <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-3">Professional Training</p>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">Our Courses</h1>
-            <p className="text-slate-600 max-w-3xl mx-auto text-lg">
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex-1"></div>
+              <div className="flex-1 text-center">
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-3">Professional Training</p>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">Our Courses</h1>
+              </div>
+              <div className="flex-1 flex justify-end">
+                {user?.isAdmin && (
+                  <button
+                    onClick={() => setShowAddCourseModal(true)}
+                    className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Course
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-slate-600 max-w-3xl mx-auto text-lg text-center">
               Expert-led courses designed by industry professionals. Learn cutting-edge skills with hands-on projects and real-world applications.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {courses.map((course) => (
+            {coursesList.map((course, index) => (
               <div
-                key={course.title}
+                key={course.title + index}
                 className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl hover:shadow-2xl transition-shadow duration-300"
               >
                 <div className="relative w-full overflow-hidden bg-slate-100 aspect-[4/3]">
@@ -171,7 +266,33 @@ export default function CoursesPage() {
                     className="object-cover"
                     priority={false}
                   />
-                  <div className="absolute top-3 right-3">
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    {user?.isAdmin && (
+                      <>
+                        <button
+                          onClick={() => handleEditCourse(index)}
+                          className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-sky-50 transition-colors"
+                          title="Edit"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-sky-600">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCourse(index)}
+                          className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-red-50 transition-colors"
+                          title="Delete"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-red-600">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                          </svg>
+                        </button>
+                      </>
+                    )}
                     <span className="inline-flex items-center rounded-full bg-white/95 backdrop-blur-sm text-slate-700 px-3 py-1 text-xs font-semibold shadow-md">
                       {course.level}
                     </span>
@@ -353,6 +474,144 @@ export default function CoursesPage() {
                 </a>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Course Modal */}
+      {showAddCourseModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 overflow-y-auto py-8">
+          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 my-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-sky-50">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">{editingIndex !== null ? 'Edit Course' : 'Add New Course'}</h3>
+              </div>
+              <button
+                onClick={() => setShowAddCourseModal(false)}
+                className="p-2 text-gray-500 hover:text-gray-700"
+                aria-label="Close"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitCourse} className="p-6 space-y-5">
+              {/* Course Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="courseName">
+                  Course Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="courseName"
+                  type="text"
+                  required
+                  value={newCourse.name}
+                  onChange={(e) => setNewCourse(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  placeholder="Enter course name"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="description">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  required
+                  value={newCourse.description}
+                  onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                  placeholder="Describe the course..."
+                />
+              </div>
+
+              {/* Conducted By and Duration */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="conductedBy">
+                    Conducted By <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="conductedBy"
+                    type="text"
+                    required
+                    value={newCourse.conductedBy}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, conductedBy: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="e.g., Eng. John Doe"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="duration">
+                    Duration <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="duration"
+                    type="text"
+                    required
+                    value={newCourse.duration}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, duration: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="e.g., 8 weeks"
+                  />
+                </div>
+              </div>
+
+              {/* Learning Outcomes */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="learningOutcomes">
+                  Learning Outcomes <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="learningOutcomes"
+                  required
+                  value={newCourse.learningOutcomes}
+                  onChange={(e) => setNewCourse(prev => ({ ...prev, learningOutcomes: e.target.value }))}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                  placeholder="List the key learning outcomes (one per line or comma separated)"
+                />
+              </div>
+
+              {/* Course Fee */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="courseFee">
+                  Course Fee <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="courseFee"
+                  type="text"
+                  required
+                  value={newCourse.courseFee}
+                  onChange={(e) => setNewCourse(prev => ({ ...prev, courseFee: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  placeholder="e.g., LKR 35,000"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAddCourseModal(false)}
+                  className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md"
+                >
+                  {editingIndex !== null ? 'Update Course' : 'Add Course'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

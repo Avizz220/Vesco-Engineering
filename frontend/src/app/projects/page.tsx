@@ -211,11 +211,14 @@ export default function ProjectsPage() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth()
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showAddProjectModal, setShowAddProjectModal] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [projectsList, setProjectsList] = useState<Project[]>([])
 
   // Debug log
   useEffect(() => {
     console.log('Projects Page - User:', user)
     console.log('Projects Page - isAdmin:', user?.isAdmin)
+    setProjectsList(allProjects)
   }, [user])
   const [newProject, setNewProject] = useState({
     title: '',
@@ -228,6 +231,25 @@ export default function ProjectsPage() {
     youtubeLink: '',
   })
   const router = useRouter()
+
+  const handleEditProject = (project: Project, index: number) => {
+    setNewProject({
+      title: project.title,
+      contributors: project.contributors || [],
+      relatedAreas: project.technologies.slice(0, 4),
+      description: project.description,
+      photo: null,
+      githubLink: project.githubUrl || '',
+      linkedInLink: '',
+      youtubeLink: '',
+    })
+    setEditingIndex(index)
+    setShowAddProjectModal(true)
+  }
+
+  const handleDeleteProject = (index: number) => {
+    setProjectsList(prev => prev.filter((_, i) => i !== index))
+  }
 
   // Mock registered users (replace with actual data from backend later)
   const registeredUsers = [
@@ -267,9 +289,39 @@ export default function ProjectsPage() {
 
   const handleSubmitProject = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Handle project submission to backend
-    console.log('New Project:', newProject)
-    // Reset form
+    console.log('Project Data:', newProject)
+    
+    if (editingIndex !== null) {
+      // Update existing project
+      setProjectsList(prev => prev.map((item, i) => 
+        i === editingIndex ? {
+          ...item,
+          title: newProject.title,
+          contributors: newProject.contributors,
+          technologies: newProject.relatedAreas,
+          description: newProject.description,
+          githubUrl: newProject.githubLink,
+        } : item
+      ))
+      setEditingIndex(null)
+    } else {
+      // Add new project
+      const newItem: Project = {
+        id: Date.now().toString(),
+        title: newProject.title,
+        description: newProject.description,
+        contributors: newProject.contributors,
+        technologies: newProject.relatedAreas,
+        category: 'Software',
+        imageUrl: '/api/placeholder/400/300',
+        githubUrl: newProject.githubLink,
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
+      }
+      setProjectsList(prev => [...prev, newItem])
+    }
+    
+    setShowAddProjectModal(false)
     setNewProject({
       title: '',
       contributors: [],
@@ -280,16 +332,15 @@ export default function ProjectsPage() {
       linkedInLink: '',
       youtubeLink: '',
     })
-    setShowAddProjectModal(false)
   }
 
   // Get unique categories
-  const categories = ['All', ...Array.from(new Set(allProjects.map(p => p.category)))]
+  const categories = ['All', ...Array.from(new Set(projectsList.map(p => p.category)))]
 
   // Filter projects by category
   const filteredProjects = selectedCategory === 'All' 
-    ? allProjects 
-    : allProjects.filter(p => p.category === selectedCategory)
+    ? projectsList 
+    : projectsList.filter(p => p.category === selectedCategory)
 
   // Get projects to display
   const displayedProjects = filteredProjects.slice(0, displayCount)
@@ -420,6 +471,9 @@ export default function ProjectsPage() {
               project={project} 
               index={index}
               onViewDetails={handleViewDetails}
+              onEdit={handleEditProject}
+              onDelete={handleDeleteProject}
+              showAdminControls={user?.isAdmin}
             />
           ))}
         </div>
@@ -462,8 +516,7 @@ export default function ProjectsPage() {
           <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 my-8">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-sky-50">
               <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-sky-700">Admin Panel</p>
-                <h3 className="text-xl font-semibold text-gray-900">Add New Project</h3>
+                <h3 className="text-xl font-semibold text-gray-900">{editingIndex !== null ? 'Edit Project' : 'Add New Project'}</h3>
               </div>
               <button
                 onClick={() => setShowAddProjectModal(false)}
@@ -661,7 +714,7 @@ export default function ProjectsPage() {
                   type="submit"
                   className="px-5 py-2.5 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md"
                 >
-                  Add Project
+                  {editingIndex !== null ? 'Update Project' : 'Add Project'}
                 </button>
               </div>
             </form>

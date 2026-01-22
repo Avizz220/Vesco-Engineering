@@ -9,9 +9,12 @@ interface ProjectCardProps {
   project: Project
   index: number
   onViewDetails: (project: Project) => void
+  onEdit?: (project: Project, index: number) => void
+  onDelete?: (index: number) => void
+  showAdminControls?: boolean
 }
 
-const ProjectCard = ({ project, index, onViewDetails }: ProjectCardProps) => {
+const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdminControls }: ProjectCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -21,6 +24,38 @@ const ProjectCard = ({ project, index, onViewDetails }: ProjectCardProps) => {
     >
       {/* Project Image/Video */}
       <div className="relative h-56 bg-gray-200 overflow-hidden">
+        {showAdminControls && (
+          <div className="absolute top-3 right-3 z-10 flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit?.(project, index)
+              }}
+              className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-sky-50 transition-colors"
+              title="Edit"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-sky-600">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete?.(index)
+              }}
+              className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-red-50 transition-colors"
+              title="Delete"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-red-600">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
+          </div>
+        )}
         {project.videoUrl ? (
           <video
             src={project.videoUrl}

@@ -4,9 +4,12 @@ export interface Project {
   description: string
   technologies: string[]
   imageUrl?: string
+  videoUrl?: string
+  youtubeUrl?: string
   githubUrl?: string
   liveUrl?: string
   category: string
+  contributors?: string[]
   createdAt: string
   updatedAt: string
 }
@@ -27,18 +30,21 @@ export interface TeamMember {
   id: string
   name: string
   role: string
+  department?: 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
   imageUrl?: string
   bio?: string
   linkedinUrl?: string
   githubUrl?: string
   email?: string
   joinedDate: string
+  isActive?: boolean
 }
 
 export interface User {
   id: string
   email: string
   name: string
-  role: 'admin' | 'member'
-  createdAt: string
+  image?: string
+  role?: 'admin' | 'member'
+  createdAt?: string
 }

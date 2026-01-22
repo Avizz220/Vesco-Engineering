@@ -11,16 +11,16 @@ const Footer = () => {
       <section className="bg-blue-600 text-white py-16">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Interested in Joining Us?
+            Need Engineering Solutions?
           </h2>
           <p className="text-xl md:text-2xl mb-8">
-            We're always looking for passionate individuals to join our team!
+            We're ready to bring your projects to life with innovative technology and expertise.
           </p>
           <Link
             href="/contact"
             className="inline-block bg-white text-blue-600 px-10 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg"
           >
-            Get in Touch
+            Contact Us
           </Link>
         </div>
       </section>

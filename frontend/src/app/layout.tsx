@@ -30,6 +30,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script async src="https://accounts.google.com/gsi/client"></script>
+      </head>
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>
         <Providers>
           <Navbar />

@@ -9,41 +9,37 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [showSignInModal, setShowSignInModal] = useState(false)
+  const [hasLocalAuth, setHasLocalAuth] = useState(true) // Default to true to show content
 
+  // Check localStorage synchronously
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    const savedUser = localStorage.getItem('vescoUser')
+    const isUserAuthenticated = !!savedUser || isAuthenticated
+    setHasLocalAuth(isUserAuthenticated)
+    
+    // Only show modal if not authenticated
+    if (!isUserAuthenticated) {
       setShowSignInModal(true)
+    } else {
+      setShowSignInModal(false)
     }
-  }, [isAuthenticated, isLoading])
+  }, [isAuthenticated])
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    )
+  // If has local auth or is authenticated, show children immediately
+  if (hasLocalAuth) {
+    return <>{children}</>
   }
 
-  if (!isAuthenticated) {
-    return (
-      <>
-        <SignInModal
-          isOpen={showSignInModal}
-          onClose={() => {}}
-          onSwitchToSignUp={() => {}}
-        />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-600 text-lg">Please sign in to continue</p>
-          </div>
-        </div>
-      </>
-    )
-  }
-
-  return <>{children}</>
+  // Not authenticated - show modal only
+  return (
+    <SignInModal
+      isOpen={showSignInModal}
+      onClose={() => {}}
+      onSwitchToSignUp={() => {}}
+    />
+  )
 }
 
 export default ProtectedRoute

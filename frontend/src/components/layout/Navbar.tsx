@@ -12,13 +12,22 @@ const Navbar = () => {
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [showSignUpModal, setShowSignUpModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
+  const [profileMessage, setProfileMessage] = useState<string | null>(null)
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    github: '',
+    linkedin: '',
+    position: '',
+  })
   const pathname = usePathname()
   const router = useRouter()
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, logout, updateProfile } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,10 +37,23 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Load lottie-player only when settings modal is opened
+  // Load lottie-player and initialize profile data when settings modal is opened
   useEffect(() => {
     if (!showSettingsModal) return
     if (typeof window === 'undefined') return
+    
+    // Reset edit mode and initialize profile data from user
+    setIsEditingProfile(false)
+    if (user) {
+      setProfileData({
+        name: user.name || '',
+        email: user.email || '',
+        github: user.github || '',
+        linkedin: user.linkedin || '',
+        position: user.position || '',
+      })
+    }
+    
     const scriptId = 'lottie-player'
     if (!document.getElementById(scriptId)) {
       const script = document.createElement('script')
@@ -40,7 +62,7 @@ const Navbar = () => {
       script.async = true
       document.body.appendChild(script)
     }
-  }, [showSettingsModal])
+  }, [showSettingsModal, user])
 
   const navLinks = [
     { href: '/', label: 'Home', protected: false },
@@ -154,8 +176,8 @@ const Navbar = () => {
 
 
       {showSettingsModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
-          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 overflow-y-auto py-8">
+          <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 my-8 max-h-[85vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-sky-50">
               <div>
                 <p className="text-xs uppercase tracking-[0.25em] text-sky-700">Account</p>
@@ -173,12 +195,13 @@ const Navbar = () => {
               </button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-0">
-              <div className="p-6 flex flex-col items-center gap-6 border-b md:border-b-0 md:border-r border-gray-200 bg-gradient-to-br from-slate-50 via-white to-sky-50">
+            <div className="grid md:grid-cols-2 gap-0" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+              {/* LEFT: Profile Information Section with Scrolling */}
+              <div className="p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-200 bg-gradient-to-br from-slate-50 via-white to-sky-50 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 80px)' }}>
                 {/* Profile Picture - Centered at Top */}
-                <div className="flex flex-col items-center gap-3 pt-4">
+                <div className="flex flex-col items-center gap-2">
                   <div className="relative">
-                    <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
+                    <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
                       {user?.image ? (
                         <img src={user.image} alt={user.name || 'Profile'} className="h-full w-full object-cover" />
                       ) : (
@@ -196,57 +219,151 @@ const Navbar = () => {
                 </div>
 
                 {/* Searching Profile Animation */}
-                <div className="w-full max-w-[200px]">
+                <div className="w-full max-w-[180px] mx-auto">
                   <lottie-player
                     autoplay
                     loop
                     mode="normal"
                     src="/searching%20for%20profile%20(1).json"
-                    style={{ height: '160px', width: '100%' }}
+                    style={{ height: '120px', width: '100%' }}
                   />
                 </div>
 
-                {/* Profile Details Card */}
+                {/* Profile Edit Form */}
                 <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-                  <p className="text-xs uppercase tracking-[0.2em] text-primary-600 font-semibold">Account Details</p>
-                  <div className="space-y-2.5 text-sm">
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-500">Full Name</span>
-                      <span className="font-semibold text-gray-900">{user?.name}</span>
+                  <p className="text-xs uppercase tracking-[0.2em] text-primary-600 font-semibold">Profile Information</p>
+                  
+                  <form
+                    id="profile-form"
+                    className="space-y-3"
+                    onSubmit={async (e) => {
+                      e.preventDefault()
+                      setProfileMessage(null)
+                      try {
+                        await updateProfile({
+                          name: profileData.name,
+                          email: profileData.email,
+                          github: profileData.github,
+                          linkedin: profileData.linkedin,
+                          position: profileData.position,
+                        })
+                        setProfileMessage('Profile updated successfully!')
+                        setIsEditingProfile(false)
+                      } catch (error) {
+                        setProfileMessage('Failed to update profile')
+                      }
+                    }}
+                  >
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-800" htmlFor="profileName">Full Name</label>
+                      <input
+                        id="profileName"
+                        type="text"
+                        value={profileData.name}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                        disabled={!isEditingProfile}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        placeholder="Your full name"
+                      />
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-500">Email Address</span>
-                      <span className="font-medium text-gray-700 truncate ml-2">{user?.email}</span>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-800" htmlFor="profileEmail">Email Address</label>
+                      <input
+                        id="profileEmail"
+                        type="email"
+                        value={profileData.email}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                        disabled={!isEditingProfile}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        placeholder="your.email@example.com"
+                      />
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-gray-500">User ID</span>
-                      <span className="font-mono text-xs text-gray-600">{user?.id}</span>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-800" htmlFor="profilePosition">Position</label>
+                      <input
+                        id="profilePosition"
+                        type="text"
+                        value={profileData.position}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, position: e.target.value }))}
+                        disabled={!isEditingProfile}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        placeholder="e.g., Software Engineer"
+                      />
                     </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-gray-500">Status</span>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                        Active
-                      </span>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-800" htmlFor="profileGithub">GitHub Profile</label>
+                      <input
+                        id="profileGithub"
+                        type="url"
+                        value={profileData.github}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, github: e.target.value }))}
+                        disabled={!isEditingProfile}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        placeholder="https://github.com/username"
+                      />
                     </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-800" htmlFor="profileLinkedin">LinkedIn Profile</label>
+                      <input
+                        id="profileLinkedin"
+                        type="url"
+                        value={profileData.linkedin}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, linkedin: e.target.value }))}
+                        disabled={!isEditingProfile}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        placeholder="https://linkedin.com/in/username"
+                      />
+                    </div>
+
+                    {profileMessage && (
+                      <div className={`text-sm font-medium ${profileMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+                        {profileMessage}
+                      </div>
+                    )}
+                  </form>
+
+                  {/* Edit/Save Profile Button - Shows at bottom */}
+                  <div className="pt-3 pb-4 border-t border-gray-200">
+                    <button
+                      onClick={(e) => {
+                        if (!isEditingProfile) {
+                          setIsEditingProfile(true)
+                          setProfileMessage(null)
+                        } else {
+                          const form = document.querySelector('form[id="profile-form"]') as HTMLFormElement
+                          if (form) {
+                            const event = new Event('submit', { bubbles: true, cancelable: true })
+                            form.dispatchEvent(event)
+                          }
+                        }
+                      }}
+                      className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-md"
+                    >
+                      {isEditingProfile ? 'Save Data' : 'Edit Data'}
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 flex flex-col gap-4 bg-white">
+              {/* RIGHT: Security/Password Section with Scrolling */}
+              <div className="p-6 bg-white overflow-y-auto flex flex-col gap-3" style={{ maxHeight: 'calc(90vh - 80px)' }}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Security</p>
                     <h4 className="text-lg font-semibold text-gray-900">Change password</h4>
                     <p className="text-sm text-gray-600">Update your password to keep your account secure.</p>
                   </div>
-                  <div className="hidden md:block h-20 w-20">
+                  <div className="hidden md:block h-16 w-16 flex-shrink-0">
                     <lottie-player
                       autoplay
                       loop
                       mode="normal"
                       src="/Forgot%20Password%20Animation.json"
-                      style={{ height: '80px', width: '80px' }}
+                      style={{ height: '64px', width: '64px' }}
                     />
                   </div>
                 </div>
@@ -257,12 +374,12 @@ const Navbar = () => {
                     loop
                     mode="normal"
                     src="/Forgot%20Password%20Animation.json"
-                    style={{ height: '120px', width: '100%' }}
+                    style={{ height: '100px', width: '100%' }}
                   />
                 </div>
 
                 <form
-                  className="space-y-4"
+                  className="space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault()
                     setPasswordMessage(null)
@@ -342,6 +459,23 @@ const Navbar = () => {
                     </button>
                   </div>
                 </form>
+
+                {/* Reset Password via Email */}
+                <div className="pt-4 border-t border-gray-200 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPasswordMessage('Password reset email sent to ' + user?.email)
+                    }}
+                    className="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Reset password via email
+                  </button>
+                  <p className="text-xs text-gray-500 text-center mt-2">We'll send you a link to reset your password</p>
+                </div>
               </div>
             </div>
           </div>

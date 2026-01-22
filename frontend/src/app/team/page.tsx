@@ -52,22 +52,6 @@ export default function TeamPage() {
   const [showSignInModal, setShowSignInModal] = useState(false)
   const router = useRouter()
 
-  if (!authLoading && !isAuthenticated) {
-    return (
-      <>
-        <SignInRequired
-          onSignIn={() => setShowSignInModal(true)}
-          onClose={() => router.push('/')}
-        />
-        <SignInModal
-          isOpen={showSignInModal}
-          onClose={() => setShowSignInModal(false)}
-          onSwitchToSignUp={() => setShowSignInModal(false)}
-        />
-      </>
-    )
-  }
-
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
@@ -208,6 +192,23 @@ export default function TeamPage() {
     'Mechanical Engineering': 'bg-blue-500',
   }
 
+  // Check authentication after all hooks
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <>
+        <SignInRequired
+          onSignIn={() => setShowSignInModal(true)}
+          onClose={() => router.push('/')}
+        />
+        <SignInModal
+          isOpen={showSignInModal}
+          onClose={() => setShowSignInModal(false)}
+          onSwitchToSignUp={() => setShowSignInModal(false)}
+        />
+      </>
+    )
+  }
+
   return (
     <>
       <div className="min-h-screen pt-24 pb-16 bg-white">
@@ -280,7 +281,6 @@ export default function TeamPage() {
         />
       </div>
     </div>
-
     </>
   )
 }

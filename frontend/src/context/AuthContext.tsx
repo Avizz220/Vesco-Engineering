@@ -9,6 +9,9 @@ interface User {
   name: string
   image?: string
   isAdmin?: boolean
+  github?: string
+  linkedin?: string
+  position?: string
 }
 
 interface AuthContextType {
@@ -19,6 +22,7 @@ interface AuthContextType {
   signUp: (name: string, email: string, password: string) => Promise<void>
   signInWithGoogle: (response: any) => Promise<void>
   logout: () => Promise<void>
+  updateProfile: (updates: Partial<User>) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -126,6 +130,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     router.push('/')
   }
 
+  const updateProfile = async (updates: Partial<User>) => {
+    if (!user) return
+    const updatedUser = { ...user, ...updates }
+    setUser(updatedUser)
+    localStorage.setItem('vescoUser', JSON.stringify(updatedUser))
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -136,6 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signInWithGoogle,
         logout,
+        updateProfile,
       }}
     >
       {children}

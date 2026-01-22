@@ -8,6 +8,7 @@ interface User {
   email: string
   name: string
   image?: string
+  isAdmin?: boolean
 }
 
 interface AuthContextType {
@@ -45,13 +46,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Mock authentication - simulate a delay
       await new Promise(resolve => setTimeout(resolve, 800))
 
+      // Check if admin credentials
+      const isAdminEmail = email.startsWith('vescoenjos') && email.endsWith('@gmail.com')
+      const isAdminPassword = password === 'engineeringvesco-2026'
+      const isAdmin = isAdminEmail && isAdminPassword
+
       // Create mock user
       const mockUser: User = {
         id: Math.random().toString(36).substr(2, 9),
         email,
         name: email.split('@')[0],
         image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+        isAdmin,
       }
+
+      console.log('Sign In - Created User:', mockUser)
+      console.log('Sign In - isAdmin:', isAdmin)
+      console.log('Sign In - Email Check:', { isAdminEmail, isAdminPassword })
 
       setUser(mockUser)
       localStorage.setItem('vescoUser', JSON.stringify(mockUser))
@@ -68,12 +79,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Mock authentication - simulate a delay
       await new Promise(resolve => setTimeout(resolve, 800))
 
-      // Create mock user
+      // Create mock user (sign up users are always normal users, not admins)
       const mockUser: User = {
         id: Math.random().toString(36).substr(2, 9),
         email,
         name,
         image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+        isAdmin: false,
       }
 
       setUser(mockUser)
@@ -96,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: 'user@google.com',
         name: 'Google User',
         image: `https://api.dicebear.com/7.x/avataaars/svg?seed=googleuser`,
+        isAdmin: false,
       }
 
       setUser(mockUser)

@@ -37,9 +37,55 @@ const SignInRequired = ({ onSignIn, onClose }: { onSignIn: () => void; onClose: 
 )
 
 export default function AchievementsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
   const [showSignInModal, setShowSignInModal] = useState(false)
+  const [showAddAchievementModal, setShowAddAchievementModal] = useState(false)
+  const [newAchievement, setNewAchievement] = useState({
+    name: '',
+    description: '',
+    participants: [] as string[],
+    placement: '',
+    linkedInLink: '',
+    year: '',
+    photo: null as File | null,
+  })
   const router = useRouter()
+
+  // Mock registered users for dropdown
+  const registeredUsers = ['Ayesh Perera', 'Dilsha Fernando', 'Ravindu Jayasinghe', 'Shenal Dias', 'Upeka Fernando', 'Naduni de Silva', 'Dineth Jayawardena', 'Buwaneka Weerakoon']
+
+  const handleAddParticipant = (participant: string) => {
+    if (participant && !newAchievement.participants.includes(participant)) {
+      setNewAchievement(prev => ({ ...prev, participants: [...prev.participants, participant] }))
+    }
+  }
+
+  const handleRemoveParticipant = (participant: string) => {
+    setNewAchievement(prev => ({ ...prev, participants: prev.participants.filter(p => p !== participant) }))
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewAchievement(prev => ({ ...prev, photo: e.target.files![0] }))
+    }
+  }
+
+  const handleSubmitAchievement = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('New Achievement:', newAchievement)
+    // Here you would typically send the data to your backend
+    setShowAddAchievementModal(false)
+    // Reset form
+    setNewAchievement({
+      name: '',
+      description: '',
+      participants: [],
+      placement: '',
+      linkedInLink: '',
+      year: '',
+      photo: null,
+    })
+  }
 
   const defaultImage = 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80'
 
@@ -113,10 +159,29 @@ export default function AchievementsPage() {
     <>
       <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-white via-slate-50 to-white text-slate-900">
         <div className="container mx-auto px-6">
-          <div className="mb-10 text-center">
-            <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-3">Competitions & Wins</p>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">Our Achievements</h1>
-            <p className="text-slate-600 max-w-3xl mx-auto text-lg">
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex-1"></div>
+              <div className="flex-1 text-center">
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-3">Competitions & Wins</p>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">Our Achievements</h1>
+              </div>
+              <div className="flex-1 flex justify-end">
+                {user?.isAdmin && (
+                  <button
+                    onClick={() => setShowAddAchievementModal(true)}
+                    className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Achievement
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-slate-600 max-w-3xl mx-auto text-lg text-center">
               Competitions we have entered, mentored, and conquered — showcasing our cross-disciplinary engineering strength.
             </p>
           </div>
@@ -207,6 +272,184 @@ export default function AchievementsPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Achievement Modal */}
+      {showAddAchievementModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 overflow-y-auto py-8">
+          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 my-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-sky-50">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-sky-700">Admin Panel</p>
+                <h3 className="text-xl font-semibold text-gray-900">Add New Achievement</h3>
+              </div>
+              <button
+                onClick={() => setShowAddAchievementModal(false)}
+                className="p-2 text-gray-500 hover:text-gray-700"
+                aria-label="Close"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitAchievement} className="p-6 space-y-5">
+              {/* Competition Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="competitionName">
+                  Competition Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="competitionName"
+                  type="text"
+                  required
+                  value={newAchievement.name}
+                  onChange={(e) => setNewAchievement(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  placeholder="Enter competition name"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="description">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  required
+                  value={newAchievement.description}
+                  onChange={(e) => setNewAchievement(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                  placeholder="Describe the achievement..."
+                />
+              </div>
+
+              {/* Participants */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Participants <span className="text-red-500">*</span>
+                </label>
+                <select
+                  onChange={(e) => {
+                    handleAddParticipant(e.target.value)
+                    e.target.value = ''
+                  }}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                >
+                  <option value="">Select participants...</option>
+                  {registeredUsers.map(user => (
+                    <option key={user} value={user}>{user}</option>
+                  ))}
+                </select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {newAchievement.participants.map(participant => (
+                    <span
+                      key={participant}
+                      className="inline-flex items-center gap-1.5 bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-sm font-medium"
+                    >
+                      {participant}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveParticipant(participant)}
+                        className="hover:text-sky-900"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Placement and Year */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="placement">
+                    Placement <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="placement"
+                    type="text"
+                    required
+                    value={newAchievement.placement}
+                    onChange={(e) => setNewAchievement(prev => ({ ...prev, placement: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="e.g., Champion, 1st Runner-up"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="year">
+                    Year <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="year"
+                    type="text"
+                    required
+                    value={newAchievement.year}
+                    onChange={(e) => setNewAchievement(prev => ({ ...prev, year: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="2026"
+                  />
+                </div>
+              </div>
+
+              {/* LinkedIn Post Link */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="linkedInLink">
+                  LinkedIn Post Link
+                </label>
+                <input
+                  id="linkedInLink"
+                  type="url"
+                  value={newAchievement.linkedInLink}
+                  onChange={(e) => setNewAchievement(prev => ({ ...prev, linkedInLink: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  placeholder="https://linkedin.com/posts/..."
+                />
+              </div>
+
+              {/* Photo Upload */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="photo">
+                  Competition Photo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="photo"
+                  type="file"
+                  required
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                />
+                {newAchievement.photo && (
+                  <p className="text-sm text-gray-600">Selected: {newAchievement.photo.name}</p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAddAchievementModal(false)}
+                  className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md"
+                >
+                  Add Achievement
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Sign In Modal */}
       <SignInModal

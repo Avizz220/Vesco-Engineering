@@ -49,7 +49,6 @@ const Navbar = () => {
     { href: '/courses', label: 'Courses', protected: true },
     { href: '/team', label: 'Team', protected: true },
     { href: '/contact', label: 'Contact', protected: true },
-    { href: '/admin', label: 'Admin', protected: true },
   ]
 
   const handleNavClick = (href: string, isProtected: boolean) => {

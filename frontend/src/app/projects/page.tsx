@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import ProjectCard from '@/components/projects/ProjectCard'
 import ProjectModal from '@/components/projects/ProjectModal'
@@ -208,9 +208,106 @@ export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
   const [showSignInModal, setShowSignInModal] = useState(false)
-   const router = useRouter()
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false)
+
+  // Debug log
+  useEffect(() => {
+    console.log('Projects Page - User:', user)
+    console.log('Projects Page - isAdmin:', user?.isAdmin)
+  }, [user])
+  const [newProject, setNewProject] = useState({
+    title: '',
+    contributors: [] as string[],
+    relatedAreas: [] as string[],
+    description: '',
+    photo: null as File | null,
+    githubLink: '',
+    linkedInLink: '',
+    youtubeLink: '',
+  })
+  const router = useRouter()
+
+  // Mock registered users (replace with actual data from backend later)
+  const registeredUsers = [
+    'John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Lee', 'Tom Brown',
+    'Alex Wilson', 'Emily Davis', 'Chris Martin', 'Lisa Taylor', 'David Kim',
+    'Rachel Green', 'Kevin Zhang', 'Olivia White', 'Ryan Black', 'Anna Johnson'
+  ]
+
+  // Available project areas
+  const projectAreas = ['IoT', 'Web Development', 'AI/ML', 'Robotics', 'Electronics', 'Software', 'Aerospace', 'Manufacturing']
+
+  const handleAddContributor = (contributor: string) => {
+    if (!newProject.contributors.includes(contributor)) {
+      setNewProject(prev => ({ ...prev, contributors: [...prev.contributors, contributor] }))
+    }
+  }
+
+  const handleRemoveContributor = (contributor: string) => {
+    setNewProject(prev => ({ ...prev, contributors: prev.contributors.filter(c => c !== contributor) }))
+  }
+
+  const handleAddArea = (area: string) => {
+    if (newProject.relatedAreas.length < 4 && !newProject.relatedAreas.includes(area)) {
+      setNewProject(prev => ({ ...prev, relatedAreas: [...prev.relatedAreas, area] }))
+    }
+  }
+
+  const handleRemoveArea = (area: string) => {
+    setNewProject(prev => ({ ...prev, relatedAreas: prev.relatedAreas.filter(a => a !== area) }))
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewProject(prev => ({ ...prev, photo: e.target.files![0] }))
+    }
+  }
+
+  const handleSubmitProject = (e: React.FormEvent) => {
+    e.preventDefault()
+    // TODO: Handle project submission to backend
+    console.log('New Project:', newProject)
+    // Reset form
+    setNewProject({
+      title: '',
+      contributors: [],
+      relatedAreas: [],
+      description: '',
+      photo: null,
+      githubLink: '',
+      linkedInLink: '',
+      youtubeLink: '',
+    })
+    setShowAddProjectModal(false)
+  }
+
+  // Get unique categories
+  const categories = ['All', ...Array.from(new Set(allProjects.map(p => p.category)))]
+
+  // Filter projects by category
+  const filteredProjects = selectedCategory === 'All' 
+    ? allProjects 
+    : allProjects.filter(p => p.category === selectedCategory)
+
+  // Get projects to display
+  const displayedProjects = filteredProjects.slice(0, displayCount)
+  const hasMore = displayCount < filteredProjects.length
+
+  const loadMore = () => {
+    setDisplayCount(prev => prev + 12)
+  }
+
+  const handleViewDetails = (project: Project) => {
+    setSelectedProject(project)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setTimeout(() => setSelectedProject(null), 300)
+  }
 
   const SignInRequired = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
@@ -255,32 +352,6 @@ export default function ProjectsPage() {
     )
   }
 
-  // Get unique categories
-  const categories = ['All', ...Array.from(new Set(allProjects.map(p => p.category)))]
-
-  // Filter projects by category
-  const filteredProjects = selectedCategory === 'All' 
-    ? allProjects 
-    : allProjects.filter(p => p.category === selectedCategory)
-
-  // Get projects to display
-  const displayedProjects = filteredProjects.slice(0, displayCount)
-  const hasMore = displayCount < filteredProjects.length
-
-  const loadMore = () => {
-    setDisplayCount(prev => prev + 12)
-  }
-
-  const handleViewDetails = (project: Project) => {
-    setSelectedProject(project)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setTimeout(() => setSelectedProject(null), 300)
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 pt-28 pb-16">
       <div className="container mx-auto px-6">
@@ -291,9 +362,26 @@ export default function ProjectsPage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-12"
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            Our Projects
-          </h1>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex-1"></div>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 flex-1">
+              Our Projects
+            </h1>
+            <div className="flex-1 flex justify-end">
+              {user?.isAdmin && (
+                <button
+                  onClick={() => setShowAddProjectModal(true)}
+                  className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Add New Project
+                </button>
+              )}
+            </div>
+          </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Explore our innovative engineering projects and technological solutions
           </p>
@@ -367,6 +455,219 @@ export default function ProjectsPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Add Project Modal */}
+      {showAddProjectModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 overflow-y-auto py-8">
+          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 my-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-sky-50">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-sky-700">Admin Panel</p>
+                <h3 className="text-xl font-semibold text-gray-900">Add New Project</h3>
+              </div>
+              <button
+                onClick={() => setShowAddProjectModal(false)}
+                className="p-2 text-gray-500 hover:text-gray-700"
+                aria-label="Close"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitProject} className="p-6 space-y-5">
+              {/* Project Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="projectName">
+                  Project Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="projectName"
+                  type="text"
+                  required
+                  value={newProject.title}
+                  onChange={(e) => setNewProject(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  placeholder="Enter project name"
+                />
+              </div>
+
+              {/* Contributors */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Contributors <span className="text-red-500">*</span>
+                </label>
+                <select
+                  onChange={(e) => {
+                    handleAddContributor(e.target.value)
+                    e.target.value = ''
+                  }}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                >
+                  <option value="">Select contributors...</option>
+                  {registeredUsers.map(user => (
+                    <option key={user} value={user}>{user}</option>
+                  ))}
+                </select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {newProject.contributors.map(contributor => (
+                    <span
+                      key={contributor}
+                      className="inline-flex items-center gap-1.5 bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-sm font-medium"
+                    >
+                      {contributor}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveContributor(contributor)}
+                        className="hover:text-sky-900"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Related Areas */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Related Areas <span className="text-gray-500 text-xs">(Max 4)</span>
+                </label>
+                <select
+                  onChange={(e) => {
+                    handleAddArea(e.target.value)
+                    e.target.value = ''
+                  }}
+                  disabled={newProject.relatedAreas.length >= 4}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-100"
+                >
+                  <option value="">Select area...</option>
+                  {projectAreas.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {newProject.relatedAreas.map(area => (
+                    <span
+                      key={area}
+                      className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium"
+                    >
+                      {area}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveArea(area)}
+                        className="hover:text-emerald-900"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="description">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  required
+                  value={newProject.description}
+                  onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none resize-none"
+                  placeholder="Describe the project..."
+                />
+              </div>
+
+              {/* Photo Upload */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="photo">
+                  Project Photo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="photo"
+                  type="file"
+                  required
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                />
+                {newProject.photo && (
+                  <p className="text-sm text-gray-600">Selected: {newProject.photo.name}</p>
+                )}
+              </div>
+
+              {/* Links Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="github">
+                    GitHub Link
+                  </label>
+                  <input
+                    id="github"
+                    type="url"
+                    value={newProject.githubLink}
+                    onChange={(e) => setNewProject(prev => ({ ...prev, githubLink: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="https://github.com/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="linkedin">
+                    LinkedIn Post
+                  </label>
+                  <input
+                    id="linkedin"
+                    type="url"
+                    value={newProject.linkedInLink}
+                    onChange={(e) => setNewProject(prev => ({ ...prev, linkedInLink: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="https://linkedin.com/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="youtube">
+                    YouTube Link
+                  </label>
+                  <input
+                    id="youtube"
+                    type="url"
+                    value={newProject.youtubeLink}
+                    onChange={(e) => setNewProject(prev => ({ ...prev, youtubeLink: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="https://youtube.com/..."
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowAddProjectModal(false)}
+                  className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md"
+                >
+                  Add Project
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Project Details Modal */}
       <ProjectModal 

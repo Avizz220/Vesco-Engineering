@@ -2,43 +2,11 @@
 
 import React, { useMemo, useState } from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
-import SignInModal from '@/components/auth/SignInModal'
-
-const SignInRequired = ({ onSignIn, onClose }: { onSignIn: () => void; onClose: () => void }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-    <div className="bg-white rounded-2xl p-10 text-center max-w-md shadow-2xl relative">
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition-colors"
-        aria-label="Close"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <div className="mb-6">
-        <svg className="w-16 h-16 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      </div>
-      <h3 className="text-3xl font-bold text-gray-900 mb-3">Sign In Required</h3>
-      <p className="text-gray-600 mb-8">Please sign in to view our achievements and milestones</p>
-      <button
-        onClick={onSignIn}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
-      >
-        Sign In
-      </button>
-    </div>
-  </div>
-)
 
 export default function AchievementsPage() {
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth()
-  const [showSignInModal, setShowSignInModal] = useState(false)
+  const { user } = useAuth()
   const [showAddAchievementModal, setShowAddAchievementModal] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [achievementsList, setAchievementsList] = useState<any[]>([])
@@ -51,7 +19,6 @@ export default function AchievementsPage() {
     year: '',
     photo: null as File | null,
   })
-  const router = useRouter()
 
   // Mock registered users for dropdown
   const registeredUsers = ['Ayesh Perera', 'Dilsha Fernando', 'Ravindu Jayasinghe', 'Shenal Dias', 'Upeka Fernando', 'Naduni de Silva', 'Dineth Jayawardena', 'Buwaneka Weerakoon']
@@ -179,27 +146,16 @@ export default function AchievementsPage() {
   const handleDeleteAchievement = (index: number) => {
     setAchievementsList(prev => prev.filter((_, i) => i !== index))
   }
-  if (!authLoading && !isAuthenticated) {
-    return (
-      <>
-        <SignInRequired
-          onSignIn={() => setShowSignInModal(true)}
-          onClose={() => router.push('/')}
-        />
-        <SignInModal
-          isOpen={showSignInModal}
-          onClose={() => setShowSignInModal(false)}
-          onSwitchToSignUp={() => setShowSignInModal(false)}
-        />
-      </>
-    )
-  }
-
   return (
     <>
       <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-white via-slate-50 to-white text-slate-900">
         <div className="container mx-auto px-6">
-          <div className="mb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-10"
+          >
             <div className="flex items-center justify-between mb-8">
               <div className="flex-1"></div>
               <div className="flex-1 text-center">
@@ -213,8 +169,8 @@ export default function AchievementsPage() {
                     className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
                     Add Achievement
                   </button>
@@ -224,9 +180,14 @@ export default function AchievementsPage() {
             <p className="text-slate-600 max-w-3xl mx-auto text-lg text-center">
               Competitions we have entered, mentored, and conquered — showcasing our cross-disciplinary engineering strength.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          >
             {achievementsList.map((item, index) => (
               <div
                 key={item.name + index}
@@ -335,7 +296,7 @@ export default function AchievementsPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -515,13 +476,6 @@ export default function AchievementsPage() {
           </div>
         </div>
       )}
-
-      {/* Sign In Modal */}
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
-        onSwitchToSignUp={() => setShowSignInModal(false)}
-      />
     </>
   )
 }

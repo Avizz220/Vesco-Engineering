@@ -28,19 +28,20 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Start with null to ensure server and initial client render match (avoid hydration mismatch)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    // Load user from localStorage if exists
-    const savedUser = localStorage.getItem('vescoUser')
-    if (savedUser) {
-      try {
+    // Load user from localStorage after hydration to avoid SSR/client mismatch
+    try {
+      const savedUser = localStorage.getItem('vescoUser')
+      if (savedUser) {
         setUser(JSON.parse(savedUser))
-      } catch (error) {
-        localStorage.removeItem('vescoUser')
       }
+    } catch {
+      localStorage.removeItem('vescoUser')
     }
   }, [])
 

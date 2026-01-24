@@ -31,9 +31,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Start with null to ensure server and initial client render match (avoid hydration mismatch)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
+    // Mark as mounted
+    setIsMounted(true)
+    
     // Load user from localStorage after hydration to avoid SSR/client mismatch
     try {
       const savedUser = localStorage.getItem('vescoUser')

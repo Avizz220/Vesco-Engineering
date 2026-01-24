@@ -3,12 +3,25 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
+import SignInModal from '@/components/auth/SignInModal'
 import roboticImg from '@/assets/robotic.jpg'
 import eieImg from '@/assets/eie.jpg'
 import arduinoImg from '@/assets/arduino.jpg'
 import aerospaceImg from '@/assets/aerospace.jpg'
 
 const Hero = () => {
+  const { isAuthenticated } = useAuth()
+  const [showSignInModal, setShowSignInModal] = useState(false)
+
+  const handleProtectedNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!isAuthenticated) {
+      e.preventDefault()
+      setShowSignInModal(true)
+    }
+    // If authenticated, let the Link component handle navigation
+  }
   return (
     <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-32 pb-20 overflow-hidden">
       {/* Animated Background Pattern */}
@@ -20,9 +33,8 @@ const Hero = () => {
       {/* Animated Floating Images - More Prominent */}
       {/* Robotics Image - Top Right */}
       <motion.div
-        initial={{ opacity: 0, y: 60, scale: 0.7 }}
-        animate={{ opacity: 0.5, y: 0, scale: 1 }}
-        transition={{ duration: 1.5, ease: 'easeOut' }}
+        initial={{ opacity: 0.5 }}
+        animate={{ opacity: 0.5 }}
         className="absolute top-20 right-8 w-80 h-80 hidden lg:block"
       >
         <motion.div
@@ -45,6 +57,7 @@ const Hero = () => {
               className="object-cover"
               sizes="320px"
               priority
+              quality={95}
             />
           </div>
         </motion.div>
@@ -52,9 +65,8 @@ const Hero = () => {
 
       {/* EIE Image - Bottom Left */}
       <motion.div
-        initial={{ opacity: 0, y: 60, scale: 0.7 }}
-        animate={{ opacity: 0.5, y: 0, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
+        initial={{ opacity: 0.5 }}
+        animate={{ opacity: 0.5 }}
         className="absolute bottom-20 left-8 w-72 h-72 hidden lg:block"
       >
         <motion.div
@@ -77,6 +89,8 @@ const Hero = () => {
               fill
               className="object-cover"
               sizes="288px"
+              priority
+              quality={95}
             />
           </div>
         </motion.div>
@@ -84,9 +98,8 @@ const Hero = () => {
 
       {/* Arduino Image - Center Right */}
       <motion.div
-        initial={{ opacity: 0, y: 60, scale: 0.7 }}
-        animate={{ opacity: 0.45, y: 0, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.6, ease: 'easeOut' }}
+        initial={{ opacity: 0.45 }}
+        animate={{ opacity: 0.45 }}
         className="absolute top-1/3 right-1/4 w-64 h-64 hidden xl:block"
       >
         <motion.div
@@ -109,6 +122,8 @@ const Hero = () => {
               fill
               className="object-cover"
               sizes="256px"
+              priority
+              quality={95}
             />
           </div>
         </motion.div>
@@ -116,9 +131,8 @@ const Hero = () => {
 
       {/* Aerospace Image - Top Left */}
       <motion.div
-        initial={{ opacity: 0, y: 60, scale: 0.7 }}
-        animate={{ opacity: 0.4, y: 0, scale: 1 }}
-        transition={{ duration: 1.5, delay: 0.9, ease: 'easeOut' }}
+        initial={{ opacity: 0.4 }}
+        animate={{ opacity: 0.4 }}
         className="absolute top-1/2 left-1/4 w-56 h-56 hidden xl:block"
       >
         <motion.div
@@ -141,6 +155,9 @@ const Hero = () => {
               fill
               className="object-cover"
               sizes="224px"
+              priority
+              loading="eager"
+              quality={90}
             />
           </div>
         </motion.div>
@@ -188,6 +205,7 @@ const Hero = () => {
           >
             <Link
               href="/projects"
+              onClick={(e) => handleProtectedNavigation(e, '/projects')}
               className="group bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
             >
               View Our Projects
@@ -202,6 +220,7 @@ const Hero = () => {
             </Link>
             <Link
               href="/team"
+              onClick={(e) => handleProtectedNavigation(e, '/team')}
               className="bg-transparent border-2 border-blue-400 text-blue-400 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
               Meet the Team
@@ -219,6 +238,12 @@ const Hero = () => {
           />
         </svg>
       </div>
+
+      {/* Sign In Modal */}
+      <SignInModal 
+        isOpen={showSignInModal} 
+        onClose={() => setShowSignInModal(false)} 
+      />
     </section>
   )
 }

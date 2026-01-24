@@ -18,8 +18,18 @@ dotenv.config()
 const app: Application = express()
 const PORT = process.env.PORT || 5000
 
-// Security middleware
-app.use(helmet())
+// Security middleware with relaxed CSP for images
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    },
+  },
+}))
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true,

@@ -2,41 +2,30 @@
 
 import React, { useEffect, useMemo, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 import roboticImg from "@/assets/robotic.jpg"
-import arduinoImg from "@/assets/arduino.jpg"
-import aerospaceImg from "@/assets/aerospace.jpg"
-import eieImg from "@/assets/eie.jpg"
 
-const projects = [
+// Fallback projects if API fails or no projects exist
+const fallbackProjects = [
   {
+    id: "fallback-1",
     title: "Autonomous Inspection Drone",
-    blurb:
+    description:
       "AI-guided aerial platform for precision inspections with live analytics and automated flight paths.",
-    image: aerospaceImg.src,
-    tech: ["AI/ML", "Computer Vision", "Edge Compute"],
-  },
-  {
-    title: "Smart Robotics Lab",
-    blurb:
-      "Modular robotic stack with real-time sensing, ROS control, and human-in-the-loop safety layer.",
-    image: roboticImg.src,
-    tech: ["ROS", "LiDAR", "Python"],
-  },
-  {
-    title: "IoT Energy Command",
-    blurb:
-      "Unified IoT control for renewable assets with predictive maintenance and adaptive load balancing.",
-    image: arduinoImg.src,
-    tech: ["IoT", "Predictive", "Realtime"],
-  },
-  {
-    title: "Industrial Control Fabric",
-    blurb:
-      "High-availability control system with digital twins, secure OPC-UA bus, and KPI dashboards.",
-    image: eieImg.src,
-    tech: ["SCADA", "OPC-UA", "Dashboard"],
+    imageUrl: roboticImg.src,
+    technologies: ["AI/ML", "Computer Vision", "Edge Compute"],
   },
 ]
+
+interface Project {
+  id: string
+  title: string
+  description: string
+  imageUrl: string
+  technologies: string[]
+  githubUrl?: string
+  liveUrl?: string
+}
 
 const cardVariants = {
   initial: { opacity: 0, y: 30, scale: 0.97 },
@@ -45,8 +34,41 @@ const cardVariants = {
 }
 
 export default function ProjectSlider() {
+  const [projects, setProjects] = useState<Project[]>(fallbackProjects)
+  const [isLoading, setIsLoading] = useState(true)
   const [index, setIndex] = useState(0)
   const length = projects.length
+
+  // Fetch real projects from API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('http://localhost:5000/api/projects')
+        const data = await response.json()
+
+        if (data.success && data.projects.length > 0) {
+          const transformedProjects = data.projects.map((project: any) => ({
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            imageUrl: project.imageUrl ? `http://localhost:5000${project.imageUrl}` : roboticImg.src,
+            technologies: Array.isArray(project.technologies) ? project.technologies : [],
+            githubUrl: project.githubUrl,
+            liveUrl: project.liveUrl,
+          }))
+          setProjects(transformedProjects)
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error)
+        // Keep fallback projects if fetch fails
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProjects()
+  }, [])
 
   const current = useMemo(() => projects[index], [index])
 
@@ -112,9 +134,9 @@ export default function ProjectSlider() {
                     Live delivery
                   </div>
                   <h3 className="text-xl md:text-2xl font-bold text-white mt-3">{current.title}</h3>
-                  <p className="text-blue-100 mt-2 leading-relaxed text-sm md:text-base">{current.blurb}</p>
+                  <p className="text-blue-100 mt-2 leading-relaxed text-sm md:text-base">{current.description}</p>
                   <div className="flex flex-wrap gap-2 mt-5">
-                    {current.tech.map((tag) => (
+                    {current.technologies.map((tag) => (
                       <span
                         key={tag}
                         className="px-3 py-1 rounded-full bg-white/10 text-blue-100 text-xs font-semibold border border-white/10"
@@ -130,15 +152,26 @@ export default function ProjectSlider() {
             <div className="order-1 md:order-2">
               <div className="relative aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-white/5">
                 <AnimatePresence mode="wait">
-                  <motion.img
-                    key={current.image}
-                    src={current.image}
-                    alt={current.title}
-                    className="h-full w-full object-cover"
+                  <motion.div
+                    key={current.imageUrl}
+                    className="relative h-full w-full"
                     initial={{ opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1, transition: { duration: 0.65, ease: "easeOut" } }}
                     exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.35, ease: "easeIn" } }}
-                  />
+                  >
+                    <Image
+                      src={current.imageUrl}
+                      alt={current.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      unoptimized={current.imageUrl.includes('localhost:5000')}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src = roboticImg.src
+                      }}
+                    />
+                  </motion.div>
                 </AnimatePresence>
                 <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
               </div>

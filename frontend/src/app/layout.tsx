@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Poppins } from 'next/font/google'
+import { Suspense } from 'react'
 import './globals.css'
 import Providers from '@/components/providers/Providers'
 import Navbar from '@/components/layout/Navbar'
@@ -8,12 +9,16 @@ import Footer from '@/components/layout/Footer'
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+  preload: true,
 })
 
 const poppins = Poppins({ 
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-poppins',
+  display: 'swap',
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -31,6 +36,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="http://localhost:5000" />
+        <link rel="dns-prefetch" href="http://localhost:5000" />
         <script async src="https://accounts.google.com/gsi/client"></script>
       </head>
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>

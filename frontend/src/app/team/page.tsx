@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { TeamMember, Project } from '@/types'
 import TeamMemberCard from '@/components/team/TeamMemberCard'
 import { useAuth } from '@/context/AuthContext'
@@ -551,11 +552,15 @@ export default function TeamPage() {
                     >
                       <div className="flex gap-4">
                         {project.imageUrl ? (
-                          <img
-                            src={project.imageUrl.startsWith('http') ? project.imageUrl : `http://localhost:5000${project.imageUrl}`}
-                            alt={project.title}
-                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                          />
+                          <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
+                            <Image
+                              src={project.imageUrl.startsWith('http') ? project.imageUrl : `http://localhost:5000${project.imageUrl}`}
+                              alt={project.title}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                          </div>
                         ) : (
                           <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
                             <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

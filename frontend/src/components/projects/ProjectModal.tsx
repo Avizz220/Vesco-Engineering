@@ -82,10 +82,6 @@ const ProjectModal = ({ project, isOpen, onClose, adminUsers = [] }: ProjectModa
                     </svg>
                   </div>
                 )}
-                {/* Category Badge */}
-                <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                  {project.category}
-                </div>
               </div>
 
               {/* Content */}

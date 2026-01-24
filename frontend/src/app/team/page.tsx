@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { TeamMember } from '@/types'
+import { TeamMember, Project } from '@/types'
 import TeamMemberCard from '@/components/team/TeamMemberCard'
+import { useAuth } from '@/context/AuthContext'
+import Dialog from '@/components/ui/Dialog'
 
 type Department = 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
 
@@ -11,119 +13,186 @@ interface CategorizedMembers {
   [key: string]: TeamMember[]
 }
 
-const FALLBACK_MEMBERS: TeamMember[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    role: 'Lead Developer',
-    department: 'Computer Engineering',
-    bio: 'Full-stack developer with passion for innovative solutions',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'john@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop',
-    joinedDate: '2024-01-15',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    role: 'UI/UX Designer',
-    department: 'Computer Engineering',
-    bio: 'Creative designer focused on user experience and modern design systems',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'jane@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop',
-    joinedDate: '2024-02-20',
-  },
-  {
-    id: '3',
-    name: 'Mike Johnson',
-    role: 'Backend Engineer',
-    department: 'Computer Engineering',
-    bio: 'Experienced backend developer specializing in cloud solutions',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'mike@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop',
-    joinedDate: '2024-01-10',
-  },
-  {
-    id: '4',
-    name: 'Sarah Williams',
-    role: 'Electrical Engineer',
-    department: 'Electrical Engineering',
-    bio: 'Strategic electrical engineer with expertise in power systems and circuit design',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'sarah@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop',
-    joinedDate: '2024-03-01',
-  },
-  {
-    id: '5',
-    name: 'Alex Chen',
-    role: 'Electrical Technician',
-    department: 'Electrical Engineering',
-    bio: 'Skilled technician with expertise in electrical systems and troubleshooting',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'alex@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop',
-    joinedDate: '2024-02-05',
-  },
-  {
-    id: '6',
-    name: 'Emma Rodriguez',
-    role: 'Mechanical Engineer',
-    department: 'Mechanical Engineering',
-    bio: 'Mechanical engineer specialized in CAD design and mechanical systems',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'emma@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop',
-    joinedDate: '2024-01-25',
-  },
-  {
-    id: '7',
-    name: 'David Lee',
-    role: 'Mechanical Designer',
-    department: 'Mechanical Engineering',
-    bio: 'Experienced mechanical designer with expertise in product development',
-    linkedinUrl: 'https://linkedin.com',
-    githubUrl: 'https://github.com',
-    email: 'david@example.com',
-    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop',
-    joinedDate: '2024-02-10',
-  },
-]
-
-// Publicly visible team page; auth only used elsewhere in app
-
 export default function TeamPage() {
-  const [members, setMembers] = useState<TeamMember[]>(FALLBACK_MEMBERS)
-  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
+  const [members, setMembers] = useState<TeamMember[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
+  const [showProjectsModal, setShowProjectsModal] = useState(false)
+  const [selectedMemberProjects, setSelectedMemberProjects] = useState<Project[]>([])
+  const [selectedMemberName, setSelectedMemberName] = useState('')
+  const [showAllProjects, setShowAllProjects] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [dialogMessage, setDialogMessage] = useState('')
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    role: '',
+    department: '',
+    bio: '',
+    linkedinUrl: '',
+    githubUrl: '',
+    email: '',
+    photo: null as File | null,
+  })
 
   useEffect(() => {
-    const fetchTeamMembers = async () => {
-      try {
-        setError(null)
-        const response = await fetch('/api/team')
-        if (!response.ok) {
-          throw new Error('Failed to fetch team members')
-        }
+    fetchTeamMembers()
+    fetchAdminUsers()
+  }, [])
+
+  const fetchAdminUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/admins')
+      if (response.ok) {
+        const admins = await response.json()
+        setAdminUsers(admins)
+      }
+    } catch (error) {
+      console.error('Error fetching admin users:', error)
+    }
+  }
+
+  const fetchTeamMembers = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('http://localhost:5000/api/team')
+      if (response.ok) {
         const data = await response.json()
         setMembers(data)
-      } catch (err) {
-        console.error('Error fetching team members:', err)
-        // Keep fallback members on network failure so the page renders immediately
-        setMembers(FALLBACK_MEMBERS)
-        setError('Using default team data')
       }
+    } catch (err) {
+      console.error('Error fetching team members:', err)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    fetchTeamMembers()
-  }, [])
+  const handleAddOrUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setShowConfirmDialog(true)
+  }
+
+  const confirmAddOrUpdate = async () => {
+    setShowConfirmDialog(false)
+    
+    try {
+      const submitFormData = new FormData()
+      submitFormData.append('name', formData.name)
+      submitFormData.append('role', formData.role)
+      submitFormData.append('department', formData.department)
+      submitFormData.append('bio', formData.bio)
+      submitFormData.append('linkedinUrl', formData.linkedinUrl)
+      submitFormData.append('githubUrl', formData.githubUrl)
+      submitFormData.append('email', formData.email)
+      if (formData.photo) {
+        submitFormData.append('image', formData.photo)
+      }
+
+      const url = editingMember 
+        ? `http://localhost:5000/api/team/${editingMember.id}`
+        : 'http://localhost:5000/api/team'
+      
+      const response = await fetch(url, {
+        method: editingMember ? 'PUT' : 'POST',
+        credentials: 'include',
+        body: submitFormData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to save profile')
+      }
+
+      setDialogMessage(editingMember ? 'Profile updated successfully!' : 'Profile created successfully!')
+      setShowSuccessDialog(true)
+      setShowAddModal(false)
+      setEditingMember(null)
+      resetForm()
+      fetchTeamMembers()
+    } catch (error: any) {
+      setDialogMessage(error.message || 'Failed to save profile')
+      setShowSuccessDialog(true)
+    }
+  }
+
+  const handleEditProfile = (member: TeamMember) => {
+    setEditingMember(member)
+    setFormData({
+      name: member.name,
+      role: member.role,
+      department: member.department || '',
+      bio: member.bio || '',
+      linkedinUrl: member.linkedinUrl || '',
+      githubUrl: member.githubUrl || '',
+      email: member.email || '',
+      photo: null,
+    })
+    setShowAddModal(true)
+  }
+
+  const handleViewProjects = async (memberName: string) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/projects')
+      if (response.ok) {
+        const data = await response.json()
+        const projects = data.projects || []
+        
+        // Get the member's user ID by matching email
+        const member = members.find(m => m.name === memberName)
+        const adminUser = adminUsers.find(admin => admin.email === member?.email)
+        
+        // Filter projects where the member is a contributor
+        const memberProjects = projects.filter((project: Project) => {
+          if (!project.contributors || !Array.isArray(project.contributors)) return false
+          
+          // If 'all' is selected, this member contributed to this project
+          if (project.contributors[0] === 'all') return true
+          
+          // Check if member's user ID is in contributors list
+          if (adminUser) {
+            return project.contributors.includes(adminUser.id)
+          }
+          
+          return false
+        })
+
+        setSelectedMemberName(memberName)
+        setSelectedMemberProjects(memberProjects)
+        setShowAllProjects(false)
+        setShowProjectsModal(true)
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      role: '',
+      department: '',
+      bio: '',
+      linkedinUrl: '',
+      githubUrl: '',
+      email: '',
+      photo: null,
+    })
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData(prev => ({ ...prev, photo: e.target.files![0] }))
+    }
+  }
+
+  // Check if logged-in user has a profile
+  const userProfile = members.find(m => m.email === user?.email)
+  const canCreateProfile = user?.isAdmin && !userProfile
 
   // Categorize members by department
   const categorizedMembers: CategorizedMembers = {
@@ -167,23 +236,42 @@ export default function TeamPage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h1 className="text-5xl font-bold text-gray-900 mb-4">
-              Meet Our Team
-            </h1>
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex-1"></div>
+              <h1 className="text-5xl font-bold text-gray-900 mb-4 flex-1">
+                Meet Our Team
+              </h1>
+              <div className="flex-1 flex justify-end">
+                {canCreateProfile && (
+                  <button
+                    onClick={() => {
+                      setEditingMember(null)
+                      resetForm()
+                      setFormData(prev => ({ ...prev, email: user?.email || '', name: user?.name || '' }))
+                      setShowAddModal(true)
+                    }}
+                    className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Create My Profile
+                  </button>
+                )}
+              </div>
+            </div>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               A talented group of professionals from diverse engineering disciplines dedicated to delivering excellence
               and innovation in everything we do
             </p>
           </motion.div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700">
-            Using default team data
+        {isLoading ? (
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        )}
-
-        {members.length === 0 ? (
+        ) : members.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-600 text-lg">No team members found.</p>
           </div>
@@ -216,6 +304,9 @@ export default function TeamPage() {
                         key={member.id}
                         member={member}
                         index={index}
+                        isOwnProfile={user?.email === member.email}
+                        onEdit={handleEditProfile}
+                        onViewProjects={handleViewProjects}
                       />
                     ))}
                   </div>
@@ -227,6 +318,333 @@ export default function TeamPage() {
 
       </div>
     </div>
+
+      {/* Add/Edit Profile Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-blue-50">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {editingMember ? 'Edit Your Profile' : 'Create Your Profile'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowAddModal(false)
+                  setEditingMember(null)
+                  resetForm()
+                }}
+                className="p-2 text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleAddOrUpdateProfile} className="p-6 space-y-5">
+              {/* Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              {/* Role */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Position/Role <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.role}
+                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                  placeholder="e.g., Senior Software Engineer"
+                />
+              </div>
+
+              {/* Department */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Department <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={formData.department}
+                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                >
+                  <option value="">Select department...</option>
+                  <option value="Computer Engineering">Computer Engineering</option>
+                  <option value="Electrical Engineering">Electrical Engineering</option>
+                  <option value="Mechanical Engineering">Mechanical Engineering</option>
+                </select>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-gray-50"
+                  placeholder="your.email@example.com"
+                  disabled={true}
+                />
+                <p className="text-xs text-gray-500">Email cannot be changed</p>
+              </div>
+
+              {/* Bio */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Bio/Description
+                </label>
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-none"
+                  placeholder="Tell us about yourself, your expertise, and interests..."
+                />
+              </div>
+
+              {/* LinkedIn URL */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  LinkedIn Profile URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.linkedinUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                />
+              </div>
+
+              {/* GitHub URL */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  GitHub Profile URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.githubUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, githubUrl: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+                  placeholder="https://github.com/yourusername"
+                />
+              </div>
+
+              {/* Profile Photo */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Profile Photo
+                </label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      {formData.photo ? (
+                        <>
+                          <svg className="w-10 h-10 text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <p className="text-sm text-gray-600 font-medium">{formData.photo.name}</p>
+                          <p className="text-xs text-gray-500">{(formData.photo.size / 1024).toFixed(2)} KB</p>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-sm text-gray-600"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                          <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false)
+                    setEditingMember(null)
+                    resetForm()
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg"
+                >
+                  {editingMember ? 'Update Profile' : 'Create Profile'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Projects Modal */}
+      {showProjectsModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-blue-50">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Projects by {selectedMemberName}
+              </h3>
+              <button
+                onClick={() => setShowProjectsModal(false)}
+                className="p-2 text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              {selectedMemberProjects.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-600 text-lg">No projects found for this member</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {(showAllProjects ? selectedMemberProjects : selectedMemberProjects.slice(0, 3)).map((project) => (
+                    <div
+                      key={project.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
+                      onClick={() => {
+                        sessionStorage.setItem('openProjectId', project.id)
+                        window.location.href = '/projects'
+                      }}
+                    >
+                      <div className="flex gap-4">
+                        {project.imageUrl ? (
+                          <img
+                            src={project.imageUrl.startsWith('http') ? project.imageUrl : `http://localhost:5000${project.imageUrl}`}
+                            alt={project.title}
+                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{project.title}</h4>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{project.description}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {project.technologies?.slice(0, 3).map((tech, idx) => (
+                              <span
+                                key={idx}
+                                className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                            {(project.technologies?.length || 0) > 3 && (
+                              <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-medium">
+                                +{(project.technologies?.length || 0) - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center flex-shrink-0">
+                          <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {selectedMemberProjects.length > 3 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowAllProjects(!showAllProjects)
+                      }}
+                      className="w-full py-3 text-center text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      {showAllProjects ? (
+                        <span className="flex items-center justify-center gap-2">
+                          Show Less
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          Show {selectedMemberProjects.length - 3} More Project{selectedMemberProjects.length - 3 > 1 ? 's' : ''}
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        type="confirm"
+        title="Confirm Action"
+        message={editingMember ? "Are you sure you want to update your profile?" : "Are you sure you want to create your profile?"}
+        onConfirm={confirmAddOrUpdate}
+        onCancel={() => setShowConfirmDialog(false)}
+        confirmText="Yes, Proceed"
+        cancelText="Cancel"
+      />
+
+      {/* Success Dialog */}
+      <Dialog
+        isOpen={showSuccessDialog}
+        onClose={() => setShowSuccessDialog(false)}
+        title={dialogMessage.includes('success') ? 'Success' : 'Error'}
+        message={dialogMessage}
+        onConfirm={() => setShowSuccessDialog(false)}
+        confirmText="OK"
+      />
     </>
   )
 }

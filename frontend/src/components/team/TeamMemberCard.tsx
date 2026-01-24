@@ -4,13 +4,17 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { TeamMember } from '@/types'
+import { useState } from 'react'
 
 interface TeamMemberCardProps {
   member: TeamMember
   index: number
+  isOwnProfile?: boolean
+  onEdit?: (member: TeamMember) => void
+  onViewProjects?: (memberName: string) => void
 }
 
-const TeamMemberCard = ({ member, index }: TeamMemberCardProps) => {
+const TeamMemberCard = ({ member, index, isOwnProfile, onEdit, onViewProjects }: TeamMemberCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -22,7 +26,7 @@ const TeamMemberCard = ({ member, index }: TeamMemberCardProps) => {
       <div className="relative h-80 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden">
         {member.imageUrl ? (
           <Image
-            src={member.imageUrl}
+            src={member.imageUrl.startsWith('http') ? member.imageUrl : `http://localhost:5000${member.imageUrl}`}
             alt={member.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -49,6 +53,20 @@ const TeamMemberCard = ({ member, index }: TeamMemberCardProps) => {
         <div className="absolute top-4 right-4 bg-blue-200 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold shadow-md">
           {member.role}
         </div>
+        
+        {/* Edit Button for Own Profile */}
+        {isOwnProfile && onEdit && (
+          <button
+            onClick={() => onEdit(member)}
+            className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-blue-50 transition-colors z-10"
+            title="Edit Your Profile"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5 text-blue-600">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Member Info */}
@@ -127,12 +145,12 @@ const TeamMemberCard = ({ member, index }: TeamMemberCardProps) => {
         </div>
 
         {/* View Projects Button */}
-        <Link
-          href={`/projects?contributor=${member.name}`}
+        <button
+          onClick={() => onViewProjects?.(member.name)}
           className="w-full block text-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3 rounded-lg transition-all duration-300 border border-blue-200 hover:border-blue-300 transform hover:scale-105 shadow-sm hover:shadow-md"
         >
           View Projects
-        </Link>
+        </button>
       </div>
     </motion.div>
   )

@@ -41,6 +41,19 @@ export default function ProjectsPage() {
     fetchAdminUsers()
   }, [])
 
+  // Check for project ID from team page navigation
+  useEffect(() => {
+    const openProjectId = sessionStorage.getItem('openProjectId')
+    if (openProjectId && projectsList.length > 0) {
+      const project = projectsList.find(p => p.id === openProjectId)
+      if (project) {
+        setSelectedProject(project)
+        setIsModalOpen(true)
+        sessionStorage.removeItem('openProjectId')
+      }
+    }
+  }, [projectsList])
+
   const fetchAdminUsers = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/auth/admins')

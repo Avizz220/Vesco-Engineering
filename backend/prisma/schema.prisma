@@ -55,18 +55,19 @@ model Achievement {
 }
 
 model TeamMember {
-  id         String   @id @default(uuid())
-  name       String
-  role       String   // e.g., "Team Lead", "Developer", "Designer"
-  imageUrl   String?
-  bio        String?  @db.Text
+  id          String   @id @default(uuid())
+  name        String
+  role        String   // e.g., "Team Lead", "Developer", "Designer"
+  department  String?  // e.g., "Computer Engineering", "Electrical Engineering", "Mechanical Engineering"
+  imageUrl    String?
+  bio         String?  @db.Text
   linkedinUrl String?
-  githubUrl  String?
-  email      String?
-  joinedDate DateTime @default(now())
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  githubUrl   String?
+  email       String?
+  joinedDate  DateTime @default(now())
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("team_members")
   @@index([isActive])

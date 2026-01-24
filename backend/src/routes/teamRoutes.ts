@@ -1,9 +1,13 @@
 import { Router, Request, Response } from 'express'
 import { authenticate, authorize } from '../middleware/auth'
 import { PrismaClient } from '@prisma/client'
+import { upload } from '../middleware/upload'
 
 const prisma = new PrismaClient()
 const router = Router()
+
+// Middleware to check admin role
+const verifyAdmin = [authenticate, authorize('admin')]
 
 // @route   GET /api/team
 // @desc    Get all team members
@@ -47,13 +51,15 @@ router.get('/:id', async (req: Request, res: Response) => {
 // @route   POST /api/team
 // @desc    Add new team member
 // @access  Private (Admin only)
-router.post('/', authenticate, authorize('admin'), async (req: Request, res: Response) => {
+router.post('/', verifyAdmin, upload.single('image'), async (req: Request, res: Response) => {
   try {
-    const { name, role, bio, linkedinUrl, githubUrl, email, imageUrl, joinedDate } = req.body
+    const { name, role, bio, linkedinUrl, githubUrl, email, department } = req.body
 
     if (!name || !role) {
       return res.status(400).json({ message: 'Name and role are required' })
     }
+
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null
 
     const teamMember = await prisma.teamMember.create({
       data: {
@@ -63,24 +69,27 @@ router.post('/', authenticate, authorize('admin'), async (req: Request, res: Res
         linkedinUrl,
         githubUrl,
         email,
+        department,
         imageUrl,
-        joinedDate: joinedDate ? new Date(joinedDate) : new Date(),
+        joinedDate: new Date(),
       },
     })
-    res.status(201).json(teamMember)
+    res.status(201).json({ success: true, teamMember })
   } catch (error) {
     console.error('Error creating team member:', error)
-    res.status(500).json({ message: 'Error creating team member' })
+    res.status(500).json({ success: false, message: 'Error creating team member' })
   }
 })
 
 // @route   PUT /api/team/:id
 // @desc    Update team member
 // @access  Private (Admin only)
-router.put('/:id', authenticate, authorize('admin'), async (req: Request, res: Response) => {
+router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { name, role, bio, linkedinUrl, githubUrl, email, imageUrl, isActive } = req.body
+    const { name, role, bio, linkedinUrl, githubUrl, email, department, isActive } = req.body
+
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined
 
     const teamMember = await prisma.teamMember.update({
       where: { id },
@@ -91,31 +100,32 @@ router.put('/:id', authenticate, authorize('admin'), async (req: Request, res: R
         ...(linkedinUrl !== undefined && { linkedinUrl }),
         ...(githubUrl !== undefined && { githubUrl }),
         ...(email !== undefined && { email }),
-        ...(imageUrl !== undefined && { imageUrl }),
+        ...(department !== undefined && { department }),
+        ...(imageUrl && { imageUrl }),
         ...(isActive !== undefined && { isActive }),
       },
     })
-    res.json(teamMember)
+    res.json({ success: true, teamMember })
   } catch (error) {
     console.error('Error updating team member:', error)
-    res.status(500).json({ message: 'Error updating team member' })
+    res.status(500).json({ success: false, message: 'Error updating team member' })
   }
 })
 
 // @route   DELETE /api/team/:id
 // @desc    Delete team member (soft delete by setting isActive to false)
 // @access  Private (Admin only)
-router.delete('/:id', authenticate, authorize('admin'), async (req: Request, res: Response) => {
+router.delete('/:id', verifyAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const teamMember = await prisma.teamMember.update({
       where: { id },
       data: { isActive: false },
     })
-    res.json({ message: 'Team member deleted successfully', teamMember })
+    res.json({ success: true, message: 'Team member deleted successfully', teamMember })
   } catch (error) {
     console.error('Error deleting team member:', error)
-    res.status(500).json({ message: 'Error deleting team member' })
+    res.status(500).json({ success: false, message: 'Error deleting team member' })
   }
 })
 

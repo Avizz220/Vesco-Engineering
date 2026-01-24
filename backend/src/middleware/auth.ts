@@ -16,13 +16,22 @@ export const authenticate = (
   next: NextFunction
 ) => {
   try {
+    // Try to get token from Authorization header first
+    let token = null
     const authHeader = req.headers.authorization
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1]
+    } 
+    // If no Bearer token, try to get from cookie
+    else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token
+    }
+    
+    if (!token) {
       throw new AppError('Authentication required', 401)
     }
 
-    const token = authHeader.split(' ')[1]
     const secret = process.env.JWT_SECRET
 
     if (!secret) {
@@ -54,10 +63,18 @@ export const authorize = (...roles: string[]) => {
       return next(new AppError('Authentication required', 401))
     }
 
-    if (!roles.includes(req.user.role)) {
+    console.log('🔐 Authorization Check - User Role:', req.user.role, 'Required Roles:', roles)
+
+    // Case-insensitive role comparison
+    const userRoleLower = req.user.role.toLowerCase()
+    const rolesLower = roles.map(r => r.toLowerCase())
+
+    if (!rolesLower.includes(userRoleLower)) {
+      console.log('❌ Access Denied - User role does not match required roles')
       return next(new AppError('Access denied', 403))
     }
 
+    console.log('✅ Access Granted')
     next()
   }
 }

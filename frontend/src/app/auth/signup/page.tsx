@@ -3,18 +3,20 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import SuccessModal from '@/components/ui/SuccessModal'
+import ErrorModal from '@/components/ui/ErrorModal'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
-  const [error, setError] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [showErrorModal, setShowErrorModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { signUp } = useAuth()
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,38 +29,95 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setErrorMessage('')
 
     // Validation
-    if (!formData.name.trim()) {
-      setError('Full name is required')
+    if (!formData.fullName.trim()) {
+      setErrorMessage('Full name is required')
+      setShowErrorModal(true)
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setErrorMessage('Password must be at least 6 characters')
+      setShowErrorModal(true)
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setErrorMessage('Passwords do not match')
+      setShowErrorModal(true)
       return
     }
 
     setIsLoading(true)
 
     try {
-      await signUp(formData.name, formData.email, formData.password)
-      router.push('/')
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrorMessage(data.message || 'Sign up failed. Please try again.')
+        setShowErrorModal(true)
+        return
+      }
+
+      // Clear form
+      setFormData({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      })
+
+      // Show success modal
+      setShowSuccessModal(true)
     } catch (err: any) {
-      setError(err.message || 'Sign up failed. Please try again.')
+      setErrorMessage(err.message || 'Sign up failed. Please check your connection and try again.')
+      setShowErrorModal(true)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false)
+    // Navigate to sign in page
+    router.push('/auth/signin')
+  }
+
+  const handleErrorModalClose = () => {
+    setShowErrorModal(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 pt-24 pb-12">
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        title="Thank You!"
+        message="Your details have been successfully submitted. Thanks!"
+      />
+
+      <ErrorModal 
+        isOpen={showErrorModal}
+        onClose={handleErrorModalClose}
+        title="Sign Up Failed"
+        message={errorMessage}
+      />
+      
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Branding */}
@@ -127,30 +186,18 @@ export default function SignUpPage() {
                 <p className="text-gray-600 mt-2">Start your engineering journey with us</p>
               </div>
 
-              {/* Error Message */}
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  <div className="flex">
-                    <svg className="h-5 w-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{error}</span>
-                  </div>
-                </div>
-              )}
-
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Full Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
                     Full Name
                   </label>
                   <input
-                    id="name"
-                    name="name"
+                    id="fullName"
+                    name="fullName"
                     type="text"
-                    value={formData.name}
+                    value={formData.fullName}
                     onChange={handleChange}
                     placeholder="John Doe"
                     required

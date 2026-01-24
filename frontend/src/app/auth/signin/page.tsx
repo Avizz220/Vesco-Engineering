@@ -3,33 +3,83 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import SuccessModal from '@/components/ui/SuccessModal'
+import ErrorModal from '@/components/ui/ErrorModal'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setErrorMessage('')
     setIsLoading(true)
 
     try {
-      await signIn(email, password)
-      router.push('/')
+      const response = await fetch('http://localhost:5000/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrorMessage(data.message || 'Invalid email or password')
+        setShowErrorModal(true)
+        return
+      }
+
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify(data.user))
+
+      // Show success modal
+      setShowSuccessModal(true)
     } catch (err: any) {
-      setError(err.message || 'Sign in failed. Please try again.')
+      setErrorMessage(err.message || 'Sign in failed. Please check your connection and try again.')
+      setShowErrorModal(true)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false)
+    // Navigate to home page
+    router.push('/')
+  }
+
+  const handleErrorModalClose = () => {
+    setShowErrorModal(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24 pb-12">
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        title="Welcome Back!"
+        message="You have successfully signed in. Redirecting to home page..."
+      />
+
+      <ErrorModal 
+        isOpen={showErrorModal}
+        onClose={handleErrorModalClose}
+        title="Sign In Failed"
+        message={errorMessage}
+      />
+      
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Branding */}
@@ -97,18 +147,6 @@ export default function SignInPage() {
                 <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
                 <p className="text-gray-600 mt-2">Enter your credentials to continue</p>
               </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  <div className="flex">
-                    <svg className="h-5 w-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{error}</span>
-                  </div>
-                </div>
-              )}
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-5">

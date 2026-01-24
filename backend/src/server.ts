@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import compression from 'compression'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
+import cookieParser from 'cookie-parser'
 import { errorHandler } from './middleware/errorHandler'
 import authRoutes from './routes/authRoutes'
 import projectRoutes from './routes/projectRoutes'
@@ -22,6 +23,9 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true,
 }))
+
+// Cookie parser middleware
+app.use(cookieParser())
 
 // Rate limiting
 const limiter = rateLimit({

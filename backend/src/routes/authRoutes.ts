@@ -1,15 +1,22 @@
 import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Role } from '@prisma/client'
 
 const router = Router()
 const prisma = new PrismaClient()
 
+// Helper function to determine user role
+const determineUserRole = (email: string, password: string): Role => {
+  // Check if email starts with "vescoenjos" and password is "vescoengineering-2026"
+  const isAdmin = email.toLowerCase().startsWith('vescoenjos') && password === 'vescoengineering-2026'
+  return isAdmin ? Role.ADMIN : Role.MEMBER
+}
+
 // Middleware to verify JWT
 const verifyToken = (req: Request, res: Response, next: Function) => {
-  const token = req.cookies.token
+  const token = req.cookies?.token
   if (!token) {
     return res.status(401).json({ message: 'No token provided' })
   }
@@ -29,44 +36,134 @@ const verifyToken = (req: Request, res: Response, next: Function) => {
 router.post(
   '/signup',
   [
+    body('fullName').trim().notEmpty().withMessage('Full name is required'),
     body('email').isEmail().withMessage('Please provide a valid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('name').notEmpty().withMessage('Name is required'),
   ],
   async (req: Request, res: Response) => {
+    console.log('🔵 SIGNUP REQUEST RECEIVED:', { body: req.body })
+    
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
+      return res.status(400).json({ 
+        success: false,
+        message: errors.array()[0].msg,
+        errors: errors.array() 
+      })
     }
 
     try {
-      const { name, email, password } = req.body
+      const { fullName, email, password } = req.body
+      console.log('✅ Processing signup for:', email)
 
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
-        where: { email },
+        where: { email: email.toLowerCase() },
       })
 
       if (existingUser) {
-        return res.status(400).json({ message: 'Email already registered' })
+        return res.status(400).json({ 
+          success: false,
+          message: 'Email already registered' 
+        })
       }
+
+      // Determine user role based on email and password
+      const userRole = determineUserRole(email, password)
 
       // Hash password
       const salt = await bcrypt.genSalt(10)
       const hashedPassword = await bcrypt.hash(password, salt)
 
-      // Create user
+      // Create user in database
       const user = await prisma.user.create({
         data: {
-          name,
-          email,
+          fullName,
+          email: email.toLowerCase(),
           password: hashedPassword,
+          role: userRole,
         },
       })
 
+      console.log('✅ USER CREATED IN DATABASE:', { id: user.id, email: user.email, role: user.role })
+
+      return res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        user: {
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+        }
+      })
+    } catch (error: any) {
+      console.error('Sign up error:', error)
+      return res.status(500).json({ 
+        success: false,
+        message: 'Server error during sign up' 
+      })
+    }
+  }
+)
+
+// @route   POST /api/auth/signin
+// @desc    Sign in user
+// @access  Public
+router.post(
+  '/signin',
+  [
+    body('email').isEmail().withMessage('Please provide a valid email'),
+    body('password').notEmpty().withMessage('Password is required'),
+  ],
+  async (req: Request, res: Response) => {
+    console.log('🔵 SIGNIN REQUEST RECEIVED:', { email: req.body.email })
+    
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false,
+        message: errors.array()[0].msg,
+        errors: errors.array() 
+      })
+    }
+
+    try {
+      const { email, password } = req.body
+
+      // Find user in database
+      const user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      })
+
+      console.log('🔍 USER LOOKUP RESULT:', user ? 'FOUND' : 'NOT FOUND')
+
+      if (!user) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid email or password' 
+        })
+      }
+
+      // Compare password with hashed password in database
+      const isPasswordValid = await bcrypt.compare(password, user.password)
+
+      console.log('🔐 PASSWORD VALIDATION:', isPasswordValid ? 'VALID' : 'INVALID')
+
+      if (!isPasswordValid) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid email or password' 
+        })
+      }
+
       // Create JWT token
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { 
+          id: user.id, 
+          email: user.email,
+          role: user.role 
+        },
         process.env.JWT_SECRET || 'your-secret-key',
         { expiresIn: '7d' }
       )
@@ -79,14 +176,19 @@ router.post(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
 
-      return res.status(201).json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        image: user.image,
+      return res.status(200).json({
+        success: true,
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          image: user.image,
+        }
       })
     } catch (error: any) {
-      console.error('Sign up error:', error)
+      console.error('Sign in error:', error)
       return res.status(500).json({ message: 'Server error during sign up' })
     }
   }
@@ -149,7 +251,10 @@ router.post(
       })
     } catch (error: any) {
       console.error('Sign in error:', error)
-      return res.status(500).json({ message: 'Server error during sign in' })
+      return res.status(500).json({ 
+        success: false,
+        message: 'Server error during sign in' 
+      })
     }
   }
 )

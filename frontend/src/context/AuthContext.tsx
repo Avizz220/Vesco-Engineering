@@ -48,31 +48,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Mock authentication - simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 800))
+      // Call real backend API
+      const response = await fetch('http://localhost:5000/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      })
 
-      // Check if admin credentials
-      const isAdminEmail = email.startsWith('vescoenjos') && email.endsWith('@gmail.com')
-      const isAdminPassword = password === 'engineeringvesco-2026'
-      const isAdmin = isAdminEmail && isAdminPassword
+      const data = await response.json()
 
-      // Create mock user
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email,
-        name: email.split('@')[0],
-        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-        isAdmin,
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid email or password')
       }
 
-      console.log('Sign In - Created User:', mockUser)
-      console.log('Sign In - isAdmin:', isAdmin)
-      console.log('Sign In - Email Check:', { isAdminEmail, isAdminPassword })
+      // Create user object from backend response
+      const authenticatedUser: User = {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.fullName,
+        image: data.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
+        isAdmin: data.user.role === 'ADMIN',
+      }
 
-      setUser(mockUser)
-      localStorage.setItem('vescoUser', JSON.stringify(mockUser))
-    } catch (error) {
-      throw new Error('Sign in failed')
+      console.log('✅ Sign In Success - User:', authenticatedUser)
+
+      setUser(authenticatedUser)
+      localStorage.setItem('vescoUser', JSON.stringify(authenticatedUser))
+    } catch (error: any) {
+      throw new Error(error.message || 'Sign in failed')
     } finally {
       setIsLoading(false)
     }
@@ -81,22 +87,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (name: string, email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Mock authentication - simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 800))
+      // Call real backend API
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ fullName: name, email, password }),
+      })
 
-      // Create mock user (sign up users are always normal users, not admins)
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email,
-        name,
-        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-        isAdmin: false,
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Sign up failed')
       }
 
-      setUser(mockUser)
-      localStorage.setItem('vescoUser', JSON.stringify(mockUser))
-    } catch (error) {
-      throw new Error('Sign up failed')
+      console.log('✅ Sign Up Success - User registered:', data.user.email)
+      
+      // DO NOT auto-login after signup - user must sign in separately
+      // Registration successful, but user is not logged in yet
+    } catch (error: any) {
+      throw new Error(error.message || 'Sign up failed')
     } finally {
       setIsLoading(false)
     }
@@ -126,6 +138,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const logout = async () => {
+    try {
+      // Call backend logout endpoint to clear cookie
+      await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+    
     setUser(null)
     localStorage.removeItem('vescoUser')
     router.push('/')

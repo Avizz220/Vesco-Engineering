@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Script from 'next/script'
 import { useAuth } from '@/context/AuthContext'
+import Dialog from '@/components/ui/Dialog'
 
 interface SignUpModalProps {
   isOpen: boolean
@@ -30,6 +31,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const { signUp } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,12 +41,14 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setErrorMessage('Passwords do not match')
+      setShowErrorDialog(true)
       return
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setErrorMessage('Password must be at least 6 characters')
+      setShowErrorDialog(true)
       return
     }
 
@@ -54,12 +60,23 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
       setEmail('')
       setPassword('')
       setConfirmPassword('')
-      onClose()
+      setShowSuccessDialog(true)
     } catch (err: any) {
-      setError(err.message || 'Sign up failed')
+      setErrorMessage(err.message || 'Sign up failed')
+      setShowErrorDialog(true)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSuccessDialogClose = () => {
+    setShowSuccessDialog(false)
+    onClose()
+    onSwitchToSignIn()
+  }
+
+  const handleErrorDialogClose = () => {
+    setShowErrorDialog(false)
   }
 
   if (!isOpen) return null
@@ -246,6 +263,24 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
           </button>
         </p>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog
+        isOpen={showSuccessDialog}
+        onClose={handleSuccessDialogClose}
+        type="success"
+        title="Thank You!"
+        message="Your account has been successfully created. Please sign in to continue."
+      />
+
+      {/* Error Dialog */}
+      <Dialog
+        isOpen={showErrorDialog}
+        onClose={handleErrorDialogClose}
+        type="error"
+        title="Sign Up Failed"
+        message={errorMessage}
+      />
     </div>
   )
 }

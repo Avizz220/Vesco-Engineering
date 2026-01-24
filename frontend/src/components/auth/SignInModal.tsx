@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Script from 'next/script'
 import { useAuth } from '@/context/AuthContext'
+import Dialog from '@/components/ui/Dialog'
 
 interface SignInModalProps {
   isOpen: boolean
@@ -67,23 +68,58 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showResetModal, setShowResetModal] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const { signIn } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validate email and password are not empty
+    if (!email || !email.trim()) {
+      setErrorMessage('Please enter your email address')
+      setShowErrorDialog(true)
+      return
+    }
+
+    if (!password || !password.trim()) {
+      setErrorMessage('Please enter your password')
+      setShowErrorDialog(true)
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setErrorMessage('Please enter a valid email address')
+      setShowErrorDialog(true)
+      return
+    }
+
     setIsLoading(true)
 
     try {
       await signIn(email, password)
       setEmail('')
       setPassword('')
-      onClose()
+      setShowSuccessDialog(true)
     } catch (err: any) {
-      setError(err.message || 'Sign in failed')
+      setErrorMessage(err.message || 'Invalid email or password')
+      setShowErrorDialog(true)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSuccessDialogClose = () => {
+    setShowSuccessDialog(false)
+    onClose()
+  }
+
+  const handleErrorDialogClose = () => {
+    setShowErrorDialog(false)
   }
 
   if (!isOpen) return null
@@ -140,6 +176,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                minLength={5}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm text-gray-900"
               />
             </div>
@@ -154,6 +191,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  minLength={6}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm text-gray-900 pr-11"
                 />
                 <button
@@ -253,6 +291,24 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
           </div>
         </div>
       )}
+
+      {/* Error Dialog */}
+      <Dialog
+        isOpen={showErrorDialog}
+        onClose={handleErrorDialogClose}
+        type="error"
+        title="Sign In Failed"
+        message={errorMessage}
+      />
+
+      {/* Success Dialog */}
+      <Dialog
+        isOpen={showSuccessDialog}
+        onClose={handleSuccessDialogClose}
+        type="success"
+        title="Welcome Back!"
+        message="You have successfully signed in to your account."
+      />
     </>
   )
 }

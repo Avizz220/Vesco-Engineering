@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 
 interface Course {
+  id: string
   title: string
   category: string
   instructor: string
@@ -13,16 +14,25 @@ interface Course {
   level: string
   price: string
   description: string
-  image: string
-  features: string[]
+  imageUrl: string | null
+  learningOutcomes: string[]
+  createdAt: string
+  updatedAt: string
 }
 
 export default function CoursesPage() {
   const { user } = useAuth()
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [showAddCourseModal, setShowAddCourseModal] = useState(false)
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
   const [coursesList, setCoursesList] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showDialog, setShowDialog] = useState(false)
+  const [dialogMessage, setDialogMessage] = useState('')
+  const [dialogType, setDialogType] = useState<'success' | 'error'>('success')
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null)
+  const [confirmMessage, setConfirmMessage] = useState('')
   const [newCourse, setNewCourse] = useState({
     name: '',
     description: '',
@@ -30,146 +40,155 @@ export default function CoursesPage() {
     duration: '',
     learningOutcomes: '',
     courseFee: '',
+    category: '',
+    level: '',
+    photo: null as File | null,
   })
-  const handleEditCourse = (index: number) => {
-    const course = coursesList[index]
+
+  // Fetch courses from API
+  useEffect(() => {
+    fetchCourses()
+  }, [])
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('http://localhost:5000/api/courses', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setCoursesList(data)
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course)
     setNewCourse({
       name: course.title,
       description: course.description,
       conductedBy: course.instructor,
       duration: course.duration,
-      learningOutcomes: course.features.join(', '),
+      learningOutcomes: course.learningOutcomes.join(', '),
       courseFee: course.price,
+      category: course.category,
+      level: course.level,
+      photo: null,
     })
-    setEditingIndex(index)
     setShowAddCourseModal(true)
   }
 
-  const handleDeleteCourse = (index: number) => {
-    setCoursesList(prev => prev.filter((_, i) => i !== index))
+  const handleDeleteCourse = async (course: Course) => {
+    setConfirmMessage(`Are you sure you want to delete "${course.title}"?`)
+    setConfirmAction(() => async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/courses/${course.id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        })
+
+        if (response.ok) {
+          setDialogType('success')
+          setDialogMessage('Course deleted successfully!')
+          setShowDialog(true)
+          fetchCourses()
+        } else {
+          setDialogType('error')
+          setDialogMessage('Failed to delete course')
+          setShowDialog(true)
+        }
+      } catch (error) {
+        setDialogType('error')
+        setDialogMessage('Error deleting course')
+        setShowDialog(true)
+      }
+    })
+    setShowConfirmDialog(true)
   }
 
-  const handleSubmitCourse = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Course Data:', newCourse)
-    
-    if (editingIndex !== null) {
-      // Update existing course
-      setCoursesList(prev => prev.map((item, i) => 
-        i === editingIndex ? {
-          ...item,
-          title: newCourse.name,
-          description: newCourse.description,
-          instructor: newCourse.conductedBy,
-          duration: newCourse.duration,
-          features: newCourse.learningOutcomes.split(',').map(s => s.trim()),
-          price: newCourse.courseFee,
-        } : item
-      ))
-      setEditingIndex(null)
-    } else {
-      // Add new course
-      const newItem: Course = {
-        title: newCourse.name,
-        description: newCourse.description,
-        instructor: newCourse.conductedBy,
-        duration: newCourse.duration,
-        features: newCourse.learningOutcomes.split(',').map(s => s.trim()),
-        price: newCourse.courseFee,
-        category: 'New Course',
-        level: 'Intermediate',
-        image: defaultImage,
-      }
-      setCoursesList(prev => [...prev, newItem])
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewCourse(prev => ({ ...prev, photo: e.target.files![0] }))
     }
-    
-    setShowAddCourseModal(false)
-    setNewCourse({
-      name: '',
-      description: '',
-      conductedBy: '',
-      duration: '',
-      learningOutcomes: '',
-      courseFee: '',
+  }
+
+  const handleSubmitCourse = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const confirmMsg = editingCourse 
+      ? `Are you sure you want to update "${newCourse.name}"?`
+      : `Are you sure you want to add "${newCourse.name}"?`
+
+    setConfirmMessage(confirmMsg)
+    setConfirmAction(() => async () => {
+      try {
+        const formData = new FormData()
+        formData.append('title', newCourse.name)
+        formData.append('description', newCourse.description)
+        formData.append('instructor', newCourse.conductedBy)
+        formData.append('duration', newCourse.duration)
+        formData.append('price', newCourse.courseFee)
+        formData.append('category', newCourse.category)
+        formData.append('level', newCourse.level)
+        
+        const outcomes = newCourse.learningOutcomes
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0)
+        formData.append('learningOutcomes', JSON.stringify(outcomes))
+        
+        if (newCourse.photo) {
+          formData.append('image', newCourse.photo)
+        }
+
+        const url = editingCourse
+          ? `http://localhost:5000/api/courses/${editingCourse.id}`
+          : 'http://localhost:5000/api/courses'
+        
+        const response = await fetch(url, {
+          method: editingCourse ? 'PUT' : 'POST',
+          credentials: 'include',
+          body: formData,
+        })
+
+        if (response.ok) {
+          setDialogType('success')
+          setDialogMessage(editingCourse ? 'Course updated successfully!' : 'Course added successfully!')
+          setShowDialog(true)
+          setShowAddCourseModal(false)
+          setEditingCourse(null)
+          setNewCourse({
+            name: '',
+            description: '',
+            conductedBy: '',
+            duration: '',
+            learningOutcomes: '',
+            courseFee: '',
+            category: '',
+            level: '',
+            photo: null,
+          })
+          fetchCourses()
+        } else {
+          const error = await response.json()
+          setDialogType('error')
+          setDialogMessage(error.message || 'Failed to save course')
+          setShowDialog(true)
+        }
+      } catch (error) {
+        setDialogType('error')
+        setDialogMessage('Error saving course')
+        setShowDialog(true)
+      }
     })
+    setShowConfirmDialog(true)
   }
 
   const defaultImage = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80'
-
-  const initialCourses = useMemo<Course[]>(
-    () => [
-      {
-        title: 'Full-Stack Web Development',
-        category: 'Software Development',
-        instructor: 'Eng. Ravindu Perera',
-        duration: '12 weeks',
-        level: 'Intermediate',
-        price: 'LKR 35,000',
-        description: 'Master modern web development with React, Node.js, and MongoDB. Build real-world applications from scratch.',
-        image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
-        features: ['React & Next.js', 'Node.js & Express', 'MongoDB & Database Design', 'API Development', 'Deployment & DevOps'],
-      },
-      {
-        title: 'PCB Design & Prototyping',
-        category: 'Electronics',
-        instructor: 'Eng. Kasun Silva',
-        duration: '8 weeks',
-        level: 'Intermediate',
-        price: 'LKR 28,000',
-        description: 'Learn professional PCB design using industry-standard tools. From schematic to fabrication-ready boards.',
-        image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1200&q=80',
-        features: ['Altium Designer', 'Schematic Capture', 'PCB Layout', 'Signal Integrity', 'Manufacturing Files'],
-      },
-      {
-        title: 'Machine Learning Fundamentals',
-        category: 'Artificial Intelligence',
-        instructor: 'Dr. Harini Wijesinghe',
-        duration: '10 weeks',
-        level: 'Advanced',
-        price: 'LKR 42,000',
-        description: 'Deep dive into ML algorithms, neural networks, and practical AI applications with Python.',
-        image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=1200&q=80',
-        features: ['Python & TensorFlow', 'Neural Networks', 'Computer Vision', 'NLP Basics', 'Real-world Projects'],
-      },
-      {
-        title: 'IoT Systems Development',
-        category: 'Internet of Things',
-        instructor: 'Eng. Dilshan Fernando',
-        duration: '6 weeks',
-        level: 'Beginner',
-        price: 'LKR 22,000',
-        description: 'Build connected devices with Arduino, ESP32, and cloud platforms. Hands-on IoT project experience.',
-        image: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=1200&q=80',
-        features: ['Arduino & ESP32', 'Sensor Integration', 'MQTT & Cloud', 'Mobile Apps', 'Real IoT Projects'],
-      },
-      {
-        title: 'Robotics & Control Systems',
-        category: 'Robotics',
-        instructor: 'Eng. Priyanka Silva',
-        duration: '14 weeks',
-        level: 'Advanced',
-        price: 'LKR 48,000',
-        description: 'Advanced robotics covering kinematics, control theory, and autonomous navigation systems.',
-        image: 'https://images.unsplash.com/photo-1563194228-9f5e3f7af4c3?auto=format&fit=crop&w=1200&q=80',
-        features: ['ROS Framework', 'Motion Planning', 'Computer Vision', 'PID Control', 'Autonomous Navigation'],
-      },
-      {
-        title: 'Power Electronics & Drives',
-        category: 'Electrical Engineering',
-        instructor: 'Eng. Malith Rodrigo',
-        duration: '9 weeks',
-        level: 'Intermediate',
-        price: 'LKR 32,000',
-        description: 'Master power conversion, motor drives, and renewable energy systems with practical labs.',
-        image: 'https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1200&q=80',
-        features: ['Power Converters', 'Motor Control', 'Renewable Energy', 'MATLAB Simulations', 'Lab Projects'],
-      },
-    ],
-    []
-  )
-  React.useEffect(() => {
-    setCoursesList(initialCourses)
-  }, [initialCourses])
 
   return (
     <>
@@ -213,14 +232,23 @@ export default function CoursesPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
           >
-            {coursesList.map((course, index) => (
+            {loading ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-slate-600">Loading courses...</p>
+              </div>
+            ) : coursesList.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-slate-600">No courses available yet.</p>
+              </div>
+            ) : (
+              coursesList.map((course) => (
               <div
-                key={course.title + index}
+                key={course.id}
                 className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl hover:shadow-2xl transition-shadow duration-300"
               >
                 <div className="relative w-full overflow-hidden bg-slate-100 aspect-[4/3]">
                   <Image
-                    src={course.image || defaultImage}
+                    src={course.imageUrl ? `http://localhost:5000${course.imageUrl}` : defaultImage}
                     alt={course.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -231,7 +259,7 @@ export default function CoursesPage() {
                     {user?.isAdmin && (
                       <>
                         <button
-                          onClick={() => handleEditCourse(index)}
+                          onClick={() => handleEditCourse(course)}
                           className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-sky-50 transition-colors"
                           title="Edit"
                         >
@@ -241,7 +269,7 @@ export default function CoursesPage() {
                           </svg>
                         </button>
                         <button
-                          onClick={() => handleDeleteCourse(index)}
+                          onClick={() => handleDeleteCourse(course)}
                           className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
@@ -288,7 +316,7 @@ export default function CoursesPage() {
                   <div className="border-t border-slate-100 pt-3 mt-2">
                     <p className="text-xs uppercase tracking-[0.15em] text-slate-500 mb-2">What you'll learn</p>
                     <ul className="space-y-1.5">
-                      {course.features.slice(0, 3).map((feature, idx) => (
+                      {course.learningOutcomes.slice(0, 3).map((feature, idx) => (
                         <li key={idx} className="flex items-center gap-2 text-sm text-slate-600">
                           <span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
                           {feature}
@@ -314,10 +342,81 @@ export default function CoursesPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </motion.div>
         </div>
       </div>
+
+      {/* Success/Error Dialog */}
+      {showDialog && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl"
+          >
+            {dialogType === 'success' ? (
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            )}
+            <h3 className="text-xl font-semibold mb-2 text-gray-900">
+              {dialogType === 'success' ? 'Success!' : 'Error'}
+            </h3>
+            <p className="text-gray-600 mb-6">{dialogMessage}</p>
+            <button
+              onClick={() => setShowDialog(false)}
+              className="bg-primary-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            >
+              OK
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl p-8 max-w-md mx-4 shadow-2xl"
+          >
+            <h3 className="text-xl font-semibold mb-4 text-gray-900">Confirm Action</h3>
+            <p className="text-gray-600 mb-6">{confirmMessage}</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowConfirmDialog(false)
+                  setConfirmAction(null)
+                }}
+                className="px-6 py-2 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
+              >
+                No
+              </button>
+              <button
+                onClick={() => {
+                  if (confirmAction) confirmAction()
+                  setShowConfirmDialog(false)
+                  setConfirmAction(null)
+                }}
+                className="px-6 py-2 rounded-lg font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+              >
+                Yes
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Enrollment Modal */}
       {selectedCourse && (
@@ -442,10 +541,10 @@ export default function CoursesPage() {
       {/* Add Course Modal */}
       {showAddCourseModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4 overflow-y-auto py-8">
-          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 my-8">
+          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] overflow-y-auto modal-scroll">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-sky-50">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900">{editingIndex !== null ? 'Edit Course' : 'Add New Course'}</h3>
+                <h3 className="text-xl font-semibold text-gray-900">{editingCourse ? 'Edit Course' : 'Add New Course'}</h3>
               </div>
               <button
                 onClick={() => setShowAddCourseModal(false)}
@@ -556,6 +655,75 @@ export default function CoursesPage() {
                 />
               </div>
 
+              {/* Category and Level */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="category">
+                    Related Category <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="category"
+                    type="text"
+                    required
+                    value={newCourse.category}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                    placeholder="e.g., Web Development, IoT"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-800" htmlFor="level">
+                    Level <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="level"
+                    required
+                    value={newCourse.level}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, level: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  >
+                    <option value="">Select level...</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Course Image */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">Course Image</label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      {newCourse.photo ? (
+                        <>
+                          <svg className="w-10 h-10 text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <p className="text-sm text-gray-600 font-medium">{newCourse.photo.name}</p>
+                          <p className="text-xs text-gray-500">{(newCourse.photo.size / 1024).toFixed(2)} KB</p>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-sm text-gray-600"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                          <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
@@ -569,7 +737,7 @@ export default function CoursesPage() {
                   type="submit"
                   className="px-5 py-2.5 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition-colors shadow-md"
                 >
-                  {editingIndex !== null ? 'Update Course' : 'Add Course'}
+                  {editingCourse !== null ? 'Update Course' : 'Add Course'}
                 </button>
               </div>
             </form>

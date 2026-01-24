@@ -120,7 +120,8 @@ router.post(
         githubUrl,
         liveUrl,
         category,
-        featured
+        featured,
+        contributors
       } = req.body
 
       // Parse technologies if it's a string (from FormData)
@@ -130,6 +131,16 @@ router.post(
           parsedTechnologies = JSON.parse(technologies)
         } catch (e) {
           parsedTechnologies = []
+        }
+      }
+
+      // Parse contributors if it's a string (from FormData)
+      let parsedContributors = contributors
+      if (typeof contributors === 'string') {
+        try {
+          parsedContributors = JSON.parse(contributors)
+        } catch (e) {
+          parsedContributors = []
         }
       }
 
@@ -145,7 +156,8 @@ router.post(
           githubUrl: githubUrl || null,
           liveUrl: liveUrl || null,
           category,
-          featured: featured === 'true' || featured === true || false
+          featured: featured === 'true' || featured === true || false,
+          contributors: parsedContributors || []
         }
       })
 
@@ -180,7 +192,8 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
       githubUrl,
       liveUrl,
       category,
-      featured
+      featured,
+      contributors
     } = req.body
 
     // Parse technologies if it's a string (from FormData)
@@ -190,6 +203,16 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
         parsedTechnologies = JSON.parse(technologies)
       } catch (e) {
         parsedTechnologies = undefined
+      }
+    }
+
+    // Parse contributors if it's a string (from FormData)
+    let parsedContributors = contributors
+    if (typeof contributors === 'string') {
+      try {
+        parsedContributors = JSON.parse(contributors)
+      } catch (e) {
+        parsedContributors = undefined
       }
     }
 
@@ -206,7 +229,8 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
         ...(githubUrl !== undefined && { githubUrl }),
         ...(liveUrl !== undefined && { liveUrl }),
         ...(category && { category }),
-        ...(featured !== undefined && { featured: featured === 'true' || featured === true })
+        ...(featured !== undefined && { featured: featured === 'true' || featured === true }),
+        ...(parsedContributors && { contributors: parsedContributors })
       }
     })
 

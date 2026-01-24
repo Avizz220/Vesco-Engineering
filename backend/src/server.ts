@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes'
 import projectRoutes from './routes/projectRoutes'
 import achievementRoutes from './routes/achievementRoutes'
 import teamRoutes from './routes/teamRoutes'
+import courseRoutes from './routes/courseRoutes'
 
 // Load environment variables
 dotenv.config()
@@ -59,6 +60,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/projects', projectRoutes)
 app.use('/api/achievements', achievementRoutes)
 app.use('/api/team', teamRoutes)
+app.use('/api/courses', courseRoutes)
 
 // 404 handler
 app.use((req: Request, res: Response) => {

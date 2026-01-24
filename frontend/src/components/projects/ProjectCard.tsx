@@ -12,9 +12,33 @@ interface ProjectCardProps {
   onEdit?: (project: Project, index: number) => void
   onDelete?: (index: number) => void
   showAdminControls?: boolean
+  adminUsers?: Array<{ id: string; fullName: string; email: string }>
 }
 
-const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdminControls }: ProjectCardProps) => {
+const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdminControls, adminUsers = [] }: ProjectCardProps) => {
+  const MAX_DESCRIPTION_LENGTH = 150
+
+  const getContributorNames = (contributors: string[]) => {
+    if (contributors[0] === 'all') {
+      // Return all admin names when "all" is selected
+      return adminUsers.map(admin => admin.fullName)
+    }
+    return contributors
+      .map(id => adminUsers.find(admin => admin.id === id)?.fullName || 'Unknown')
+      .filter(name => name !== 'Unknown')
+  }
+
+  const contributorNames = project.contributors ? getContributorNames(project.contributors) : []
+  const displayedContributors = contributorNames.slice(0, 3)
+  const remainingCount = Math.max(0, contributorNames.length - 3)
+
+  const truncateDescription = (text: string) => {
+    if (text.length <= MAX_DESCRIPTION_LENGTH) return text
+    return text.substring(0, MAX_DESCRIPTION_LENGTH) + '...'
+  }
+
+  const shouldShowMore = project.description.length > MAX_DESCRIPTION_LENGTH
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -74,44 +98,58 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
             <svg className="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
         )}
-        {/* Category Badge */}
-        <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-          {project.category}
-        </div>
       </div>
 
-      {/* Project Content */}
+      {/* Content Section */}
       <div className="p-6">
+        {/* Category Badge */}
+        <div className="mb-3">
+          <span className="inline-block bg-gradient-to-r from-primary-500 to-sky-500 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
+            {project.category}
+          </span>
+        </div>
+
         {/* Title */}
-        <h3 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-1">
+        <h3 className="text-xl font-bold mb-3 text-gray-800 hover:text-primary-600 transition-colors line-clamp-2">
           {project.title}
         </h3>
 
         {/* Description */}
-        <p className="text-gray-600 mb-4 line-clamp-3">
-          {project.description}
+        <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+          {truncateDescription(project.description)}
         </p>
+        {shouldShowMore && (
+          <button
+            onClick={() => onViewDetails(project)}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-3 inline-flex items-center gap-1"
+          >
+            Read more
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
 
         {/* Contributors */}
         {project.contributors && project.contributors.length > 0 && (
           <div className="mb-4">
             <p className="text-sm text-gray-500 mb-2 font-medium">Contributors:</p>
             <div className="flex flex-wrap gap-2">
-              {project.contributors.slice(0, 3).map((contributor, idx) => (
+              {displayedContributors.map((name, idx) => (
                 <span
                   key={idx}
-                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium"
+                  className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-xs font-medium"
                 >
-                  {contributor}
+                  {name}
                 </span>
               ))}
-              {project.contributors.length > 3 && (
-                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
-                  +{project.contributors.length - 3} more
+              {remainingCount > 0 && (
+                <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                  +{remainingCount} more
                 </span>
               )}
             </div>

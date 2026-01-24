@@ -30,6 +30,7 @@ model Project {
   liveUrl      String?
   category     String
   featured     Boolean  @default(false)
+  contributors Json     // Array of contributor user IDs or "all"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -69,6 +70,25 @@ model TeamMember {
 
   @@map("team_members")
   @@index([isActive])
+}
+
+model Course {
+  id               String   @id @default(uuid())
+  title            String
+  description      String   @db.Text
+  category         String
+  instructor       String
+  duration         String
+  level            String   // Beginner, Intermediate, Advanced
+  price            String
+  imageUrl         String?
+  learningOutcomes Json     // Array of learning outcomes/features
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("courses")
+  @@index([category])
+  @@index([level])
 }
 
 enum Role {

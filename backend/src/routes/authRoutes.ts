@@ -310,5 +310,28 @@ router.post('/logout', (req: Request, res: Response) => {
   return res.status(200).json({ message: 'Logged out successfully' })
 })
 
+// @route   GET /api/auth/admins
+// @desc    Get all admin users
+// @access  Public (needed for project contributors dropdown)
+router.get('/admins', async (req: Request, res: Response) => {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: Role.ADMIN },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        image: true,
+      },
+      orderBy: { fullName: 'asc' }
+    })
+
+    return res.status(200).json(admins)
+  } catch (error: any) {
+    console.error('Get admins error:', error)
+    return res.status(500).json({ message: 'Server error' })
+  }
+})
+
 export default router
 

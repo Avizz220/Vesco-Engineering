@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import ProjectCard from '@/components/projects/ProjectCard'
 import ProjectModal from '@/components/projects/ProjectModal'
@@ -23,6 +23,7 @@ export default function ProjectsPage() {
   const [dialogMessage, setDialogMessage] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'update', index?: number } | null>(null)
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])
   const [newProject, setNewProject] = useState({
     title: '',
     contributors: [] as string[],
@@ -37,7 +38,20 @@ export default function ProjectsPage() {
   // Fetch projects from backend
   useEffect(() => {
     fetchProjects()
+    fetchAdminUsers()
   }, [])
+
+  const fetchAdminUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/admins')
+      if (response.ok) {
+        const admins = await response.json()
+        setAdminUsers(admins)
+      }
+    } catch (error) {
+      console.error('Error fetching admin users:', error)
+    }
+  }
 
   const fetchProjects = async () => {
     try {
@@ -53,7 +67,7 @@ export default function ProjectsPage() {
           technologies: Array.isArray(project.technologies) ? project.technologies : [],
           imageUrl: project.imageUrl ? `http://localhost:5000${project.imageUrl}` : '/api/placeholder/400/300',
           category: project.category,
-          contributors: [],
+          contributors: Array.isArray(project.contributors) ? project.contributors : [],
           liveUrl: project.liveUrl,
           githubUrl: project.githubUrl,
           createdAt: project.createdAt,
@@ -122,7 +136,22 @@ export default function ProjectsPage() {
     'Rachel Green', 'Kevin Zhang', 'Olivia White', 'Ryan Black', 'Anna Johnson'
   ]
 
-  const projectAreas = ['IoT', 'Web Development', 'AI/ML', 'Robotics', 'Electronics', 'Software', 'Aerospace', 'Manufacturing']
+  // Get unique areas from existing projects' technologies and categories
+  const projectAreas = useMemo(() => {
+    const allAreas = new Set<string>()
+    projectsList.forEach(project => {
+      // Add category
+      if (project.category) allAreas.add(project.category)
+      // Add all technologies
+      if (Array.isArray(project.technologies)) {
+        project.technologies.forEach(tech => allAreas.add(tech))
+      }
+    })
+    // Add some default options if no projects exist yet
+    const defaultAreas = ['IoT', 'Web Development', 'AI/ML', 'Robotics', 'Electronics', 'Software', 'Aerospace', 'Manufacturing']
+    defaultAreas.forEach(area => allAreas.add(area))
+    return Array.from(allAreas).sort()
+  }, [projectsList])
 
   const handleAddContributor = (contributor: string) => {
     if (!newProject.contributors.includes(contributor)) {
@@ -165,6 +194,7 @@ export default function ProjectsPage() {
         formData.append('title', newProject.title)
         formData.append('description', newProject.description)
         formData.append('technologies', JSON.stringify(newProject.relatedAreas))
+        formData.append('contributors', JSON.stringify(newProject.contributors))
         formData.append('category', newProject.relatedAreas[0] || 'Other')
         formData.append('githubUrl', newProject.githubLink || '')
         formData.append('liveUrl', newProject.youtubeLink || '')
@@ -194,6 +224,7 @@ export default function ProjectsPage() {
         formData.append('title', newProject.title)
         formData.append('description', newProject.description)
         formData.append('technologies', JSON.stringify(newProject.relatedAreas))
+        formData.append('contributors', JSON.stringify(newProject.contributors))
         formData.append('category', newProject.relatedAreas[0] || 'Other')
         formData.append('githubUrl', newProject.githubLink || '')
         formData.append('liveUrl', newProject.youtubeLink || '')
@@ -341,6 +372,7 @@ export default function ProjectsPage() {
                 onEdit={handleEditProject}
                 onDelete={handleDeleteProject}
                 showAdminControls={user?.isAdmin}
+                adminUsers={adminUsers}
               />
             ))}
           </div>
@@ -521,6 +553,76 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
+              {/* Contributors */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Contributors
+                </label>
+                <select
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === 'all') {
+                      setNewProject(prev => ({ ...prev, contributors: ['all'] }))
+                    } else if (value && !newProject.contributors.includes(value) && newProject.contributors[0] !== 'all') {
+                      setNewProject(prev => ({ 
+                        ...prev, 
+                        contributors: [...prev.contributors, value] 
+                      }))
+                    }
+                    e.target.value = ''
+                  }}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  value=""
+                >
+                  <option value="">Select contributors...</option>
+                  <option value="all">All Admins</option>
+                  {adminUsers.map(admin => (
+                    <option key={admin.id} value={admin.id}>
+                      {admin.fullName} ({admin.email})
+                    </option>
+                  ))}
+                </select>
+                {newProject.contributors.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {newProject.contributors[0] === 'all' ? (
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-sky-500 to-primary-600 text-white rounded-lg text-sm font-medium">
+                        All Admins
+                        <button
+                          onClick={() => setNewProject(prev => ({ ...prev, contributors: [] }))}
+                          className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                          type="button"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </span>
+                    ) : (
+                      newProject.contributors.map((contributorId) => {
+                        const admin = adminUsers.find(a => a.id === contributorId)
+                        return admin ? (
+                          <span key={contributorId} className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-100 text-primary-800 rounded-lg text-sm font-medium">
+                            {admin.fullName}
+                            <button
+                              onClick={() => setNewProject(prev => ({
+                                ...prev,
+                                contributors: prev.contributors.filter(id => id !== contributorId)
+                              }))}
+                              className="hover:bg-primary-200 rounded-full p-0.5 transition-colors"
+                              type="button"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ) : null
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* GitHub Link */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-800" htmlFor="github">
@@ -577,6 +679,7 @@ export default function ProjectsPage() {
         project={selectedProject}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        adminUsers={adminUsers}
       />
 
       {/* Success Dialog */}

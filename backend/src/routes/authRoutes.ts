@@ -142,7 +142,7 @@ router.post(
 
       console.log('🔍 USER LOOKUP RESULT:', user ? 'FOUND' : 'NOT FOUND')
 
-      if (!user) {
+      if (!user || !user.password) {
         return res.status(401).json({ 
           success: false,
           message: 'Invalid email or password' 
@@ -249,7 +249,7 @@ router.post(
 
       return res.status(200).json({
         id: user.id,
-        name: user.name,
+        name: user.fullName,
         email: user.email,
         image: user.image,
       })
@@ -367,7 +367,7 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
 
     return res.status(200).json({
       id: user.id,
-      name: user.name,
+      name: user.fullName,
       email: user.email,
       image: user.image,
     })
@@ -510,6 +510,88 @@ router.post('/google', async (req: Request, res: Response) => {
     })
   }
 })
+
+// @route   POST /api/auth/change-password
+// @desc    Change user password
+// @access  Private
+router.post(
+  '/change-password',
+  verifyToken,
+  [
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+  ],
+  async (req: Request, res: Response) => {
+    console.log('🔵 CHANGE PASSWORD REQUEST RECEIVED')
+    
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false,
+        message: errors.array()[0].msg,
+        errors: errors.array() 
+      })
+    }
+
+    try {
+      const { currentPassword, newPassword } = req.body
+      const userId = (req as any).user.id
+
+      // Find user in database
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      })
+
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'User not found' 
+        })
+      }
+
+      // Check if user has a password (not Google user)
+      if (!user.password) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Cannot change password for Google accounts' 
+        })
+      }
+
+      // Verify current password
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
+
+      if (!isPasswordValid) {
+        return res.status(401).json({ 
+          success: false,
+          message: 'Current password is incorrect' 
+        })
+      }
+
+      // Hash new password
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = await bcrypt.hash(newPassword, salt)
+
+      // Update password in database
+      await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      })
+
+      console.log('✅ PASSWORD CHANGED FOR USER:', userId)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password changed successfully'
+      })
+    } catch (error: any) {
+      console.error('Change password error:', error)
+      return res.status(500).json({ 
+        success: false,
+        message: 'Server error while changing password' 
+      })
+    }
+  }
+)
 
 export default router
 

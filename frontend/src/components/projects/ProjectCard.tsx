@@ -107,12 +107,6 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
       {/* Content Section */}
       <div className="p-6">
         {/* Category Badge */}
-        <div className="mb-3">
-          <span className="inline-block bg-gradient-to-r from-primary-500 to-sky-500 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-            {project.category}
-          </span>
-        </div>
-
         {/* Title */}
         <h3 className="text-xl font-bold mb-3 text-gray-800 hover:text-primary-600 transition-colors line-clamp-2">
           {project.title}

@@ -12,6 +12,7 @@ interface User {
   github?: string
   linkedin?: string
   position?: string
+  isGoogleUser?: boolean
 }
 
 interface AuthContextType {
@@ -23,6 +24,7 @@ interface AuthContextType {
   signInWithGoogle: (response: any) => Promise<void>
   logout: () => Promise<void>
   updateProfile: (updates: Partial<User>) => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -70,11 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Create user object from backend response
       const authenticatedUser: User = {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.fullName,
-        image: data.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
-        isAdmin: data.user.role === 'ADMIN',
+        id: data.id || data.user?.id,
+        email: data.email || data.user?.email,
+        name: data.name || data.user?.name,
+        image: data.image || data.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
+        isAdmin: data.role === 'ADMIN' || data.user?.role === 'ADMIN',
+        isGoogleUser: false,
       }
 
       console.log('✅ Sign In Success - User:', authenticatedUser)
@@ -141,9 +144,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const authenticatedUser: User = {
         id: data.user.id,
         email: data.user.email,
-        name: data.user.fullName,
+        name: data.user.name,
         image: data.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
         isAdmin: data.user.role === 'ADMIN',
+        isGoogleUser: true,
       }
 
       console.log('✅ Google Sign In Success - User:', authenticatedUser)
@@ -180,6 +184,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('vescoUser', JSON.stringify(updatedUser))
   }
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!user) throw new Error('Not authenticated')
+    
+    const response = await fetch('http://localhost:5000/api/auth/change-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Password change failed')
+    }
+
+    return data
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -191,6 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         logout,
         updateProfile,
+        changePassword,
       }}
     >
       {children}

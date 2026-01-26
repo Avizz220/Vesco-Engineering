@@ -175,7 +175,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-10 relative max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8 relative max-h-[90vh] overflow-y-auto"
         style={{ scrollbarColor: '#ffffff #ffffff' }}
       >
         <Script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" strategy="afterInteractive" />
@@ -191,18 +191,18 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
         </button>
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
           <p className="text-gray-600">Join VESCO today</p>
         </div>
 
         {/* Engineering Animation */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <lottie-player
             src="/Engineering.json"
             background="transparent"
             speed="1"
-            style={{ width: '220px', height: '220px' }}
+            style={{ width: '180px', height: '180px' }}
             loop
             autoplay
           ></lottie-player>
@@ -210,7 +210,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
           </div>
         )}

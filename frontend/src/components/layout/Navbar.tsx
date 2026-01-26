@@ -23,9 +23,6 @@ const Navbar = () => {
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
-    github: '',
-    linkedin: '',
-    position: '',
   })
   const pathname = usePathname()
   const router = useRouter()
@@ -50,9 +47,6 @@ const Navbar = () => {
       setProfileData({
         name: user.name || '',
         email: user.email || '',
-        github: user.github || '',
-        linkedin: user.linkedin || '',
-        position: user.position || '',
       })
     }
     
@@ -273,12 +267,15 @@ const Navbar = () => {
                         await updateProfile({
                           name: profileData.name,
                           email: profileData.email,
-                          github: profileData.github,
-                          linkedin: profileData.linkedin,
-                          position: profileData.position,
                         })
-                        setProfileMessage('Profile updated successfully!')
+                        setProfileMessage('Profile updated successfully! Please sign in again.')
                         setIsEditingProfile(false)
+                        // Wait 2 seconds then logout
+                        setTimeout(() => {
+                          logout()
+                          setShowSettingsModal(false)
+                          router.push('/')
+                        }, 2000)
                       } catch (error) {
                         setProfileMessage('Failed to update profile')
                       }
@@ -294,6 +291,7 @@ const Navbar = () => {
                         disabled={!isEditingProfile}
                         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
                         placeholder="Your full name"
+                        required
                       />
                     </div>
 
@@ -307,45 +305,7 @@ const Navbar = () => {
                         disabled={!isEditingProfile}
                         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
                         placeholder="your.email@example.com"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-800" htmlFor="profilePosition">Position</label>
-                      <input
-                        id="profilePosition"
-                        type="text"
-                        value={profileData.position}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, position: e.target.value }))}
-                        disabled={!isEditingProfile}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
-                        placeholder="e.g., Software Engineer"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-800" htmlFor="profileGithub">GitHub Profile</label>
-                      <input
-                        id="profileGithub"
-                        type="url"
-                        value={profileData.github}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, github: e.target.value }))}
-                        disabled={!isEditingProfile}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
-                        placeholder="https://github.com/username"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-800" htmlFor="profileLinkedin">LinkedIn Profile</label>
-                      <input
-                        id="profileLinkedin"
-                        type="url"
-                        value={profileData.linkedin}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, linkedin: e.target.value }))}
-                        disabled={!isEditingProfile}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none disabled:bg-gray-50 disabled:cursor-not-allowed"
-                        placeholder="https://linkedin.com/in/username"
+                        required
                       />
                     </div>
 
@@ -433,10 +393,16 @@ const Navbar = () => {
 
                     try {
                       await changePassword(currentPassword, newPassword)
-                      setPasswordMessage('Password updated successfully!')
+                      setPasswordMessage('Password changed successfully! Please sign in again with your new password.')
                       setCurrentPassword('')
                       setNewPassword('')
                       setConfirmPassword('')
+                      // Wait 2 seconds then logout
+                      setTimeout(() => {
+                        logout()
+                        setShowSettingsModal(false)
+                        router.push('/')
+                      }, 2000)
                     } catch (error: any) {
                       setPasswordMessage(error.message || 'Failed to update password')
                     }
@@ -534,115 +500,149 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* Profile Modal for Google Users (Read-only) */}
+      {/* Profile Modal for Google Users (Read-only) - Enhanced UI */}
       {showProfileModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all animate-fadeIn">
+            {/* Header with Gradient Background */}
+            <div className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 p-5 text-white">
+              {/* Close Button */}
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
+                className="absolute top-3 right-3 text-white/90 hover:text-white hover:bg-white/20 rounded-full p-1.5 transition-all duration-200"
+                aria-label="Close"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
-              <div className="flex flex-col items-center">
-                <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-white shadow-lg mb-3">
-                  {user?.image ? (
-                    <img 
-                      src={user.image} 
-                      alt={user.name || 'Profile'} 
-                      className="h-full w-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-3xl font-bold text-white bg-gradient-to-br from-primary-600 to-primary-800">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+
+              {/* Profile Section */}
+              <div className="flex flex-col items-center text-center">
+                {/* Profile Picture with Ring */}
+                <div className="relative mb-3">
+                  <div className="h-20 w-20 rounded-full overflow-hidden border-3 border-white shadow-xl ring-2 ring-blue-400/50">
+                    {user?.image ? (
+                      <img 
+                        src={user.image} 
+                        alt={user.name || 'Profile'} 
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br from-blue-600 to-blue-800">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  {/* Online Status Indicator */}
+                  <div className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-green-500 border-3 border-white shadow-md"></div>
                 </div>
-                <h3 className="text-2xl font-bold">{user?.name}</h3>
-                <p className="text-primary-100 text-sm">{user?.email}</p>
+
+                {/* User Info */}
+                <h2 className="text-xl font-bold mb-0.5 tracking-tight">{user?.name}</h2>
+                <p className="text-blue-100 text-xs font-medium">{user?.email}</p>
               </div>
             </div>
 
-            {/* Body */}
-            <div className="p-6 space-y-4">
-              {/* Google Account Badge */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-                <svg className="h-6 w-6 text-blue-600" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <div>
-                  <p className="font-semibold text-gray-900">Google Account</p>
-                  <p className="text-xs text-gray-600">Signed in with Google</p>
+            {/* Body Content */}
+            <div className="p-4 space-y-3 bg-gradient-to-b from-gray-50 to-white">
+              {/* Google Account Badge - Enhanced with colored icon */}
+              <div className="bg-white border-2 border-gray-100 rounded-lg p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
+                {/* Colored Google Icon */}
+                <div className="flex-shrink-0">
+                  <svg className="h-8 w-8" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900 text-sm">Google Account</p>
+                  <p className="text-xs text-gray-500">Signed in with Google</p>
+                </div>
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                    Active
+                  </span>
                 </div>
               </div>
 
-              {/* Account Information */}
-              <div className="space-y-3">
-                <div className="border-b border-gray-200 pb-2">
-                  <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Account Information</p>
+              {/* Account Information Section */}
+              <div className="bg-white border-2 border-gray-100 rounded-lg p-3 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Account Details</h3>
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-500">Full Name</p>
-                      <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                  {/* Full Name */}
+                  <div className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</p>
+                      <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                      <polyline points="22,6 12,13 2,6"></polyline>
-                    </svg>
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-500">Email Address</p>
-                      <p className="text-sm font-medium text-gray-900">{user?.email}</p>
+                  {/* Email Address */}
+                  <div className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email Address</p>
+                      <p className="text-sm font-semibold text-gray-900 truncate">{user?.email}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
+                  {/* Account Security */}
+                  <div className="flex items-start gap-2 p-2 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      </svg>
+                    </div>
                     <div className="flex-1">
-                      <p className="text-xs text-gray-500">Account Security</p>
-                      <p className="text-sm font-medium text-gray-900">Managed by Google</p>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Security</p>
+                      <p className="text-sm font-bold text-green-700">Protected by Google</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Note */}
-              <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 flex gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {/* Info Notice */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="16" x2="12" y2="12"></line>
                   <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
-                <p>
-                  Your account is managed through Google. To update your profile information or password, please visit your Google Account settings.
-                </p>
+                <div className="flex-1">
+                  <p className="text-xs text-blue-900 font-medium">Account Management</p>
+                  <p className="text-xs text-blue-700 leading-relaxed mt-0.5">
+                    Managed through your Google Account settings.
+                  </p>
+                </div>
               </div>
 
               {/* Close Button */}
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-md"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-2.5 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Close
               </button>

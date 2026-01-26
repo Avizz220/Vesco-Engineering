@@ -219,7 +219,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-10 relative">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8 relative">
           <Script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" strategy="afterInteractive" />
           {/* Close Button */}
           <button
@@ -233,18 +233,18 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
           </button>
 
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
             <p className="text-gray-600">Welcome back to VESCO</p>
           </div>
 
           {/* Telecommunication Animation */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-4">
             <lottie-player
               src="/Telecommunications%20Engineering.json"
               background="transparent"
               speed="1"
-              style={{ width: '220px', height: '220px' }}
+              style={{ width: '180px', height: '180px' }}
               loop
               autoplay
             ></lottie-player>
@@ -252,13 +252,13 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>

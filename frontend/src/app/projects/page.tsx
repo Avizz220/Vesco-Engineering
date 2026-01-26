@@ -9,7 +9,8 @@ import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
 
 export default function ProjectsPage() {
-  const [displayCount, setDisplayCount] = useState(12)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 3
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -285,17 +286,66 @@ export default function ProjectsPage() {
     }
   }
 
-  const categories = ['All', ...Array.from(new Set(projectsList.map(p => p.category)))]
+  const categories = useMemo(() => {
+    const allCategories = new Set<string>(['All'])
+    projectsList.forEach(project => {
+      // Add main category
+      if (project.category) {
+        allCategories.add(project.category)
+      }
+      // Add technologies as categories too
+      if (Array.isArray(project.technologies)) {
+        project.technologies.forEach(tech => allCategories.add(tech))
+      }
+    })
+    return Array.from(allCategories).sort((a, b) => {
+      if (a === 'All') return -1
+      if (b === 'All') return 1
+      return a.localeCompare(b)
+    })
+  }, [projectsList])
 
-  const filteredProjects = selectedCategory === 'All' 
-    ? projectsList 
-    : projectsList.filter(p => p.category === selectedCategory)
+  const filteredProjects = useMemo(() => {
+    if (selectedCategory === 'All') return projectsList
+    return projectsList.filter(p => 
+      p.category === selectedCategory || 
+      (Array.isArray(p.technologies) && p.technologies.includes(selectedCategory))
+    )
+  }, [selectedCategory, projectsList])
 
-  const displayedProjects = filteredProjects.slice(0, displayCount)
-  const hasMore = displayCount < filteredProjects.length
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const displayedProjects = filteredProjects.slice(startIndex, endIndex)
 
-  const loadMore = () => {
-    setDisplayCount(prev => prev + 12)
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const showEllipsisThreshold = 7
+
+    if (totalPages <= showEllipsisThreshold) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i)
+        pages.push('...')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push('...')
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i)
+      } else {
+        pages.push(1)
+        pages.push('...')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i)
+        pages.push('...')
+        pages.push(totalPages)
+      }
+    }
+    return pages
   }
 
   const handleViewDetails = (project: Project) => {
@@ -355,7 +405,7 @@ export default function ProjectsPage() {
               key={category}
               onClick={() => {
                 setSelectedCategory(category)
-                setDisplayCount(12)
+                setCurrentPage(1)
               }}
               className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 ${
                 selectedCategory === category
@@ -402,23 +452,95 @@ export default function ProjectsPage() {
           </div>
         )}
 
-        {/* Load More Button */}
-        {hasMore && (
+        {/* Pagination */}
+        {!isLoading && filteredProjects.length > itemsPerPage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="text-center mt-12"
+            className="flex items-center justify-center gap-2 mt-12"
           >
+            {/* First Page */}
             <button
-              onClick={loadMore}
-              className="bg-blue-600 text-white px-10 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              onClick={() => {
+                setCurrentPage(1)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="First Page"
             >
-              Load More Projects
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
             </button>
-            <p className="text-gray-500 mt-4">
-              Showing {displayedProjects.length} of {filteredProjects.length} projects
-            </p>
+
+            {/* Previous Page */}
+            <button
+              onClick={() => {
+                setCurrentPage(prev => Math.max(1, prev - 1))
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Previous Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Page Numbers */}
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-400">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => {
+                    setCurrentPage(page as number)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className={`min-w-[40px] px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentPage === page
+                      ? 'bg-sky-600 text-white shadow-md'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+
+            {/* Next Page */}
+            <button
+              onClick={() => {
+                setCurrentPage(prev => Math.min(totalPages, prev + 1))
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Next Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Last Page */}
+            <button
+              onClick={() => {
+                setCurrentPage(totalPages)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Last Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
           </motion.div>
         )}
       </div>

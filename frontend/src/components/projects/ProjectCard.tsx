@@ -106,7 +106,26 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
 
       {/* Content Section */}
       <div className="p-6">
-        {/* Category Badge */}
+        {/* Category Badges - Display all categories/technologies */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+            {project.category}
+          </span>
+          {project.technologies.slice(0, 3).map((tech, idx) => (
+            <span
+              key={idx}
+              className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-medium"
+            >
+              {tech}
+            </span>
+          ))}
+          {project.technologies.length > 3 && (
+            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+              +{project.technologies.length - 3}
+            </span>
+          )}
+        </div>
+
         {/* Title */}
         <h3 className="text-xl font-bold mb-3 text-gray-800 hover:text-primary-600 transition-colors line-clamp-2">
           {project.title}
@@ -150,26 +169,8 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
           </div>
         )}
 
-        {/* Technologies */}
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {project.technologies.slice(0, 4).map((tech, idx) => (
-              <span
-                key={idx}
-                className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium"
-              >
-                {tech}
-              </span>
-            ))}
-            {project.technologies.length > 4 && (
-              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium">
-                +{project.technologies.length - 4}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Links */}
+        {/* Technologies - Remove duplicate display since now shown at top */}
+        {/* Contributors */}
         <div className="grid grid-cols-3 gap-2 pt-4 border-t border-gray-100">
           <button
             onClick={() => onViewDetails(project)}

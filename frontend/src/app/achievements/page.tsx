@@ -20,6 +20,8 @@ interface Achievement {
 
 export default function AchievementsPage() {
   const { user } = useAuth()
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 3
   const [showAddAchievementModal, setShowAddAchievementModal] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [achievementsList, setAchievementsList] = useState<Achievement[]>([])
@@ -196,6 +198,41 @@ export default function AchievementsPage() {
     }
   }
 
+  // Pagination calculations
+  const totalPages = Math.ceil(achievementsList.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const displayedAchievements = achievementsList.slice(startIndex, endIndex)
+
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const showEllipsisThreshold = 7
+
+    if (totalPages <= showEllipsisThreshold) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i)
+        pages.push('...')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push('...')
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i)
+      } else {
+        pages.push(1)
+        pages.push('...')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i)
+        pages.push('...')
+        pages.push(totalPages)
+      }
+    }
+    return pages
+  }
+
   return (
     <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="container mx-auto px-6">
@@ -245,7 +282,7 @@ export default function AchievementsPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
           >
-            {achievementsList.map((achievement, index) => (
+            {displayedAchievements.map((achievement, index) => (
               <div
                 key={achievement.id}
                 className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl hover:shadow-2xl transition-all duration-300"
@@ -331,6 +368,83 @@ export default function AchievementsPage() {
             <h3 className="text-2xl font-bold text-gray-700 mb-2">No Achievements Yet</h3>
             <p className="text-gray-500">Add your first achievement to get started</p>
           </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && achievementsList.length > itemsPerPage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center justify-center gap-2 mt-12"
+          >
+            {/* First Page */}
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="First Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Previous Page */}
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Previous Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Page Numbers */}
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-400">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page as number)}
+                  className={`min-w-[40px] px-3 py-2 rounded-lg font-medium transition-all ${
+                    currentPage === page
+                      ? 'bg-sky-600 text-white shadow-md'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+
+            {/* Next Page */}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Next Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Last Page */}
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Last Page"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          </motion.div>
         )}
       </div>
 

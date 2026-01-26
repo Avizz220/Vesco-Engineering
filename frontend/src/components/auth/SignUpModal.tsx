@@ -34,7 +34,98 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const { signUp } = useAuth()
+  const { signUp, signInWithGoogle } = useAuth()
+
+  const handleGoogleResponse = React.useCallback(async (response: any) => {
+    console.log('🔵 Google Response received (Sign Up):', response)
+    try {
+      setIsLoading(true)
+      await signInWithGoogle(response.credential)
+      setShowSuccessDialog(true)
+    } catch (err: any) {
+      console.error('❌ Google sign up error:', err)
+      setErrorMessage(err.message || 'Google sign up failed')
+      setShowErrorDialog(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [signInWithGoogle])
+
+  const handleGoogleSignUp = React.useCallback(() => {
+    console.log('🔵 Google Sign-Up button clicked')
+    console.log('🔵 Window.google exists:', !!window.google)
+    console.log('🔵 Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
+    
+    if (window.google?.accounts?.id) {
+      console.log('✅ Rendering Google Sign-In button for Sign Up')
+      const buttonContainer = document.getElementById('googleSignUpButton')
+      if (buttonContainer) {
+        window.google.accounts.id.renderButton(
+          buttonContainer,
+          { 
+            theme: 'outline', 
+            size: 'large',
+            width: buttonContainer.offsetWidth,
+            text: 'signup_with',
+            shape: 'rectangular'
+          }
+        )
+      }
+    } else {
+      console.error('❌ Google Sign-In not loaded yet')
+      setErrorMessage('Google Sign-In is loading, please try again in a moment')
+      setShowErrorDialog(true)
+    }
+  }, [])
+
+  // Initialize Google Sign-In
+  React.useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return
+
+    const initializeGoogleSignIn = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        })
+        console.log('✅ Google Sign-In initialized for Sign Up')
+        
+        // Render the button automatically when initialized
+        const buttonContainer = document.getElementById('googleSignUpButton')
+        if (buttonContainer) {
+          window.google.accounts.id.renderButton(
+            buttonContainer,
+            { 
+              theme: 'outline', 
+              size: 'large',
+              width: buttonContainer.offsetWidth || 400,
+              text: 'signup_with',
+              shape: 'rectangular'
+            }
+          )
+          console.log('✅ Google Sign-Up button rendered')
+        }
+      }
+    }
+
+    // Load Google script if not already loaded
+    if (!window.google) {
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = () => {
+        console.log('✅ Google Sign-In script loaded')
+        initializeGoogleSignIn()
+      }
+      script.onerror = () => {
+        console.error('❌ Failed to load Google Sign-In script')
+      }
+      document.body.appendChild(script)
+    } else {
+      initializeGoogleSignIn()
+    }
+  }, [isOpen, handleGoogleResponse])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -235,18 +326,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
           <div className="flex-1 border-t border-gray-300"></div>
         </div>
 
-        {/* Google Sign Up Button */}
-        <button
-          type="button"
-          className="w-full border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-3 hover:bg-gray-50"
-        >
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            className="w-5 h-5"
-          />
-          Sign up with Google
-        </button>
+        {/* Google Sign Up Button Container */}
+        <div id="googleSignUpButton" className="w-full flex justify-center"></div>
 
         {/* Sign In Link */}
         <p className="text-center text-gray-600 mt-6">

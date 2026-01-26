@@ -11,7 +11,8 @@ model User {
   id        String   @id @default(uuid())
   fullName  String   @map("full_name")
   email     String   @unique
-  password  String
+  password  String?
+  googleId  String?  @unique @map("google_id")
   image     String?
   role      Role     @default(MEMBER)
   createdAt DateTime @default(now()) @map("created_at")

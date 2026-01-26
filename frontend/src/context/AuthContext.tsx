@@ -118,24 +118,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const signInWithGoogle = async (response: any) => {
+  const signInWithGoogle = async (credential: string) => {
     setIsLoading(true)
     try {
-      // Mock Google authentication
-      await new Promise(resolve => setTimeout(resolve, 800))
+      // Call real backend API for Google authentication
+      const response = await fetch('http://localhost:5000/api/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ credential }),
+      })
 
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        email: 'user@google.com',
-        name: 'Google User',
-        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=googleuser`,
-        isAdmin: false,
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Google sign in failed')
       }
 
-      setUser(mockUser)
-      localStorage.setItem('vescoUser', JSON.stringify(mockUser))
-    } catch (error) {
-      throw new Error('Google sign in failed')
+      // Create user object from backend response
+      const authenticatedUser: User = {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.fullName,
+        image: data.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
+        isAdmin: data.user.role === 'ADMIN',
+      }
+
+      console.log('✅ Google Sign In Success - User:', authenticatedUser)
+
+      setUser(authenticatedUser)
+      localStorage.setItem('vescoUser', JSON.stringify(authenticatedUser))
+    } catch (error: any) {
+      throw new Error(error.message || 'Google sign in failed')
     } finally {
       setIsLoading(false)
     }

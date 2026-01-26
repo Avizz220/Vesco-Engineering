@@ -15,7 +15,7 @@ async function main() {
     create: {
       email: 'admin@vesco.com',
       password: hashedPassword,
-      name: 'Admin User',
+      fullName: 'Admin User',
       role: 'ADMIN',
     },
   })
@@ -30,6 +30,7 @@ async function main() {
       technologies: ['Python', 'ROS', 'OpenCV', 'TensorFlow'],
       category: 'Robotics',
       featured: true,
+      contributors: ['all'],
     },
     {
       title: 'IoT Smart Home System',
@@ -37,6 +38,7 @@ async function main() {
       technologies: ['Arduino', 'React Native', 'Firebase', 'MQTT'],
       category: 'IoT',
       featured: true,
+      contributors: ['all'],
     },
     {
       title: 'AI-Powered Chatbot',
@@ -44,6 +46,7 @@ async function main() {
       technologies: ['Python', 'FastAPI', 'Hugging Face', 'PostgreSQL'],
       category: 'AI/ML',
       featured: false,
+      contributors: ['all'],
     },
   ]
 

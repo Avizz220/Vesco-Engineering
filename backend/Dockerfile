@@ -28,6 +28,10 @@ RUN npm install --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 
+# Copy generated Prisma Client (Critical for Production)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
+
 # Expose port
 EXPOSE 5000
 

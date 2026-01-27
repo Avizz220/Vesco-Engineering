@@ -136,10 +136,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ credential }),
       })
 
-      const data = await response.json()
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('❌ Non-JSON Response from Backend:', text);
+        try {
+           // Attempt to parse text in case header was wrong
+           data = JSON.parse(text);
+        } catch (e) {
+           throw new Error(`Server returned ${response.status} ${response.statusText} (non-JSON). See console.`);
+        }
+      }
 
       if (!response.ok) {
-        console.error('Google Sign-In Error Response:', data)
+        console.error('❌ Google Sign-In Error Response:', data)
         throw new Error(data.message || 'Google sign in failed - check console for details')
       }
 

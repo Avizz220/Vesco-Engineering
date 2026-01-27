@@ -351,10 +351,10 @@ router.post('/google', async (req: Request, res: Response) => {
     })
   } catch (error: any) {
     console.error('Google sign in error:', error)
+    // Return the actual error message to help debugging
     return res.status(500).json({ 
       success: false,
-      message: 'Server error during Google sign in',
-      error: error.message 
+      message: error.message || 'Server error during Google sign in',
     })
   }
 })

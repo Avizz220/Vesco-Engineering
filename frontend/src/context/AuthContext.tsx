@@ -139,7 +139,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Google sign in failed')
+        console.error('Google Sign-In Error Response:', data)
+        throw new Error(data.message || 'Google sign in failed - check console for details')
       }
 
       // Create user object from backend response

@@ -32,6 +32,15 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/vesco-backend:latest
           cache-to: type=inline
 
+      - name: Copy Compose and Caddy Files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml,Caddyfile"
+          target: "~/app"
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -54,16 +63,11 @@ jobs:
             echo "NODE_ENV=production" >> .env
             echo "PORT=5000" >> .env
 
-            # Pull latest code snippets (infrastructure files)
-            # In a real scenario we might just copy the single file or git pull
-            # minimal file creation for docker-compose:
-            echo "${{ secrets.DOCKER_COMPOSE_CONTENT }}" > docker-compose.yml
-
             # Pull latest images
-            docker compose pull
+            docker compose -f docker-compose.prod.yml pull
 
             # Restart services
-            docker compose up -d
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             # Run migrations
-            docker compose exec -T backend npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy

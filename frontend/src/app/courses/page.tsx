@@ -230,7 +230,7 @@ export default function CoursesPage() {
   return (
     <>
       <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-white via-slate-50 to-white text-slate-900">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-6 lg:px-12 xl:px-16">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

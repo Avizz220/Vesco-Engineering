@@ -48,7 +48,7 @@ const Stats = () => {
             </h2>
             
             <p className="text-gray-700 text-lg leading-relaxed">
-              <span className="text-teal-700 font-semibold">VES</span><span className="text-orange-500 font-semibold text-base">CO</span> provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
+              <span className="text-blue-700 font-semibold">VES</span><span className="text-orange-500 font-semibold text-base">CO</span> provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
             </p>
 
             <div className="pt-4">
@@ -85,7 +85,7 @@ const Stats = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="relative w-full h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl"
+            className="relative w-full h-[350px] lg:h-[420px] rounded-2xl overflow-hidden shadow-2xl"
           >
             <AnimatePresence mode="wait">
               <motion.div

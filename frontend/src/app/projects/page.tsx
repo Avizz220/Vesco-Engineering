@@ -360,7 +360,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-28 pb-16">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 lg:px-12 xl:px-16">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}

@@ -11,7 +11,7 @@ const Footer = () => {
     <>
       {/* CTA Section */}
       <section className="bg-blue-600 text-white py-16">
-        <div className="container mx-auto px-6 text-center">
+        <div className="container mx-auto px-6 lg:px-12 xl:px-16 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Need Engineering Solutions?
           </h2>
@@ -29,7 +29,7 @@ const Footer = () => {
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-6 text-center">
+        <div className="container mx-auto px-6 lg:px-12 xl:px-16 text-center">
           <p className="text-lg mb-2">&copy; {currentYear} Team <span className="text-white font-bold">VES</span><span className="text-base text-orange-400">CO</span>. All rights reserved.</p>
           <p className="text-gray-400">Visionary Engineers Shaping Creative Opportunities</p>
         </div>

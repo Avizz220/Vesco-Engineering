@@ -271,6 +271,12 @@ router.post('/google', async (req: Request, res: Response) => {
   try {
     const { credential } = req.body
 
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    if (!clientId) {
+      console.error('❌ CRITICAL ERROR: GOOGLE_CLIENT_ID is not defined in environment variables')
+      return res.status(500).json({ message: 'Server configuration error: Google Client ID missing' })
+    }
+
     if (!credential) {
       return res.status(400).json({ message: 'Credential is required' })
     }
@@ -278,7 +284,7 @@ router.post('/google', async (req: Request, res: Response) => {
     // Verify the Google token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: clientId,
     })
 
     const payload = ticket.getPayload()

@@ -61,6 +61,21 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
 
+  // Add COOP headers for Google Sign In
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+        ],
+      },
+    ]
+  },
+
   // Setup proxy to avoid Mixed Content errors (HTTPS frontend -> HTTP backend)
   async rewrites() {
     return [

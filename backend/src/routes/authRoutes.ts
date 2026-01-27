@@ -268,92 +268,112 @@ router.post(
 // @desc    Google OAuth sign in
 // @access  Public
 router.post('/google', async (req: Request, res: Response) => {
-  console.log('🔵 GOOGLE AUTH ENDPOINT HIT')
-  
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  console.log(`🔧 Configured Client ID (Server): ${clientId ? clientId.substring(0, 15) + '...' : 'UNDEFINED'}`)
-  
+  // Wrap entire handler in a try-catch block to ensure NO crash escapes
   try {
+    console.log('🔵 GOOGLE AUTH ENDPOINT HIT')
+    
+    // Log environment status (Masked)
+    const envClientId = process.env.GOOGLE_CLIENT_ID;
+    console.log(`🔧 Env Client ID Length: ${envClientId ? envClientId.length : 'MISSING'}`)
+    
+    // 1. Basic Config Checks
+    if (!envClientId) {
+       console.error('❌ FATAL: GOOGLE_CLIENT_ID is missing from process.env');
+       return res.status(500).json({ 
+         success: false, 
+         message: 'Internal Configuration Error: Missing Google Client ID',
+         code: 'CONFIG_MISSING' 
+       });
+    }
+
     const { credential } = req.body
-
-    if (!clientId) {
-      console.error('❌ CRITICAL ERROR: GOOGLE_CLIENT_ID is not defined in environment variables')
-      return res.status(500).json({ message: 'Server configuration error: Google Client ID missing' })
-    }
-
     if (!credential) {
-      return res.status(400).json({ message: 'Credential is required' })
+      return res.status(400).json({ success:false, message: 'No credential provided' });
     }
 
-    // 1. Verify Token
-    console.log('🔐 Verifying ID Token...')
+    // 2. Token Verification
+    console.log('🔐 Verifying ID Token with Google...');
     let ticket;
     try {
       ticket = await googleClient.verifyIdToken({
         idToken: credential,
-        audience: clientId,
+        audience: envClientId,
       })
     } catch (verifyError: any) {
-      console.error('❌ Token Verification Failed:', verifyError.message)
+      console.error('❌ Verify Failed:', verifyError.message);
       return res.status(401).json({ 
-        message: 'Token verification failed', 
+        success: false, 
+        message: 'Google Token Verification Failed', 
         details: verifyError.message,
-        tip: 'Ensure Frontend and Backend use the exact same Google Client ID'
-      })
+        tip: 'Check if NEXT_PUBLIC_GOOGLE_CLIENT_ID matches GOOGLE_CLIENT_ID exactly.'
+      });
     }
 
     const payload = ticket.getPayload()
-    
-    if (!payload) {
-      return res.status(401).json({ message: 'Invalid Google token payload' })
+    if (!payload || !payload.email) {
+      return res.status(400).json({ success: false, message: 'Invalid Token Payload (No Email)' });
     }
 
     const { email, name, picture, sub: googleId } = payload
-    console.log('✅ Token Verified. Email:', email)
+    console.log(`✅ Token Valid. User: ${email}`);
 
-    if (!email) {
-      return res.status(400).json({ message: 'Email not provided by Google' })
+    // 3. User Lookup/Create
+    let user = await prisma.user.findUnique({ where: { email } })
+
+    if (!user) {
+      console.log('👤 Creating new user...');
+      user = await prisma.user.create({
+        data: {
+          email,
+          fullName: name || email.split('@')[0],
+          image: picture || null,
+          googleId,
+          role: Role.MEMBER,
+        },
+      })
+    } else if (!user.googleId) {
+      console.log('↻ Linking Google ID to existing user...');
+      user = await prisma.user.update({
+        where: { email },
+        data: { googleId },
+      })
     }
 
-    // 2. Database Operations
-    console.log('💾 Checking Database for user...')
-    let user = await prisma.user.findUnique({
-      where: { email },
+    // 4. Session Token
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: '7d' }
+    )
+
+    console.log('🍪 Setting Cookie...');
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'none' for cross-site (Vercel->AWS)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
-    // If user doesn't exist, create new user
-    if (!user) {
-      console.log('👤 Creating new user...')
-      try {
-        user = await prisma.user.create({
-          data: {
-            email,
-            fullName: name || email.split('@')[0],
-            image: picture || null,
-            googleId,
-            password: null, // No password for Google OAuth users
-            role: Role.MEMBER,
-          },
-        })
-      } catch (dbError: any) {
-        console.error('❌ DB Create Error:', dbError)
-        throw new Error(`Database Create Error: ${dbError.message}`)
-      }
-    } else if (!user.googleId) {
-      console.log('↻ Updating existing user with Google ID...')
-      try {
-        user = await prisma.user.update({
-          where: { email },
-          data: { googleId },
-        })
-      } catch (dbError: any) {
-         console.error('❌ DB Update Error:', dbError)
-         throw new Error(`Database Update Error: ${dbError.message}`)
-      }
-    }
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.fullName,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+      },
+    })
 
-    // 3. Create Session Token
-    const token = jwt.sign(
+  } catch (fatalError: any) {
+    console.error('🔥 UNCAUGHT HANDLER ERROR:', fatalError);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Fatal Server Error during Google Auth',
+      details: fatalError.message || 'Unknown Error'
+    });
+  }
+})
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }

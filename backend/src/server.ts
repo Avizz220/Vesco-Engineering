@@ -18,6 +18,9 @@ dotenv.config()
 const app: Application = express()
 const PORT = process.env.PORT || 5000
 
+// Trust proxy (Required for Vercel/AWS Caddy)
+app.set('trust proxy', 1)
+
 // Security middleware with relaxed CSP for images
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },

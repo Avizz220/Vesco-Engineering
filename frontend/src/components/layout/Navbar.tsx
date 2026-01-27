@@ -94,8 +94,9 @@ const Navbar = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-3xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
-              VESCO
+            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center">
+              <span className="text-primary-600">VES</span>
+              <span className="text-2xl text-orange-500 ml-0.5">CO</span>
             </Link>
 
             {/* Navigation Links */}

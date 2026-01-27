@@ -129,7 +129,7 @@ const Footer = () => {
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-6 text-center">
-          <p className="text-lg mb-2">&copy; {currentYear} Team VESCO. All rights reserved.</p>
+          <p className="text-lg mb-2">&copy; {currentYear} Team <span className="text-white font-bold">VES</span><span className="text-base text-orange-400">CO</span>. All rights reserved.</p>
           <p className="text-gray-400">Visionary Engineers Shaping Creative Opportunities</p>
         </div>
       </footer>

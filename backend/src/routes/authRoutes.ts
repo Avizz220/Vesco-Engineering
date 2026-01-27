@@ -105,7 +105,8 @@ router.post(
       console.error('Sign up error:', error)
       return res.status(500).json({ 
         success: false,
-        message: 'Server error during sign up' 
+        message: error.message || 'Server error during sign up',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       })
     }
   }

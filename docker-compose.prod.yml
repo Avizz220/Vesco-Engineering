@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    image: ${DOCKER_HUB_USERNAME}/vesco-backend:latest
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file: .env
+    depends_on:
+      - db
+      - caddy
+    networks:
+      - app_network
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: vesco_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - app_network
+
+# Note: DB is running here as well
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  app_network:
+    driver: bridge

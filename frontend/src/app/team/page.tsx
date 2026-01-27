@@ -7,6 +7,7 @@ import { TeamMember, Project } from '@/types'
 import TeamMemberCard from '@/components/team/TeamMemberCard'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
+import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 type Department = 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
 
@@ -94,8 +95,8 @@ export default function TeamPage() {
       }
 
       const url = editingMember 
-        ? `http://localhost:5000/api/team/${editingMember.id}`
-        : 'http://localhost:5000/api/team'
+        ? `${API_URL}/team/${editingMember.id}`
+        : `${API_URL}/team`
       
       const response = await fetch(url, {
         method: editingMember ? 'PUT' : 'POST',
@@ -138,7 +139,7 @@ export default function TeamPage() {
 
   const handleViewProjects = async (memberName: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/projects')
+      const response = await fetch(`${API_URL}/projects`)
       if (response.ok) {
         const data = await response.json()
         const projects = data.projects || []

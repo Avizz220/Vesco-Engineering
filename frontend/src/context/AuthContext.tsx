@@ -126,10 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithGoogle = async (credential: string) => {
     setIsLoading(true)
     try {
-      // Determine API URL
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 
-        (process.env.NODE_ENV === 'production' ? '/api/proxy' : 'http://localhost:5000/api')
-        
       // Call real backend API for Google authentication
       const response = await fetch(`${API_URL}/auth/google`, {
         method: 'POST',

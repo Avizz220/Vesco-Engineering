@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
+import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 interface Achievement {
   id: string
@@ -49,7 +50,7 @@ export default function AchievementsPage() {
   const fetchAchievements = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('http://localhost:5000/api/achievements')
+      const response = await fetch(`${API_URL}/achievements`)
       const data = await response.json()
 
       if (data.success) {
@@ -94,7 +95,7 @@ export default function AchievementsPage() {
     const index = confirmAction.index
     const achievementId = achievementsList[index].id
     try {
-      const response = await fetch(`http://localhost:5000/api/achievements/${achievementId}`, {
+      const response = await fetch(`${API_URL}/achievements/${achievementId}`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -135,7 +136,7 @@ export default function AchievementsPage() {
           formData.append('image', newAchievement.photo)
         }
 
-        const response = await fetch(`http://localhost:5000/api/achievements/${achievementId}`, {
+        const response = await fetch(`${API_URL}/achievements/${achievementId}`, {
           method: 'PUT',
           credentials: 'include',
           body: formData,
@@ -163,7 +164,7 @@ export default function AchievementsPage() {
           formData.append('image', newAchievement.photo)
         }
 
-        const response = await fetch('http://localhost:5000/api/achievements', {
+        const response = await fetch(`${API_URL}/achievements`, {
           method: 'POST',
           credentials: 'include',
           body: formData,
@@ -318,7 +319,7 @@ export default function AchievementsPage() {
                 <div className="relative w-full overflow-hidden bg-slate-100 aspect-[4/3]">
                   {achievement.imageUrl ? (
                     <Image
-                      src={`http://localhost:5000${achievement.imageUrl}`}
+                      src={achievement.imageUrl.startsWith('http') ? achievement.imageUrl : `${IMAGE_URL_PREFIX}${achievement.imageUrl}`}
                       alt={achievement.title}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"

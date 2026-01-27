@@ -36,7 +36,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const teamMember = await prisma.teamMember.findUnique({
-      where: { id },
+      where: { id: String(id) },
     })
     if (!teamMember) {
       return res.status(404).json({ message: 'Team member not found' })
@@ -92,7 +92,7 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined
 
     const teamMember = await prisma.teamMember.update({
-      where: { id },
+      where: { id: String(id) },
       data: {
         ...(name && { name }),
         ...(role && { role }),
@@ -119,7 +119,7 @@ router.delete('/:id', verifyAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const teamMember = await prisma.teamMember.update({
-      where: { id },
+      where: { id: String(id) },
       data: { isActive: false },
     })
     res.json({ success: true, message: 'Team member deleted successfully', teamMember })

@@ -154,7 +154,7 @@ router.put(
       }
 
       const course = await prisma.course.update({
-        where: { id },
+        where: { id: String(id) },
         data: updateData,
       });
 
@@ -171,7 +171,7 @@ router.delete('/:id', verifyAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.course.delete({
-      where: { id },
+      where: { id: String(id) },
     });
     res.json({ message: 'Course deleted successfully' });
   } catch (error) {

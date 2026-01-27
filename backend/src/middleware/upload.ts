@@ -23,7 +23,7 @@ const getStorage = () => {
       params: {
         folder: 'vesco-engineering',
         allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
-        public_id: (req, file) => {
+        public_id: (req: any, file: any) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
           return file.fieldname + '-' + uniqueSuffix
         },

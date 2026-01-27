@@ -268,10 +268,14 @@ router.post(
 // @desc    Google OAuth sign in
 // @access  Public
 router.post('/google', async (req: Request, res: Response) => {
+  console.log('🔵 GOOGLE AUTH ENDPOINT HIT')
+  
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  console.log(`🔧 Configured Client ID (Server): ${clientId ? clientId.substring(0, 15) + '...' : 'UNDEFINED'}`)
+  
   try {
     const { credential } = req.body
 
-    const clientId = process.env.GOOGLE_CLIENT_ID
     if (!clientId) {
       console.error('❌ CRITICAL ERROR: GOOGLE_CLIENT_ID is not defined in environment variables')
       return res.status(500).json({ message: 'Server configuration error: Google Client ID missing' })
@@ -281,50 +285,74 @@ router.post('/google', async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Credential is required' })
     }
 
-    // Verify the Google token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: clientId,
-    })
+    // 1. Verify Token
+    console.log('🔐 Verifying ID Token...')
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
+      })
+    } catch (verifyError: any) {
+      console.error('❌ Token Verification Failed:', verifyError.message)
+      return res.status(401).json({ 
+        message: 'Token verification failed', 
+        details: verifyError.message,
+        tip: 'Ensure Frontend and Backend use the exact same Google Client ID'
+      })
+    }
 
     const payload = ticket.getPayload()
     
     if (!payload) {
-      return res.status(401).json({ message: 'Invalid Google token' })
+      return res.status(401).json({ message: 'Invalid Google token payload' })
     }
 
     const { email, name, picture, sub: googleId } = payload
+    console.log('✅ Token Verified. Email:', email)
 
     if (!email) {
       return res.status(400).json({ message: 'Email not provided by Google' })
     }
 
-    // Check if user exists
+    // 2. Database Operations
+    console.log('💾 Checking Database for user...')
     let user = await prisma.user.findUnique({
       where: { email },
     })
 
     // If user doesn't exist, create new user
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          fullName: name || email.split('@')[0],
-          image: picture || null,
-          googleId,
-          password: null, // No password for Google OAuth users
-          role: Role.MEMBER,
-        },
-      })
+      console.log('👤 Creating new user...')
+      try {
+        user = await prisma.user.create({
+          data: {
+            email,
+            fullName: name || email.split('@')[0],
+            image: picture || null,
+            googleId,
+            password: null, // No password for Google OAuth users
+            role: Role.MEMBER,
+          },
+        })
+      } catch (dbError: any) {
+        console.error('❌ DB Create Error:', dbError)
+        throw new Error(`Database Create Error: ${dbError.message}`)
+      }
     } else if (!user.googleId) {
-      // Update existing user with Google ID if they signed up with email/password first
-      user = await prisma.user.update({
-        where: { email },
-        data: { googleId },
-      })
+      console.log('↻ Updating existing user with Google ID...')
+      try {
+        user = await prisma.user.update({
+          where: { email },
+          data: { googleId },
+        })
+      } catch (dbError: any) {
+         console.error('❌ DB Update Error:', dbError)
+         throw new Error(`Database Update Error: ${dbError.message}`)
+      }
     }
 
-    // Create JWT token
+    // 3. Create Session Token
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',

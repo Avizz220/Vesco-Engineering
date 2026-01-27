@@ -1,7 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from '@/hooks/useInView'
+import Image from 'next/image'
+import { useState, useEffect } from 'react'
 
 const Stats = () => {
   const [ref, inView] = useInView({
@@ -9,66 +11,101 @@ const Stats = () => {
     threshold: 0.1,
   })
 
-  const stats = [
-    { 
-      number: '50+', 
-      label: 'Projects Completed', 
-      icon: (
-        <svg className="w-12 h-12 mx-auto mb-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      )
-    },
-    { 
-      number: '25+', 
-      label: 'Awards Won', 
-      icon: (
-        <svg className="w-12 h-12 mx-auto mb-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      )
-    },
-    { 
-      number: '30+', 
-      label: 'Team Members', 
-      icon: (
-        <svg className="w-12 h-12 mx-auto mb-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      )
-    },
-    { 
-      number: '5+', 
-      label: 'Years of Excellence', 
-      icon: (
-        <svg className="w-12 h-12 mx-auto mb-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-        </svg>
-      )
-    },
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const services = [
+    { name: 'Web Development', image: '/web_dev.jpg' },
+    { name: 'Software Services', image: '/software_service.jpg' },
+    { name: 'Solid Work Designs', image: '/solid.png' },
+    { name: 'Electrical Services', image: '/elec_service.jpg' },
+    { name: 'Machine Learning & AI', image: '/ai_and_ml.jpg' },
+    { name: 'IoT Services', image: '/iot_servicesjpg.jpg' },
   ]
 
+  useEffect(() => {
+    if (!inView) return
+    
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % services.length)
+    }, 2500)
+
+    return () => clearInterval(interval)
+  }, [inView, services.length])
+
   return (
-    <section ref={ref} className="py-20 bg-white">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="text-center"
-            >
-              <div className="bg-gray-50 rounded-xl shadow-md p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-                {stat.icon}
-                <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
-              </div>
-            </motion.div>
-          ))}
+    <section id="services" ref={ref} className="py-20 bg-white">
+      <div className="container mx-auto px-6 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left side - Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="space-y-6"
+          >
+            <h2 className="text-4xl lg:text-5xl font-bold text-blue-700 leading-tight">
+              Expertise Across Engineering Service Disciplines
+            </h2>
+            
+            <p className="text-gray-700 text-lg leading-relaxed">
+              <span className="text-teal-700 font-semibold">VES</span><span className="text-orange-500 font-semibold text-base">CO</span> provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
+            </p>
+
+            <div className="pt-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Engineering Services Include:</h3>
+              <ul className="space-y-3">
+                {services.map((service, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={inView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+                    className={`flex items-center text-lg transition-all duration-500 ${
+                      activeIndex === index 
+                        ? 'text-blue-600 font-bold translate-x-2 scale-105' 
+                        : 'text-gray-700 font-normal'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full mr-4 transition-all duration-500 ${
+                      activeIndex === index ? 'bg-blue-600 w-3 h-3' : 'bg-teal-600'
+                    }`}></span>
+                    {service.name}
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="text-gray-700 pt-4 leading-relaxed">
+              Each service is delivered with <span className="font-semibold">industry experience, technical competence, and innovative solutions</span>.
+            </p>
+          </motion.div>
+
+          {/* Right side - Image Slider */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="relative w-full h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeIndex}
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ duration: 0.6, ease: 'easeInOut' }}
+                className="relative w-full h-full"
+              >
+                <Image
+                  src={services[activeIndex].image}
+                  alt={services[activeIndex].name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Image from 'next/image'
 
 interface SuccessModalProps {
   isOpen: boolean
@@ -39,22 +40,16 @@ export default function SuccessModal({
       
       {/* Modal */}
       <div className="relative bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all">
-        {/* Success Icon */}
+        {/* Success Icon - Animated GIF */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-[#7ED321] flex items-center justify-center animate-scale-in">
-            <svg 
-              className="w-12 h-12 text-white" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={3} 
-                d="M5 13l4 4L19 7" 
-              />
-            </svg>
+          <div className="w-24 h-24 relative animate-scale-in">
+            <Image
+              src="/icons8-sent (1).gif"
+              alt="Success"
+              fill
+              className="object-contain"
+              unoptimized
+            />
           </div>
         </div>
 

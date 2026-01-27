@@ -36,6 +36,18 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Handle scroll to services section when navigating from other pages
+  useEffect(() => {
+    if (pathname === '/' && window.location.hash === '#services') {
+      setTimeout(() => {
+        const servicesSection = document.getElementById('services')
+        if (servicesSection) {
+          servicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+  }, [pathname])
+
   // Load lottie-player and initialize profile data when settings modal is opened
   useEffect(() => {
     if (!showSettingsModal) return
@@ -66,12 +78,26 @@ const Navbar = () => {
     { href: '/achievements', label: 'Achievements', protected: true },
     { href: '/courses', label: 'Courses', protected: true },
     { href: '/team', label: 'Team', protected: true },
+    { href: '/#services', label: 'Services', protected: false },
     { href: '/contact', label: 'Contact', protected: true },
   ]
 
   const handleNavClick = (href: string, isProtected: boolean) => {
     if (href === '/') {
       router.push('/')
+      return
+    }
+
+    // Handle services anchor link
+    if (href === '/#services') {
+      if (pathname !== '/') {
+        router.push('/#services')
+      } else {
+        const servicesSection = document.getElementById('services')
+        if (servicesSection) {
+          servicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
       return
     }
 

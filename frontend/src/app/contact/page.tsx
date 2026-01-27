@@ -1,26 +1,37 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import SuccessModal from '@/components/ui/SuccessModal'
+import ErrorModal from '@/components/ui/ErrorModal'
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 export default function ContactPage() {
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
     rating: 0,
-    questions: '',
-    feedback: '',
-    affiliation: '',
-    field: ''
   })
-  const [submitted, setSubmitted] = useState(false)
   const [hoveredRating, setHoveredRating] = useState(0)
   const [mailAnimation, setMailAnimation] = useState<any>(null)
   const [phoneAnimation, setPhoneAnimation] = useState<any>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [showError, setShowError] = useState(false)
+
+  // Check for success/error parameters in URL
+  useEffect(() => {
+    const success = searchParams.get('success')
+    const error = searchParams.get('error')
+    
+    if (success === 'true') {
+      setShowSuccess(true)
+    } else if (error === 'true') {
+      setShowError(true)
+    }
+  }, [searchParams])
 
   // Load Lottie animations
   useEffect(() => {
@@ -35,27 +46,11 @@ export default function ContactPage() {
       .catch(err => console.error('Error loading phone animation:', err))
   }, [])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
-    setSubmitted(true)
-    setTimeout(() => {
-      setSubmitted(false)
-      setFormData({
-        name: '',
-        email: '',
-        rating: 0,
-        questions: '',
-        feedback: '',
-        affiliation: '',
-        field: ''
-      })
-      setHoveredRating(0)
-    }, 3000)
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  const handleCloseModal = () => {
+    setShowSuccess(false)
+    setShowError(false)
+    // Clean URL by removing query parameters
+    window.history.replaceState({}, '', '/contact')
   }
 
   const headquarters = [
@@ -102,7 +97,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-16 -mt-10 relative z-20">
+      <div className="container mx-auto px-6 lg:px-12 xl:px-16 py-16 -mt-10 relative z-20">
         <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* Contact Form - Takes 2 columns */}
           <motion.div
@@ -118,11 +113,18 @@ export default function ContactPage() {
                     <Lottie animationData={mailAnimation} loop={true} />
                   </div>
                 )}
-                <h2 className="text-2xl font-bold text-gray-900">Feedback Form</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Contact Form</h2>
               </div>
               <p className="text-gray-600 mb-8">We'd love to hear from you.</p>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form action="https://formsubmit.co/ahirushan629@gmail.com" method="POST" className="space-y-6">
+                {/* Hidden inputs for FormSubmit configuration */}
+                <input type="hidden" name="_subject" value="New Contact Form Submission from VESCO Website" />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
+                <input type="hidden" name="_next" value={`${typeof window !== 'undefined' ? window.location.origin : ''}/contact?success=true`} />
+                <input type="hidden" name="_error" value={`${typeof window !== 'undefined' ? window.location.origin : ''}/contact?error=true`} />
+                
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -132,9 +134,7 @@ export default function ContactPage() {
                     type="text"
                     name="name"
                     required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                     placeholder="Your full name"
                   />
                 </div>
@@ -148,9 +148,7 @@ export default function ContactPage() {
                     type="email"
                     name="email"
                     required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -162,23 +160,26 @@ export default function ContactPage() {
                   </label>
                   <div className="flex items-center gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, rating: star })}
-                        onMouseEnter={() => setHoveredRating(star)}
-                        onMouseLeave={() => setHoveredRating(0)}
-                        className="transition-transform hover:scale-110"
-                      >
+                      <label key={star} className="cursor-pointer transition-transform hover:scale-110">
+                        <input
+                          type="radio"
+                          name="rating"
+                          value={star}
+                          required
+                          className="sr-only"
+                          onChange={() => setFormData({ ...formData, rating: star })}
+                        />
                         <svg
                           className={`w-10 h-10 ${
-                            star <= (hoveredRating || formData.rating)
+                            star <= formData.rating
                               ? 'text-yellow-400 fill-current'
                               : 'text-gray-300'
                           }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
                         >
                           <path
                             strokeLinecap="round"
@@ -187,7 +188,7 @@ export default function ContactPage() {
                             d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                           />
                         </svg>
-                      </button>
+                      </label>
                     ))}
                   </div>
                   {formData.rating > 0 && (
@@ -210,9 +211,7 @@ export default function ContactPage() {
                     name="questions"
                     required
                     rows={3}
-                    value={formData.questions}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-gray-900"
                     placeholder="Any questions you have for us..."
                   />
                 </div>
@@ -220,15 +219,12 @@ export default function ContactPage() {
                 {/* Feedback */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Feedback*
+                    Feedback <span className="text-gray-400">(Optional)</span>
                   </label>
                   <textarea
                     name="feedback"
-                    required
                     rows={4}
-                    value={formData.feedback}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-gray-900"
                     placeholder="Share your feedback with us..."
                   />
                 </div>
@@ -241,9 +237,7 @@ export default function ContactPage() {
                   <input
                     type="text"
                     name="affiliation"
-                    value={formData.affiliation}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                     placeholder="e.g., University of Moratuwa / Software Engineer"
                   />
                 </div>
@@ -256,9 +250,7 @@ export default function ContactPage() {
                   <input
                     type="text"
                     name="field"
-                    value={formData.field}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                     placeholder="e.g., Computer Science, Electrical Engineering"
                   />
                 </div>
@@ -270,7 +262,7 @@ export default function ContactPage() {
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  {submitted ? 'Feedback Sent! ✓' : 'Submit Feedback'}
+                  Submit Contact Form
                 </motion.button>
               </form>
             </div>
@@ -396,6 +388,22 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={handleCloseModal}
+        title="Form Submitted Successfully!"
+        message="Thank you for contacting us. We've received your message and will get back to you shortly via email."
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showError}
+        onClose={handleCloseModal}
+        title="Submission Failed"
+        message="There was an error submitting your form. Please try again or contact us directly via email."
+      />
     </div>
   )
 }

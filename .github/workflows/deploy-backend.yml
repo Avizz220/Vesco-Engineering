@@ -54,6 +54,15 @@ jobs:
             mkdir -p ~/app
             cd ~/app
 
+            # Add 1GB Swap Space to prevent OOM (Out Of Memory) crashes
+            if [ ! -f /swapfile ]; then
+              sudo fallocate -l 1G /swapfile
+              sudo chmod 600 /swapfile
+              sudo mkswap /swapfile
+              sudo swapon /swapfile
+              echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+            fi
+
             # Create .env file from GitHub Secrets
             echo "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@db:5432/vesco_db" > .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env

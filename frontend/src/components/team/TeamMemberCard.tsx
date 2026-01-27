@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { TeamMember } from '@/types'
 import { useState } from 'react'
+import { IMAGE_URL_PREFIX } from '@/lib/api'
 
 interface TeamMemberCardProps {
   member: TeamMember
@@ -26,7 +27,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, onEdit, onViewProjects }:
       <div className="relative h-80 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden">
         {member.imageUrl ? (
           <Image
-            src={member.imageUrl.startsWith('http') ? member.imageUrl : `http://localhost:5000${member.imageUrl}`}
+            src={member.imageUrl.startsWith('http') ? member.imageUrl : `${IMAGE_URL_PREFIX}${member.imageUrl}`}
             alt={member.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"

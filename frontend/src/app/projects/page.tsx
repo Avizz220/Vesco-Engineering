@@ -57,7 +57,7 @@ export default function ProjectsPage() {
 
   const fetchAdminUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/admins')
+      const response = await fetch(`${API_URL}/auth/admins`)
       if (response.ok) {
         const admins = await response.json()
         setAdminUsers(admins)
@@ -70,7 +70,7 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('http://localhost:5000/api/projects')
+      const response = await fetch(`${API_URL}/projects`)
       const data = await response.json()
 
       if (data.success) {
@@ -79,7 +79,7 @@ export default function ProjectsPage() {
           title: project.title,
           description: project.description,
           technologies: Array.isArray(project.technologies) ? project.technologies : [],
-          imageUrl: project.imageUrl ? `http://localhost:5000${project.imageUrl}` : '/api/placeholder/400/300',
+          imageUrl: project.imageUrl ? `${IMAGE_URL_PREFIX}${project.imageUrl}` : '/api/placeholder/400/300',
           category: project.category,
           contributors: Array.isArray(project.contributors) ? project.contributors : [],
           liveUrl: project.liveUrl,

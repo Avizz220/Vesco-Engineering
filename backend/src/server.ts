@@ -21,11 +21,14 @@ const PORT = process.env.PORT || 5000
 // Security middleware with relaxed CSP for images
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000", "https://*.vercel.app", "https://*.googleusercontent.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000", "https://accounts.google.com"],
+      frameSrc: ["'self'", "https://accounts.google.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
     },
   },

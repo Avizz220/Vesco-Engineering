@@ -85,23 +85,9 @@ jobs:
             # Pull latest images
             docker compose -f docker-compose.prod.yml pull
 
-            # Run migrations SEPARATELY using a disposable container to save RAM
-            # Only run this if the DB service is healthy (checked by docker compose up later)
-            # But we need migrations run before the app starts effectively.
-            # Strategy: Start DB -> Run Migration -> Start App
-            
-            # 1. Start DB only
-            docker compose -f docker-compose.prod.yml up -d db
-            
-            # 2. Waiting for DB...
-            sleep 10
-            
-            # 3. Run migrations (using specific command to avoid npx overhead if possible, but npx is needed)
-            docker run --rm \
-              --network app_app_network \
-              --env DATABASE_URL="postgresql://postgres:${{ secrets.DB_PASSWORD }}@db:5432/vesco_db" \
-              ${{ secrets.DOCKER_HUB_USERNAME }}/vesco-backend:latest \
-              npx prisma migrate deploy
+            # Run migrations using the backend service definition
+            # This ensures 'db' is healthy before running because of 'depends_on'
+            docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate deploy
 
-            # 4. Start everything else
+            # Start the application
             docker compose -f docker-compose.prod.yml up -d --remove-orphans

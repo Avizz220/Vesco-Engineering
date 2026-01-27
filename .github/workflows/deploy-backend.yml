@@ -6,6 +6,8 @@ on:
     paths:
       - 'backend/**'
       - 'docker-compose.prod.yml'
+      - 'Caddyfile'
+      - '.github/workflows/deploy-backend.yml'
 
 jobs:
   deploy:

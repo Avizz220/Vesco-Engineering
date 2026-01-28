@@ -77,7 +77,11 @@ router.post(
         }
       }
 
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      // Handle Cloudinary URL or local path
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`;
+      }
 
       const course = await prisma.course.create({
         data: {
@@ -149,8 +153,9 @@ router.put(
       };
 
       // Only update imageUrl if a new file is uploaded
+      // Handle Cloudinary URL or local path
       if (req.file) {
-        updateData.imageUrl = `/uploads/${req.file.filename}`;
+        updateData.imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`;
       }
 
       const course = await prisma.course.update({

@@ -59,7 +59,11 @@ router.post('/', verifyAdmin, upload.single('image'), async (req: Request, res: 
       return res.status(400).json({ message: 'Name and role are required' })
     }
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null
+    // Handle Cloudinary URL or local path
+    let imageUrl = null
+    if (req.file) {
+      imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+    }
 
     const teamMember = await prisma.teamMember.create({
       data: {
@@ -89,7 +93,11 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     const { id } = req.params
     const { name, role, bio, linkedinUrl, githubUrl, email, department, isActive } = req.body
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined
+    // Handle Cloudinary URL or local path
+    let imageUrl = undefined
+    if (req.file) {
+      imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+    }
 
     const teamMember = await prisma.teamMember.update({
       where: { id: String(id) },

@@ -120,7 +120,11 @@ router.post(
         date
       } = req.body
 
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null
+      // Handle Cloudinary URL or local path
+      let imageUrl = null
+      if (req.file) {
+        imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+      }
 
       const achievement = await prisma.achievement.create({
         data: {
@@ -165,7 +169,11 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
       date
     } = req.body
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined
+    // Handle Cloudinary URL or local path
+    let imageUrl = undefined
+    if (req.file) {
+      imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+    }
 
     const achievement = await prisma.achievement.update({
       where: { id },

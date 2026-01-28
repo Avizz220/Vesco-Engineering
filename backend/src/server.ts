@@ -28,7 +28,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000", "https://*.vercel.app", "https://*.vesco.lk", "https://*.googleusercontent.com"],
+      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000", "https://*.vercel.app", "https://*.vesco.lk", "https://*.googleusercontent.com", "https://res.cloudinary.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
       connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000", "https://accounts.google.com", "https://*.vercel.app", "https://*.vesco.lk"],
       frameSrc: ["'self'", "https://accounts.google.com"],

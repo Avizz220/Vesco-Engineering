@@ -46,6 +46,7 @@ model Achievement {
   description String   @db.Text
   date        DateTime
   imageUrl    String?
+  linkedinUrl String?
   position    String   // e.g., "1st Place", "Winner", "Runner-up"
   competition String
   createdAt   DateTime @default(now())

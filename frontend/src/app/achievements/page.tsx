@@ -15,6 +15,7 @@ interface Achievement {
   competition: string
   date: string
   imageUrl?: string
+  linkedinUrl?: string
   createdAt: string
   updatedAt: string
 }
@@ -32,6 +33,8 @@ export default function AchievementsPage() {
   const [dialogMessage, setDialogMessage] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'update', index?: number } | null>(null)
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set())
+  const MAX_DESCRIPTION_LENGTH = 100
   
   const [newAchievement, setNewAchievement] = useState({
     title: '',
@@ -39,6 +42,7 @@ export default function AchievementsPage() {
     position: '',
     competition: '',
     date: '',
+    linkedinUrl: '',
     photo: null as File | null,
   })
 
@@ -78,6 +82,7 @@ export default function AchievementsPage() {
       position: achievement.position,
       competition: achievement.competition,
       date: achievement.date.split('T')[0],
+      linkedinUrl: achievement.linkedinUrl || '',
       photo: null,
     })
     setEditingIndex(index)
@@ -132,6 +137,9 @@ export default function AchievementsPage() {
         formData.append('position', newAchievement.position)
         formData.append('competition', newAchievement.competition)
         formData.append('date', newAchievement.date)
+        if (newAchievement.linkedinUrl) {
+          formData.append('linkedinUrl', newAchievement.linkedinUrl)
+        }
         if (newAchievement.photo) {
           formData.append('image', newAchievement.photo)
         }
@@ -160,6 +168,9 @@ export default function AchievementsPage() {
         formData.append('position', newAchievement.position)
         formData.append('competition', newAchievement.competition)
         formData.append('date', newAchievement.date)
+        if (newAchievement.linkedinUrl) {
+          formData.append('linkedinUrl', newAchievement.linkedinUrl)
+        }
         if (newAchievement.photo) {
           formData.append('image', newAchievement.photo)
         }
@@ -188,6 +199,7 @@ export default function AchievementsPage() {
         position: '',
         competition: '',
         date: '',
+        linkedinUrl: '',
         photo: null,
       })
     } catch (error: any) {
@@ -346,13 +358,50 @@ export default function AchievementsPage() {
                     </span>
                   </div>
 
-                  <p className="text-sm text-slate-600 leading-relaxed mb-4">{achievement.description}</p>
+                  <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                    {expandedDescriptions.has(achievement.id) || achievement.description.length <= MAX_DESCRIPTION_LENGTH
+                      ? achievement.description
+                      : `${achievement.description.substring(0, MAX_DESCRIPTION_LENGTH)}...`}
+                    {achievement.description.length > MAX_DESCRIPTION_LENGTH && (
+                      <button
+                        onClick={() => {
+                          setExpandedDescriptions(prev => {
+                            const newSet = new Set(prev)
+                            if (newSet.has(achievement.id)) {
+                              newSet.delete(achievement.id)
+                            } else {
+                              newSet.add(achievement.id)
+                            }
+                            return newSet
+                          })
+                        }}
+                        className="ml-2 text-sky-600 hover:text-sky-700 font-semibold text-xs"
+                      >
+                        {expandedDescriptions.has(achievement.id) ? 'See Less' : 'See More'}
+                      </button>
+                    )}
+                  </p>
 
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {new Date(achievement.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      {achievement.linkedinUrl && (
+                        <a 
+                          href={achievement.linkedinUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="hover:opacity-75 transition-opacity"
+                          title="View on LinkedIn"
+                        >
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#0077B5">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                          </svg>
+                        </a>
+                      )}
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {new Date(achievement.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -563,6 +612,21 @@ export default function AchievementsPage() {
                   onChange={(e) => setNewAchievement(prev => ({ ...prev, date: e.target.value }))}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none"
                 />
+              </div>
+
+              {/* LinkedIn URL */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  LinkedIn Post URL
+                </label>
+                <input
+                  type="url"
+                  value={newAchievement.linkedinUrl}
+                  onChange={(e) => setNewAchievement(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none"
+                  placeholder="https://www.linkedin.com/posts/..."
+                />
+                <p className="text-xs text-gray-500">Optional: Link to LinkedIn post about this achievement</p>
               </div>
 
               {/* Photo Upload */}

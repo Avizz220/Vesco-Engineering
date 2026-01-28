@@ -117,7 +117,8 @@ router.post(
         description,
         position,
         competition,
-        date
+        date,
+        linkedinUrl
       } = req.body
 
       // Handle Cloudinary URL or local path
@@ -143,7 +144,8 @@ router.post(
           position,
           competition,
           date: new Date(date),
-          imageUrl
+          imageUrl,
+          linkedinUrl: linkedinUrl || null
         }
       })
 
@@ -176,7 +178,8 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
       description,
       position,
       competition,
-      date
+      date,
+      linkedinUrl
     } = req.body
 
     // Handle Cloudinary URL or local path
@@ -203,6 +206,7 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
         ...(position && { position }),
         ...(competition && { competition }),
         ...(date && { date: new Date(date) }),
+        ...(linkedinUrl !== undefined && { linkedinUrl }),
         ...(imageUrl !== undefined && { imageUrl })
       }
     })

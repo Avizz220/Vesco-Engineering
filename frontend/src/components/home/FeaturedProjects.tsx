@@ -3,35 +3,69 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
+
+interface Project {
+  id: string
+  title: string
+  description: string
+  category: string
+  imageUrl: string | null
+  featured: boolean
+}
 
 const FeaturedProjects = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const projects = [
-    {
-      title: 'Autonomous Navigation Robot',
-      description: 'AI-powered robot with computer vision for obstacle detection and path planning.',
-      category: 'Robotics',
-      image: '/images/robot.jpg',
-      color: 'from-blue-600 to-cyan-600',
-    },
-    {
-      title: 'IoT Smart Home System',
-      description: 'Complete home automation with mobile app control and voice integration.',
-      category: 'IoT',
-      image: '/images/iot.jpg',
-      color: 'from-purple-600 to-pink-600',
-    },
-    {
-      title: 'AI Healthcare Assistant',
-      description: 'Machine learning model for disease prediction and health monitoring.',
-      category: 'AI/ML',
-      image: '/images/ai.jpg',
-      color: 'from-green-600 to-teal-600',
-    },
+  // Define gradient colors for featured projects
+  const gradients = [
+    'from-blue-600 to-cyan-600',
+    'from-purple-600 to-pink-600',
+    'from-green-600 to-teal-600',
+    'from-orange-600 to-red-600',
+    'from-indigo-600 to-purple-600',
   ]
 
+  // Fetch featured projects from backend
   useEffect(() => {
+    const fetchFeaturedProjects = async () => {
+      try {
+        const response = await fetch(`${API_URL}/projects`)
+        const data = await response.json()
+
+        if (data.success) {
+          // Filter featured projects or take first 3-5 projects
+          const featuredProjects = data.projects
+            .filter((p: any) => p.featured)
+            .slice(0, 5)
+          
+          // If no featured projects, take first 3 projects
+          const projectsToDisplay = featuredProjects.length > 0 
+            ? featuredProjects 
+            : data.projects.slice(0, 3)
+          
+          setProjects(projectsToDisplay)
+        }
+      } catch (error) {
+        console.error('Error fetching featured projects:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchFeaturedProjects()
+  }, [])
+
+  // If no projects loaded, don't render the section
+  if (isLoading || projects.length === 0) {
+    return null
+  }
+
+  // Auto-advance slides
+  useEffect(() => {
+    if (projects.length === 0) return
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % projects.length)
     }, 5000)
@@ -62,7 +96,7 @@ const FeaturedProjects = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.5 }}
-              className={`absolute inset-0 bg-gradient-to-r ${projects[currentSlide].color} rounded-2xl p-8 md:p-12 flex items-center shadow-2xl`}
+              className={`absolute inset-0 bg-gradient-to-r ${gradients[currentSlide % gradients.length]} rounded-2xl p-8 md:p-12 flex items-center shadow-2xl`}
             >
               <div className="max-w-2xl text-white">
                 <div className="inline-block bg-white/30 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-4 font-semibold">
@@ -71,11 +105,14 @@ const FeaturedProjects = () => {
                 <h3 className="text-3xl md:text-5xl font-bold mb-4">
                   {projects[currentSlide].title}
                 </h3>
-                <p className="text-lg md:text-xl mb-8 text-white/95">
+                <p className="text-lg md:text-xl mb-8 text-white/95 line-clamp-3">
                   {projects[currentSlide].description}
                 </p>
-                <button className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
-                  Learn More
+                <button 
+                  onClick={() => window.location.href = '/projects'}
+                  className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+                >
+                  View Projects
                 </button>
               </div>
             </motion.div>

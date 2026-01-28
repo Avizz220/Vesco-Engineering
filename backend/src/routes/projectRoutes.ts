@@ -145,7 +145,11 @@ router.post(
       }
 
       // Get the image URL from uploaded file
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null
+      // Cloudinary returns full URL in 'path', local storage uses 'filename'
+      let imageUrl = null
+      if (req.file) {
+        imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+      }
 
       const project = await prisma.project.create({
         data: {
@@ -217,7 +221,11 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     }
 
     // Get the image URL from uploaded file (if provided)
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined
+    // Cloudinary returns full URL in 'path', local storage uses 'filename'
+    let imageUrl = undefined
+    if (req.file) {
+      imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+    }
 
     const project = await prisma.project.update({
       where: { id },

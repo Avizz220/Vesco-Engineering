@@ -80,7 +80,10 @@ export default function ProjectsPage() {
           title: project.title,
           description: project.description,
           technologies: Array.isArray(project.technologies) ? project.technologies : [],
-          imageUrl: project.imageUrl ? `${IMAGE_URL_PREFIX}${project.imageUrl}` : '/api/placeholder/400/300',
+          // Handle both Cloudinary URLs (full path) and local uploads (relative path)
+          imageUrl: project.imageUrl 
+            ? (project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`)
+            : '/api/placeholder/400/300',
           category: project.category,
           contributors: Array.isArray(project.contributors) ? project.contributors : [],
           liveUrl: project.liveUrl,

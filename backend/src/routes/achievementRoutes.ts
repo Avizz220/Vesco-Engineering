@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
-import { upload } from '../middleware/upload'
+import { upload, getImageUrl } from '../middleware/upload'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -122,20 +122,7 @@ router.post(
       } = req.body
 
       // Handle Cloudinary URL or local path
-      let imageUrl = null
-      if (req.file) {
-        if ((req.file as any).path && typeof (req.file as any).path === 'string') {
-          const cloudinaryPath = (req.file as any).path
-          if (cloudinaryPath.startsWith('http')) {
-            imageUrl = cloudinaryPath
-          } else {
-            const cloudName = process.env.CLOUDINARY_CLOUD_NAME
-            imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
-          }
-        } else {
-          imageUrl = `/uploads/${req.file.filename}`
-        }
-      }
+      const imageUrl = getImageUrl(req.file)
 
       const achievement = await prisma.achievement.create({
         data: {
@@ -183,20 +170,7 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     } = req.body
 
     // Handle Cloudinary URL or local path
-    let imageUrl = undefined
-    if (req.file) {
-      if ((req.file as any).path && typeof (req.file as any).path === 'string') {
-        const cloudinaryPath = (req.file as any).path
-        if (cloudinaryPath.startsWith('http')) {
-          imageUrl = cloudinaryPath
-        } else {
-          const cloudName = process.env.CLOUDINARY_CLOUD_NAME
-          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
-        }
-      } else {
-        imageUrl = `/uploads/${req.file.filename}`
-      }
-    }
+    const imageUrl = req.file ? getImageUrl(req.file) : undefined
 
     const achievement = await prisma.achievement.update({
       where: { id },

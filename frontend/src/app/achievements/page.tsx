@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
@@ -33,7 +33,8 @@ export default function AchievementsPage() {
   const [dialogMessage, setDialogMessage] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'update', index?: number } | null>(null)
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set())
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null)
+  const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false)
   const MAX_DESCRIPTION_LENGTH = 100
   
   const [newAchievement, setNewAchievement] = useState({
@@ -359,25 +360,18 @@ export default function AchievementsPage() {
                   </div>
 
                   <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                    {expandedDescriptions.has(achievement.id) || achievement.description.length <= MAX_DESCRIPTION_LENGTH
+                    {achievement.description.length <= MAX_DESCRIPTION_LENGTH
                       ? achievement.description
                       : `${achievement.description.substring(0, MAX_DESCRIPTION_LENGTH)}...`}
                     {achievement.description.length > MAX_DESCRIPTION_LENGTH && (
                       <button
                         onClick={() => {
-                          setExpandedDescriptions(prev => {
-                            const newSet = new Set(prev)
-                            if (newSet.has(achievement.id)) {
-                              newSet.delete(achievement.id)
-                            } else {
-                              newSet.add(achievement.id)
-                            }
-                            return newSet
-                          })
+                          setSelectedAchievement(achievement)
+                          setIsDetailsPanelOpen(true)
                         }}
                         className="ml-2 text-sky-600 hover:text-sky-700 font-semibold text-xs"
                       >
-                        {expandedDescriptions.has(achievement.id) ? 'See Less' : 'See More'}
+                        See More
                       </button>
                     )}
                   </p>
@@ -754,6 +748,118 @@ export default function AchievementsPage() {
           </div>
         </div>
       )}
+
+      {/* Achievement Details Side Panel */}
+      <AnimatePresence>
+        {isDetailsPanelOpen && selectedAchievement && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsDetailsPanelOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+          />
+
+          {/* Slide-in Panel from Right */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed right-0 top-0 bottom-0 w-full md:w-3/4 lg:w-2/3 xl:w-1/2 bg-white shadow-2xl z-50 overflow-y-auto"
+          >
+            <div className="relative">
+              {/* Close Button */}
+              <button
+                onClick={() => setIsDetailsPanelOpen(false)}
+                className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-sm p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+                title="Close"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Achievement Image */}
+              <div className="relative w-full h-64 md:h-80 lg:h-96 bg-slate-100">
+                {selectedAchievement.imageUrl ? (
+                  <Image
+                    src={selectedAchievement.imageUrl.startsWith('http') ? selectedAchievement.imageUrl : `${IMAGE_URL_PREFIX}${selectedAchievement.imageUrl}`}
+                    alt={selectedAchievement.title}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                    <svg className="w-32 h-32 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="p-6 md:p-8">
+                {/* Competition & Position Badge */}
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs uppercase tracking-[0.25em] text-sky-700 font-semibold">
+                    {selectedAchievement.competition}
+                  </p>
+                  <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-4 py-1.5 text-sm font-bold border-2 border-emerald-200">
+                    {selectedAchievement.position}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+                  {selectedAchievement.title}
+                </h2>
+
+                {/* Date & LinkedIn */}
+                <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-200">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      {new Date(selectedAchievement.date).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </span>
+                  </div>
+                  
+                  {selectedAchievement.linkedinUrl && (
+                    <a 
+                      href={selectedAchievement.linkedinUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sky-600 hover:text-sky-700 transition-colors font-medium text-sm"
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#0077B5">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      </svg>
+                      View on LinkedIn
+                    </a>
+                  )}
+                </div>
+
+                {/* Full Description */}
+                <div className="prose max-w-none">
+                  <h3 className="text-xl font-semibold text-slate-900 mb-3">About This Achievement</h3>
+                  <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                    {selectedAchievement.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

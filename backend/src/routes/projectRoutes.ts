@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
-import { upload, getImageUrl, normalizeImageUrl } from '../middleware/upload'
+import { upload } from '../middleware/upload'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -41,15 +41,10 @@ router.get('/', async (req: Request, res: Response) => {
       ]
     })
 
-    const normalizedProjects = projects.map((p) => ({
-      ...p,
-      imageUrl: normalizeImageUrl(p.imageUrl),
-    }))
-
     res.json({
       success: true,
       count: projects.length,
-      projects: normalizedProjects
+      projects
     })
   } catch (error: any) {
     console.error('❌ Get projects error:', error)
@@ -81,10 +76,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      project: {
-        ...project,
-        imageUrl: normalizeImageUrl(project.imageUrl),
-      }
+      project
     })
   } catch (error: any) {
     console.error('❌ Get project error:', error)
@@ -154,7 +146,10 @@ router.post(
 
       // Get the image URL from uploaded file
       // Cloudinary returns full URL in 'path', local storage uses 'filename'
-      const imageUrl = getImageUrl(req.file)
+      let imageUrl = null
+      if (req.file) {
+        imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+      }
 
       const project = await prisma.project.create({
         data: {
@@ -226,7 +221,25 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     }
 
     // Get the image URL from uploaded file (if provided)
-    const imageUrl = req.file ? getImageUrl(req.file) : undefined
+    // Cloudinary returns full URL in 'path', local storage uses 'filename'
+    let imageUrl = undefined
+    if (req.file) {
+      // Check if it's a Cloudinary upload
+      if ((req.file as any).path && typeof (req.file as any).path === 'string') {
+        const cloudinaryPath = (req.file as any).path
+        // If it's already a full URL, use it; otherwise construct Cloudinary URL
+        if (cloudinaryPath.startsWith('http')) {
+          imageUrl = cloudinaryPath
+        } else {
+          // Construct full Cloudinary URL from path
+          const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
+        }
+      } else {
+        // Local storage - use filename
+        imageUrl = `/uploads/${req.file.filename}`
+      }
+    }
 
     const project = await prisma.project.update({
       where: { id },

@@ -36,15 +36,32 @@ const FeaturedProjects = () => {
         const data = await response.json()
 
         if (data.success) {
-          // Filter featured projects or take first 3-5 projects
-          const featuredProjects = data.projects
-            .filter((p: any) => p.featured)
-            .slice(0, 5)
+          // Transform projects to handle image URLs properly
+          const transformedProjects = data.projects.map((p: any) => {
+            let imageUrl = null
+            if (p.imageUrl) {
+              // If it's a full URL (Cloudinary), use as-is
+              if (p.imageUrl.startsWith('http')) {
+                imageUrl = p.imageUrl
+              } else {
+                // Relative path, prepend backend URL
+                imageUrl = IMAGE_URL_PREFIX ? `${IMAGE_URL_PREFIX}${p.imageUrl}` : p.imageUrl
+              }
+            }
+            
+            return {
+              id: p.id,
+              title: p.title,
+              description: p.description,
+              category: p.category,
+              imageUrl,
+              featured: p.featured
+            }
+          })
           
-          // If no featured projects, take first 3 projects
-          const projectsToDisplay = featuredProjects.length > 0 
-            ? featuredProjects 
-            : data.projects.slice(0, 3)
+          // Show all projects with images (or first 5 if too many)
+          const projectsWithImages = transformedProjects.filter((p: Project) => p.imageUrl)
+          const projectsToDisplay = projectsWithImages.slice(0, 5)
           
           setProjects(projectsToDisplay)
         }
@@ -96,27 +113,66 @@ const FeaturedProjects = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.5 }}
-              className={`absolute inset-0 bg-gradient-to-r ${gradients[currentSlide % gradients.length]} rounded-2xl p-8 md:p-12 flex items-center shadow-2xl`}
+              className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
             >
-              <div className="max-w-2xl text-white">
-                <div className="inline-block bg-white/30 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-4 font-semibold">
-                  {projects[currentSlide].category}
+              {/* Background Image with Overlay */}
+              {projects[currentSlide].imageUrl && (
+                <div className="absolute inset-0">
+                  <img
+                    src={projects[currentSlide].imageUrl}
+                    alt={projects[currentSlide].title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-r ${gradients[currentSlide % gradients.length]} opacity-90`}></div>
                 </div>
-                <h3 className="text-3xl md:text-5xl font-bold mb-4">
-                  {projects[currentSlide].title}
-                </h3>
-                <p className="text-lg md:text-xl mb-8 text-white/95 line-clamp-3">
-                  {projects[currentSlide].description}
-                </p>
-                <button 
-                  onClick={() => window.location.href = '/projects'}
-                  className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
-                >
-                  View Projects
-                </button>
+              )}
+              {/* Fallback gradient if no image */}
+              {!projects[currentSlide].imageUrl && (
+                <div className={`absolute inset-0 bg-gradient-to-r ${gradients[currentSlide % gradients.length]}`}></div>
+              )}
+              
+              {/* Content */}
+              <div className="relative h-full flex items-center p-8 md:p-12">
+                <div className="max-w-2xl text-white">
+                  <div className="inline-block bg-white/30 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-4 font-semibold">
+                    {projects[currentSlide].category}
+                  </div>
+                  <h3 className="text-3xl md:text-5xl font-bold mb-4">
+                    {projects[currentSlide].title}
+                  </h3>
+                  <p className="text-lg md:text-xl mb-8 text-white/95 line-clamp-3">
+                    {projects[currentSlide].description}
+                  </p>
+                  <button 
+                    onClick={() => window.location.href = '/projects'}
+                    className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+                  >
+                    View Projects
+                  </button>
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
+
+          {/* Navigation Arrows */}
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev - 1 + projects.length) % projects.length)}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all z-10"
+            aria-label="Previous slide"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setCurrentSlide((prev) => (prev + 1) % projects.length)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all z-10"
+            aria-label="Next slide"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
           {/* Navigation Dots */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3">

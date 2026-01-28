@@ -149,6 +149,11 @@ router.post(
       let imageUrl = null
       if (req.file) {
         imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+        console.log('📸 Image upload details:', {
+          hasPath: !!(req.file as any).path,
+          hasFilename: !!req.file.filename,
+          finalUrl: imageUrl
+        })
       }
 
       const project = await prisma.project.create({

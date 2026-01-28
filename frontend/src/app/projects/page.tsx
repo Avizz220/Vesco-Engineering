@@ -75,22 +75,36 @@ export default function ProjectsPage() {
       const data = await response.json()
 
       if (data.success) {
-        const transformedProjects = data.projects.map((project: any) => ({
-          id: project.id,
-          title: project.title,
-          description: project.description,
-          technologies: Array.isArray(project.technologies) ? project.technologies : [],
-          // Handle both Cloudinary URLs (full path) and local uploads (relative path)
-          imageUrl: project.imageUrl 
-            ? (project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`)
-            : '/api/placeholder/400/300',
-          category: project.category,
-          contributors: Array.isArray(project.contributors) ? project.contributors : [],
-          liveUrl: project.liveUrl,
-          githubUrl: project.githubUrl,
-          createdAt: project.createdAt,
-          updatedAt: project.updatedAt,
-        }))
+        const transformedProjects = data.projects.map((project: any) => {
+          // Handle image URL properly
+          let imageUrl = '/api/placeholder/400/300'
+          if (project.imageUrl) {
+            if (project.imageUrl.startsWith('http')) {
+              // Full URL (Cloudinary or external)
+              imageUrl = project.imageUrl
+            } else if (project.imageUrl.startsWith('/')) {
+              // Relative path (/uploads/...)
+              imageUrl = IMAGE_URL_PREFIX ? `${IMAGE_URL_PREFIX}${project.imageUrl}` : project.imageUrl
+            } else {
+              // Filename only - shouldn't happen but handle it
+              imageUrl = IMAGE_URL_PREFIX ? `${IMAGE_URL_PREFIX}/uploads/${project.imageUrl}` : `/uploads/${project.imageUrl}`
+            }
+          }
+          
+          return {
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            technologies: Array.isArray(project.technologies) ? project.technologies : [],
+            imageUrl,
+            category: project.category,
+            contributors: Array.isArray(project.contributors) ? project.contributors : [],
+            liveUrl: project.liveUrl,
+            githubUrl: project.githubUrl,
+            createdAt: project.createdAt,
+            updatedAt: project.updatedAt,
+          }
+        })
         setProjectsList(transformedProjects)
       }
     } catch (error) {

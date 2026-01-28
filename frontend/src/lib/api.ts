@@ -4,7 +4,10 @@ import axios from 'axios'
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 
   (process.env.NODE_ENV === 'production' ? '/api/proxy' : 'http://localhost:5000/api')
 
-export const IMAGE_URL_PREFIX = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000'
+// In production, use the backend URL for images, or empty if using Cloudinary
+export const IMAGE_URL_PREFIX = process.env.NODE_ENV === 'production' 
+  ? (process.env.NEXT_PUBLIC_BACKEND_URL || '') 
+  : 'http://localhost:5000'
 
 const apiClient = axios.create({
   baseURL: API_URL,

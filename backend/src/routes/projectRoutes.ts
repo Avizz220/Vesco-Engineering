@@ -224,7 +224,21 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     // Cloudinary returns full URL in 'path', local storage uses 'filename'
     let imageUrl = undefined
     if (req.file) {
-      imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+      // Check if it's a Cloudinary upload
+      if ((req.file as any).path && typeof (req.file as any).path === 'string') {
+        const cloudinaryPath = (req.file as any).path
+        // If it's already a full URL, use it; otherwise construct Cloudinary URL
+        if (cloudinaryPath.startsWith('http')) {
+          imageUrl = cloudinaryPath
+        } else {
+          // Construct full Cloudinary URL from path
+          const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
+        }
+      } else {
+        // Local storage - use filename
+        imageUrl = `/uploads/${req.file.filename}`
+      }
     }
 
     const project = await prisma.project.update({

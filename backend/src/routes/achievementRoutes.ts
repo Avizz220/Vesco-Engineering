@@ -123,7 +123,17 @@ router.post(
       // Handle Cloudinary URL or local path
       let imageUrl = null
       if (req.file) {
-        imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+        if ((req.file as any).path && typeof (req.file as any).path === 'string') {
+          const cloudinaryPath = (req.file as any).path
+          if (cloudinaryPath.startsWith('http')) {
+            imageUrl = cloudinaryPath
+          } else {
+            const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+            imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
+          }
+        } else {
+          imageUrl = `/uploads/${req.file.filename}`
+        }
       }
 
       const achievement = await prisma.achievement.create({
@@ -172,7 +182,17 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     // Handle Cloudinary URL or local path
     let imageUrl = undefined
     if (req.file) {
-      imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`
+      if ((req.file as any).path && typeof (req.file as any).path === 'string') {
+        const cloudinaryPath = (req.file as any).path
+        if (cloudinaryPath.startsWith('http')) {
+          imageUrl = cloudinaryPath
+        } else {
+          const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
+        }
+      } else {
+        imageUrl = `/uploads/${req.file.filename}`
+      }
     }
 
     const achievement = await prisma.achievement.update({

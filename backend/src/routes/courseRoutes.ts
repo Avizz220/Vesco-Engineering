@@ -80,7 +80,17 @@ router.post(
       // Handle Cloudinary URL or local path
       let imageUrl = null;
       if (req.file) {
-        imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`;
+        if ((req.file as any).path && typeof (req.file as any).path === 'string') {
+          const cloudinaryPath = (req.file as any).path;
+          if (cloudinaryPath.startsWith('http')) {
+            imageUrl = cloudinaryPath;
+          } else {
+            const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+            imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`;
+          }
+        } else {
+          imageUrl = `/uploads/${req.file.filename}`;
+        }
       }
 
       const course = await prisma.course.create({
@@ -155,7 +165,17 @@ router.put(
       // Only update imageUrl if a new file is uploaded
       // Handle Cloudinary URL or local path
       if (req.file) {
-        updateData.imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`;
+        if ((req.file as any).path && typeof (req.file as any).path === 'string') {
+          const cloudinaryPath = (req.file as any).path;
+          if (cloudinaryPath.startsWith('http')) {
+            updateData.imageUrl = cloudinaryPath;
+          } else {
+            const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+            updateData.imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`;
+          }
+        } else {
+          updateData.imageUrl = `/uploads/${req.file.filename}`;
+        }
       }
 
       const course = await prisma.course.update({

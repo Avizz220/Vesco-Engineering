@@ -27,7 +27,9 @@ const getStorage = () => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
           return file.fieldname + '-' + uniqueSuffix
         },
-      } as any, // Type assertion needed for some multer-storage-cloudinary versions
+        // Ensure transformation returns the URL properly
+        transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+      } as any,
     })
   }
 

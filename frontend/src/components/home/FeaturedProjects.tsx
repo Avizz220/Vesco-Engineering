@@ -32,8 +32,11 @@ const FeaturedProjects = () => {
   useEffect(() => {
     const fetchFeaturedProjects = async () => {
       try {
+        console.log('🔍 Fetching projects from:', `${API_URL}/projects`)
         const response = await fetch(`${API_URL}/projects`)
         const data = await response.json()
+
+        console.log('📊 API Response:', data)
 
         if (data.success) {
           // Transform projects to handle image URLs properly
@@ -59,14 +62,16 @@ const FeaturedProjects = () => {
             }
           })
           
-          // Show all projects with images (or first 5 if too many)
-          const projectsWithImages = transformedProjects.filter((p: Project) => p.imageUrl)
-          const projectsToDisplay = projectsWithImages.slice(0, 5)
+          console.log('🎨 Transformed projects:', transformedProjects)
           
+          // Show ALL projects (not filtered by image) - display up to 10
+          const projectsToDisplay = transformedProjects.slice(0, 10)
+          
+          console.log('✅ Projects to display:', projectsToDisplay.length)
           setProjects(projectsToDisplay)
         }
       } catch (error) {
-        console.error('Error fetching featured projects:', error)
+        console.error('❌ Error fetching featured projects:', error)
       } finally {
         setIsLoading(false)
       }
@@ -75,8 +80,20 @@ const FeaturedProjects = () => {
     fetchFeaturedProjects()
   }, [])
 
-  // If no projects loaded, don't render the section
-  if (isLoading || projects.length === 0) {
+  // Show loading state or render empty div during loading
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gray-100">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-gray-500">Loading projects...</p>
+        </div>
+      </section>
+    )
+  }
+
+  // Don't render if no projects
+  if (projects.length === 0) {
+    console.log('⚠️ No projects to display in FeaturedProjects')
     return null
   }
 

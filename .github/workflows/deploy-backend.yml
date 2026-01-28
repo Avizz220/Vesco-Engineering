@@ -84,37 +84,63 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
+
             # Create app directory if not exists
             mkdir -p app
             cd app
 
+            echo "Disk before cleanup:";
+            df -h || true
+
+            # If disk is tight, clean up Docker artifacts (keep named volumes like db_data)
+            docker compose -f docker-compose.prod.yml down || true
+            docker container prune -f || true
+            docker image prune -af || true
+            docker builder prune -af || true
+
+            echo "Disk after Docker cleanup:";
+            df -h || true
+
             # Configure 2GB Swap Space to prevent OOM
             # First turn off any existing swap to resize
-            sudo swapoff -a || true
-            sudo rm -f /swapfile
-            
-            # Create new larger swap
-            sudo fallocate -l 2G /swapfile
-            sudo chmod 600 /swapfile
-            sudo mkswap /swapfile
-            sudo swapon /swapfile
-            
-            # Ensure fstab is correct (remove old entries first to prevent dupes)
-            sudo sed -i '/swapfile/d' /etc/fstab
-            echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+            # Only attempt swap setup if there's enough free disk and swap isn't already enabled.
+            if ! swapon --show | grep -q '^/swapfile'; then
+              avail_mb=$(df -Pm / | tail -1 | awk '{print $4}')
+              if [ "$avail_mb" -ge 2500 ]; then
+                sudo swapoff -a || true
+                sudo rm -f /swapfile
+
+                sudo fallocate -l 2G /swapfile
+                sudo chmod 600 /swapfile
+                sudo mkswap /swapfile
+                sudo swapon /swapfile
+
+                sudo sed -i '/swapfile/d' /etc/fstab
+                echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+              else
+                echo "Skipping swap creation (only ${avail_mb}MB free on /)"
+              fi
+            fi
 
             # Create .env file from GitHub Secrets
-            echo "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@db:5432/vesco_db" > .env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env
-            echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env
-            echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env
-            echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> .env
-            echo "NODE_ENV=production" >> .env
-            echo "PORT=5000" >> .env
-            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+            if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then echo "Missing DOCKER_HUB_USERNAME secret"; exit 1; fi
+            if [ -z "${{ secrets.DB_PASSWORD }}" ]; then echo "Missing DB_PASSWORD secret"; exit 1; fi
+            if [ -z "${{ secrets.JWT_SECRET }}" ]; then echo "Missing JWT_SECRET secret"; exit 1; fi
+
+            cat > .env <<EOF
+            DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@db:5432/vesco_db
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+            CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+            CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+            CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
+            NODE_ENV=production
+            PORT=5000
+            DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            EOF
 
             # Pull latest images
             docker compose -f docker-compose.prod.yml pull

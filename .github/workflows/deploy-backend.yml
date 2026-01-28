@@ -127,6 +127,7 @@ jobs:
             if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then echo "Missing DOCKER_HUB_USERNAME secret"; exit 1; fi
             if [ -z "${{ secrets.DB_PASSWORD }}" ]; then echo "Missing DB_PASSWORD secret"; exit 1; fi
             if [ -z "${{ secrets.JWT_SECRET }}" ]; then echo "Missing JWT_SECRET secret"; exit 1; fi
+            if [ -z "${{ secrets.GOOGLE_CLIENT_ID }}" ]; then echo "Missing GOOGLE_CLIENT_ID secret"; exit 1; fi
 
             cat > .env <<EOF
             DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@db:5432/vesco_db
@@ -141,6 +142,10 @@ jobs:
             DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             EOF
+
+            # Confirm Google client id is present (print length only)
+            echo "GOOGLE_CLIENT_ID length in .env:";
+            awk -F= '/^GOOGLE_CLIENT_ID=/{print length($2)}' .env || true
 
             # Pull latest images
             docker compose -f docker-compose.prod.yml pull

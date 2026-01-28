@@ -147,6 +147,8 @@ jobs:
 
             # Run migrations using the backend service definition
             # This ensures 'db' is healthy before running because of 'depends_on'
+            # If a legacy migration previously failed, resolve it so deploy can continue.
+            docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate resolve --rolled-back 20260124130807_add_auth_fields || true
             docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate deploy
 
             # Start the application

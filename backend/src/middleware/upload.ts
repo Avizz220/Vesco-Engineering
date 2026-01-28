@@ -70,7 +70,7 @@ export const upload = multer({
 })
 
 // Helper function to get proper image URL from uploaded file
-export const getImageUrl = (file: Express.Multer.File): string | null => {
+export const getImageUrl = (file: Express.Multer.File | undefined): string | null => {
   if (!file) return null
 
   // Check if it's a Cloudinary upload

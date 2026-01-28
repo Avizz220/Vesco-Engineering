@@ -41,7 +41,24 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
             mkdir -p app
+
+      - name: Remote diagnostics (before SCP)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            echo "whoami=$(whoami)"
+            echo "pwd=$(pwd)"
+            echo "HOME=$HOME"
+            ls -ld app || true
+            df -h || true
+            command -v tar || true
+            command -v gzip || true
 
       - name: Copy Compose and Caddy Files to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -62,8 +79,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Create app directory if not exists
-            mkdir -p ~/app
-            cd ~/app
+            mkdir -p app
+            cd app
 
             # Configure 2GB Swap Space to prevent OOM
             # First turn off any existing swap to resize

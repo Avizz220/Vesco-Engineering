@@ -230,25 +230,25 @@ export default function CoursesPage() {
 
   return (
     <>
-      <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-white via-slate-50 to-white text-slate-900">
-        <div className="container mx-auto px-6 lg:px-12 xl:px-16">
+      <div className="min-h-screen pt-24 sm:pt-26 md:pt-28 pb-12 sm:pb-14 md:pb-16 bg-gradient-to-b from-white via-slate-50 to-white text-slate-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-10"
+            className="mb-8 sm:mb-10"
           >
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex-1"></div>
+            <div className="flex flex-col md:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
+              <div className="flex-1 hidden md:block"></div>
               <div className="flex-1 text-center">
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-3">Professional Training</p>
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">Our Courses</h1>
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-2 sm:mb-3">Professional Training</p>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 text-slate-900">Our Courses</h1>
               </div>
-              <div className="flex-1 flex justify-end">
+              <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">
                 {user?.isAdmin && (
                   <button
                     onClick={() => setShowAddCourseModal(true)}
-                    className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                    className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                       <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -259,7 +259,7 @@ export default function CoursesPage() {
                 )}
               </div>
             </div>
-            <p className="text-slate-600 max-w-3xl mx-auto text-lg text-center">
+            <p className="text-slate-600 max-w-3xl mx-auto text-base sm:text-lg text-center px-2">
               Expert-led courses designed by industry professionals. Learn cutting-edge skills with hands-on projects and real-world applications.
             </p>
           </motion.div>
@@ -268,7 +268,7 @@ export default function CoursesPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6"
           >
             {loading ? (
               <div className="col-span-full text-center py-12">

@@ -41,34 +41,34 @@ const Stats = () => {
   }, [inView, services.length])
 
   return (
-    <section id="services" ref={ref} className="py-20 bg-white">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <section id="services" ref={ref} className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
           {/* Left side - Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
-            <h2 className="text-4xl lg:text-5xl font-bold text-blue-700 leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-700 leading-tight">
               Expertise Across Engineering Service Disciplines
             </h2>
             
-            <p className="text-gray-700 text-lg leading-relaxed">
+            <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
               <span className="text-blue-700 font-semibold">VES</span><span className="text-orange-500 font-semibold text-base">CO</span> provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
             </p>
 
-            <div className="pt-4">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Engineering Services Include:</h3>
-              <ul className="space-y-3">
+            <div className="pt-2 sm:pt-4">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">Our Engineering Services Include:</h3>
+              <ul className="space-y-2 sm:space-y-3">
                 {services.map((service, index) => (
                   <motion.li
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={inView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
-                    className={`flex items-center text-lg transition-all duration-500 ${
+                    className={`flex items-center text-base sm:text-lg transition-all duration-500 ${
                       activeIndex === index 
                         ? 'text-blue-600 font-bold translate-x-2 scale-105' 
                         : 'text-gray-700 font-normal'
@@ -88,23 +88,23 @@ const Stats = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.9 }}
-              className="flex items-center gap-3 pt-4"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 sm:pt-4"
             >
               <button
                 onClick={() => handleServiceClick('Prime Tronics')}
-                className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md"
+                className="bg-blue-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md w-full sm:w-auto"
               >
                 Prime Tronics
               </button>
               <button
                 onClick={() => handleServiceClick('Elechub')}
-                className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md"
+                className="bg-blue-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md w-full sm:w-auto"
               >
                 Elechub
               </button>
             </motion.div>
 
-            <p className="text-gray-700 pt-4 leading-relaxed">
+            <p className="text-gray-700 text-sm sm:text-base pt-2 sm:pt-4 leading-relaxed">
               Each service is delivered with <span className="font-semibold">industry experience, technical competence, and innovative solutions</span>.
             </p>
           </motion.div>
@@ -114,7 +114,7 @@ const Stats = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="relative w-full h-[350px] lg:h-[420px] rounded-2xl overflow-hidden shadow-2xl"
+            className="relative w-full h-[280px] sm:h-[320px] md:h-[350px] lg:h-[420px] rounded-2xl overflow-hidden shadow-2xl"
           >
             <AnimatePresence mode="wait">
               <motion.div

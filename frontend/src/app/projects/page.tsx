@@ -360,25 +360,25 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-28 pb-16">
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16">
+    <div className="min-h-screen bg-gray-50 pt-24 sm:pt-26 md:pt-28 pb-12 sm:pb-14 md:pb-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex-1"></div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 flex-1">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
+            <div className="flex-1 hidden md:block"></div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-4 md:flex-1">
               Our Projects
             </h1>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">
               {user?.isAdmin && (
                 <button
                   onClick={() => setShowAddProjectModal(true)}
-                  className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                  className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -389,7 +389,7 @@ export default function ProjectsPage() {
               )}
             </div>
           </div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
             Explore our innovative engineering projects and technological solutions
           </p>
         </motion.div>
@@ -399,7 +399,7 @@ export default function ProjectsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-3 mb-12"
+          className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-10 md:mb-12 px-2"
         >
           {categories.map(category => (
             <button
@@ -408,7 +408,7 @@ export default function ProjectsPage() {
                 setSelectedCategory(category)
                 setCurrentPage(1)
               }}
-              className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 ${
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium text-sm sm:text-base transition-all duration-300 ${
                 selectedCategory === category
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-600'
@@ -426,7 +426,7 @@ export default function ProjectsPage() {
             <p className="mt-4 text-gray-600">Loading projects...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
             {displayedProjects.map((project, index) => (
               <ProjectCard 
                 key={project.id} 

@@ -375,38 +375,6 @@ router.post('/google', async (req: Request, res: Response) => {
     });
   }
 })
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
-
-    // Set cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
-
-    return res.status(200).json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.fullName,
-        email: user.email,
-        image: user.image,
-        role: user.role,
-      },
-    })
-  } catch (error: any) {
-    console.error('Google sign in error:', error)
-    return res.status(500).json({
-      success: false,
-      message: 'Server error during Google sign in',
-      details: error?.message,
-    })
-  }
-})
 
 // @route   GET /api/auth/me
 // @desc    Get current user

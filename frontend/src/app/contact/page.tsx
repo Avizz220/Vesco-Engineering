@@ -66,7 +66,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Engineering Background */}
-      <div className="relative bg-blue-600 text-white py-32 overflow-hidden">
+      <div className="relative bg-blue-600 text-white py-20 sm:py-24 md:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: 'url(/Engineering.json)',
@@ -75,15 +75,15 @@ export default function ContactPage() {
           }} />
         </div>
         
-        <div className="container mx-auto px-6 relative z-10 pt-20">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10 pt-12 sm:pt-16 md:pt-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="max-w-3xl"
           >
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg">Get in touch</h1>
-            <p className="text-2xl text-white opacity-90 mb-8 drop-shadow-md">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-white drop-shadow-lg">Get in touch</h1>
+            <p className="text-lg sm:text-xl md:text-2xl text-white opacity-90 mb-6 sm:mb-8 drop-shadow-md">
               We're ready to lead you into the future of engineering excellence.
             </p>
           </motion.div>
@@ -97,8 +97,8 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16 py-16 -mt-10 relative z-20">
-        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-12 md:py-16 -mt-8 sm:-mt-10 relative z-20">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
           {/* Contact Form - Takes 2 columns */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -106,16 +106,16 @@ export default function ContactPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
-              <div className="flex items-center gap-4 mb-2">
+            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-10">
+              <div className="flex items-center gap-3 sm:gap-4 mb-2">
                 {mailAnimation && (
-                  <div className="w-16 h-16">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16">
                     <Lottie animationData={mailAnimation} loop={true} />
                   </div>
                 )}
-                <h2 className="text-2xl font-bold text-gray-900">Contact Form</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Contact Form</h2>
               </div>
-              <p className="text-gray-600 mb-8">We'd love to hear from you.</p>
+              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">We'd love to hear from you.</p>
 
               <form action="https://formsubmit.co/ahirushan629@gmail.com" method="POST" className="space-y-6">
                 {/* Hidden inputs for FormSubmit configuration */}

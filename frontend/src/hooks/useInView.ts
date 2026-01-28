@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 
-export function useInView(options?: IntersectionObserverInit) {
+interface UseInViewOptions extends IntersectionObserverInit {
+  triggerOnce?: boolean
+}
+
+export function useInView(options?: UseInViewOptions) {
   const [ref, setRef] = useState<HTMLElement | null>(null)
   const [inView, setInView] = useState(false)
 

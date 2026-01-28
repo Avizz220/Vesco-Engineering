@@ -229,21 +229,21 @@ export default function TeamPage() {
 
   return (
     <>
-      <div className="min-h-screen pt-24 pb-16 bg-white">
-        <div className="container mx-auto px-6">
+      <div className="min-h-screen pt-24 sm:pt-26 md:pt-28 pb-12 sm:pb-14 md:pb-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-12 md:mb-16"
           >
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex-1"></div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-4 flex-1">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
+              <div className="flex-1 hidden md:block"></div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-4 md:flex-1">
                 Meet Our Team
               </h1>
-              <div className="flex-1 flex justify-end">
+              <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">
                 {canCreateProfile && (
                   <button
                     onClick={() => {
@@ -252,7 +252,7 @@ export default function TeamPage() {
                       setFormData(prev => ({ ...prev, email: user?.email || '', name: user?.name || '' }))
                       setShowAddModal(true)
                     }}
-                    className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                    className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                       <line x1="12" y1="5" x2="12" y2="19" />
@@ -263,7 +263,7 @@ export default function TeamPage() {
                 )}
               </div>
             </div>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2">
               A talented group of professionals from diverse engineering disciplines dedicated to delivering excellence
               and innovation in everything we do
             </p>
@@ -283,24 +283,24 @@ export default function TeamPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="space-y-16"
+            className="space-y-12 sm:space-y-14 md:space-y-16"
           >
             {departments.map((department) => {
               const deptMembers = categorizedMembers[department]
               if (deptMembers.length === 0) return null
 
               return (
-                <div key={department} className={`rounded-lg p-8 border ${departmentColors[department]} shadow-sm`}>
+                <div key={department} className={`rounded-lg p-5 sm:p-6 md:p-8 border ${departmentColors[department]} shadow-sm`}>
                   {/* Department Header */}
-                  <div className="mb-10">
-                    <h2 className={`text-3xl font-bold ${departmentTitleColors[department]} mb-2`}>
+                  <div className="mb-6 sm:mb-8 md:mb-10">
+                    <h2 className={`text-2xl sm:text-3xl font-bold ${departmentTitleColors[department]} mb-2`}>
                       {department}
                     </h2>
-                    <div className={`w-24 h-1 rounded-full ${departmentAccentColors[department]}`}></div>
+                    <div className={`w-20 sm:w-24 h-1 rounded-full ${departmentAccentColors[department]}`}></div>
                   </div>
 
                   {/* Department Members Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
                     {deptMembers.map((member, index) => (
                       <TeamMemberCard
                         key={member.id}

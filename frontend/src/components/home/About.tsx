@@ -70,38 +70,38 @@ const About = () => {
   ]
 
   return (
-    <section ref={ref} className="py-20 bg-white">
-      <div className="container mx-auto px-6 lg:px-12 xl:px-16">
+    <section ref={ref} className="py-12 sm:py-16 md:py-20 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-10 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
             About VESCO
           </h2>
-          <div className="w-24 h-1 bg-orange-500 mx-auto mb-6"></div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <div className="w-20 sm:w-24 h-1 bg-orange-500 mx-auto mb-4 sm:mb-6"></div>
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
             VESCO (Visionary Engineers Shaping Creative Opportunities) is a student-led engineering team
             committed to excellence, innovation, and making a positive impact through technology.
           </p>
         </motion.div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-10 md:mb-12">
           {features.map((feature, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="text-center p-6 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-300 border border-gray-200"
+              className="text-center p-4 sm:p-6 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-300 border border-gray-200"
             >
               {feature.icon}
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
+              <p className="text-sm sm:text-base text-gray-600">{feature.description}</p>
             </motion.div>
           ))}
         </div>
@@ -111,11 +111,11 @@ const About = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-8 md:p-12 border border-gray-200"
+          className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-5 sm:p-8 md:p-12 border border-gray-200"
         >
           <div className="max-w-4xl mx-auto">
-            <h3 className="text-3xl font-bold text-gray-900 mb-6 text-center">Our Mission</h3>
-            <p className="text-lg text-gray-700 leading-relaxed text-center">
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">Our Mission</h3>
+            <p className="text-base sm:text-lg text-gray-700 leading-relaxed text-center">
               To empower students with practical engineering skills, foster innovation through collaborative
               projects, and contribute to society by developing technology-driven solutions. We believe in
               learning by doing, pushing boundaries, and inspiring the next generation of engineers.

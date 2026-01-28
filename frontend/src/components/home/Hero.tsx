@@ -23,11 +23,11 @@ const Hero = () => {
     // If authenticated, let the Link component handle navigation
   }
   return (
-    <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-32 pb-20 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-24 sm:pt-28 md:pt-32 lg:pt-32 pb-16 sm:pb-20 md:pb-24 lg:pb-12 overflow-hidden">
       {/* Animated Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-orange-500 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-40 h-40 sm:w-72 sm:h-72 bg-orange-500 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-48 h-48 sm:w-96 sm:h-96 bg-amber-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
       {/* Animated Floating Images - More Prominent */}
@@ -35,7 +35,7 @@ const Hero = () => {
       <motion.div
         initial={{ opacity: 0.5 }}
         animate={{ opacity: 0.5 }}
-        className="absolute top-20 right-8 w-80 h-80 hidden lg:block"
+        className="absolute top-12 right-4 w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 hidden md:block"
       >
         <motion.div
           animate={{ 
@@ -67,7 +67,7 @@ const Hero = () => {
       <motion.div
         initial={{ opacity: 0.5 }}
         animate={{ opacity: 0.5 }}
-        className="absolute bottom-20 left-8 w-72 h-72 hidden lg:block"
+        className="absolute bottom-12 left-4 w-40 h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 hidden md:block"
       >
         <motion.div
           animate={{ 
@@ -163,16 +163,16 @@ const Hero = () => {
         </motion.div>
       </motion.div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Main Heading with Animation */}
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6"
           >
-            Welcome to Team <span className="text-primary-600">VES</span><span className="text-4xl md:text-5xl lg:text-6xl text-orange-500">CO</span>
+            Welcome to Team <span className="text-primary-600">VES</span><span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-orange-500">CO</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -180,7 +180,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl md:text-2xl mb-8 text-orange-200"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 text-orange-200"
           >
             Visionary Engineers Shaping Creative Opportunities
           </motion.p>
@@ -190,7 +190,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-xl mb-12 text-gray-200 max-w-3xl mx-auto"
+            className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10 lg:mb-12 text-gray-200 max-w-3xl mx-auto px-2 sm:px-4"
           >
             We are a passionate team of innovators from our university, dedicated to solving real-world
             problems through cutting-edge technology, robotics, AI, and creative engineering solutions.
@@ -201,12 +201,12 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-2 sm:px-4 mb-16 lg:mb-20"
           >
             <Link
               href="/projects"
               onClick={(e) => handleProtectedNavigation(e, '/projects')}
-              className="group bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+              className="group bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               View Our Projects
               <svg
@@ -221,7 +221,7 @@ const Hero = () => {
             <Link
               href="/team"
               onClick={(e) => handleProtectedNavigation(e, '/team')}
-              className="bg-transparent border-2 border-blue-400 text-blue-400 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-transparent border-2 border-blue-400 text-blue-400 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto justify-center"
             >
               Meet the Team
             </Link>
@@ -242,7 +242,8 @@ const Hero = () => {
       {/* Sign In Modal */}
       <SignInModal 
         isOpen={showSignInModal} 
-        onClose={() => setShowSignInModal(false)} 
+        onClose={() => setShowSignInModal(false)}
+        onSwitchToSignUp={() => {}}
       />
     </section>
   )

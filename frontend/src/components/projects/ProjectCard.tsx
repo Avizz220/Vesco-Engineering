@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Project } from '@/types'
+import { useState } from 'react'
 
 interface ProjectCardProps {
   project: Project
@@ -17,6 +18,7 @@ interface ProjectCardProps {
 
 const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdminControls, adminUsers = [] }: ProjectCardProps) => {
   const MAX_DESCRIPTION_LENGTH = 150
+  const [imageError, setImageError] = useState(false)
 
   const getContributorNames = (contributors: string[]) => {
     if (contributors[0] === 'all') {
@@ -87,13 +89,26 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
             controls
             preload="metadata"
           />
-        ) : project.imageUrl ? (
+        ) : project.imageUrl && !imageError ? (
           <Image
             src={project.imageUrl}
             alt={project.title}
             fill
             className="object-cover hover:scale-110 transition-transform duration-500"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => setImageError(true)}
+            unoptimized={project.imageUrl.includes('/uploads/')}
+          />
+        ) : project.imageUrl && imageError ? (
+          // Fallback to regular img tag if Next.js Image fails
+          <img
+            src={project.imageUrl}
+            alt={project.title}
+            className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+            onError={(e) => {
+              // If even the regular img fails, hide it
+              e.currentTarget.style.display = 'none'
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">

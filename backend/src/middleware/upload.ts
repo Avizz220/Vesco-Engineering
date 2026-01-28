@@ -68,3 +68,29 @@ export const upload = multer({
     fileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880'), // 5MB default
   },
 })
+
+// Helper to get full image URL
+export const getImageUrl = (file: Express.Multer.File | undefined): string | null => {
+  if (!file) return null
+
+  // Check if using Cloudinary
+  if (process.env.CLOUDINARY_CLOUD_NAME && (file as any).path) {
+    const cloudinaryPath = (file as any).path
+    
+    // If it's already a full URL, return it
+    if (cloudinaryPath.startsWith('http')) {
+      return cloudinaryPath
+    }
+    
+    // Otherwise construct the full Cloudinary URL
+    // Format: https://res.cloudinary.com/CLOUD_NAME/image/upload/v1234567890/folder/filename.ext
+    return cloudinary.url(cloudinaryPath, {
+      secure: true,
+      quality: 'auto',
+      fetch_format: 'auto'
+    })
+  }
+
+  // Local storage - return relative path
+  return `/uploads/${file.filename}`
+}

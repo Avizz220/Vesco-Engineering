@@ -34,6 +34,15 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/vesco-backend:latest
           cache-to: type=inline
 
+      - name: Ensure remote app directory exists
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            mkdir -p ~/app
+
       - name: Copy Compose and Caddy Files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -41,7 +50,8 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.prod.yml,Caddyfile"
-          target: "~/app"
+          target: "/home/${{ secrets.EC2_USERNAME }}/app"
+          overwrite: true
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { authenticate, authorize } from '../middleware/auth'
 import { PrismaClient } from '@prisma/client'
-import { upload } from '../middleware/upload'
+import { upload, getImageUrl } from '../middleware/upload'
 
 const prisma = new PrismaClient()
 const router = Router()
@@ -59,21 +59,7 @@ router.post('/', verifyAdmin, upload.single('image'), async (req: Request, res: 
       return res.status(400).json({ message: 'Name and role are required' })
     }
 
-    // Handle Cloudinary URL or local path
-    let imageUrl = null
-    if (req.file) {
-      if ((req.file as any).path && typeof (req.file as any).path === 'string') {
-        const cloudinaryPath = (req.file as any).path
-        if (cloudinaryPath.startsWith('http')) {
-          imageUrl = cloudinaryPath
-        } else {
-          const cloudName = process.env.CLOUDINARY_CLOUD_NAME
-          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
-        }
-      } else {
-        imageUrl = `/uploads/${req.file.filename}`
-      }
-    }
+    const imageUrl = getImageUrl(req.file)
 
     const teamMember = await prisma.teamMember.create({
       data: {
@@ -103,21 +89,7 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     const { id } = req.params
     const { name, role, bio, linkedinUrl, githubUrl, email, department, isActive } = req.body
 
-    // Handle Cloudinary URL or local path
-    let imageUrl = undefined
-    if (req.file) {
-      if ((req.file as any).path && typeof (req.file as any).path === 'string') {
-        const cloudinaryPath = (req.file as any).path
-        if (cloudinaryPath.startsWith('http')) {
-          imageUrl = cloudinaryPath
-        } else {
-          const cloudName = process.env.CLOUDINARY_CLOUD_NAME
-          imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`
-        }
-      } else {
-        imageUrl = `/uploads/${req.file.filename}`
-      }
-    }
+    const imageUrl = req.file ? getImageUrl(req.file) : undefined
 
     const teamMember = await prisma.teamMember.update({
       where: { id: String(id) },

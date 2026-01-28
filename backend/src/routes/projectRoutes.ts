@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
-import { upload, getImageUrl } from '../middleware/upload'
+import { upload, getImageUrl, normalizeImageUrl } from '../middleware/upload'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -41,10 +41,15 @@ router.get('/', async (req: Request, res: Response) => {
       ]
     })
 
+    const normalizedProjects = projects.map((p) => ({
+      ...p,
+      imageUrl: normalizeImageUrl(p.imageUrl),
+    }))
+
     res.json({
       success: true,
       count: projects.length,
-      projects
+      projects: normalizedProjects
     })
   } catch (error: any) {
     console.error('❌ Get projects error:', error)
@@ -76,7 +81,10 @@ router.get('/:id', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      project
+      project: {
+        ...project,
+        imageUrl: normalizeImageUrl(project.imageUrl),
+      }
     })
   } catch (error: any) {
     console.error('❌ Get project error:', error)

@@ -102,6 +102,11 @@ const nextConfig = {
         // Change this IP to your EC2 Elastic IP if it changes
         destination: 'http://34.227.71.169/api/:path*',
       },
+      {
+        // Serve uploaded files via the backend while keeping the public origin https://www.vesco.lk
+        source: '/uploads/:path*',
+        destination: 'http://34.227.71.169/uploads/:path*',
+      },
     ]
   },
   

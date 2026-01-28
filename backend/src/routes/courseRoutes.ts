@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
-import { upload } from '../middleware/upload';
+import { upload, getImageUrl } from '../middleware/upload';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -78,20 +78,7 @@ router.post(
       }
 
       // Handle Cloudinary URL or local path
-      let imageUrl = null;
-      if (req.file) {
-        if ((req.file as any).path && typeof (req.file as any).path === 'string') {
-          const cloudinaryPath = (req.file as any).path;
-          if (cloudinaryPath.startsWith('http')) {
-            imageUrl = cloudinaryPath;
-          } else {
-            const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-            imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`;
-          }
-        } else {
-          imageUrl = `/uploads/${req.file.filename}`;
-        }
-      }
+      const imageUrl = getImageUrl(req.file);
 
       const course = await prisma.course.create({
         data: {
@@ -163,19 +150,8 @@ router.put(
       };
 
       // Only update imageUrl if a new file is uploaded
-      // Handle Cloudinary URL or local path
       if (req.file) {
-        if ((req.file as any).path && typeof (req.file as any).path === 'string') {
-          const cloudinaryPath = (req.file as any).path;
-          if (cloudinaryPath.startsWith('http')) {
-            updateData.imageUrl = cloudinaryPath;
-          } else {
-            const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-            updateData.imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${cloudinaryPath}`;
-          }
-        } else {
-          updateData.imageUrl = `/uploads/${req.file.filename}`;
-        }
+        updateData.imageUrl = getImageUrl(req.file);
       }
 
       const course = await prisma.course.update({

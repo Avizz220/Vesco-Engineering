@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useAuth } from '@/context/AuthContext'
 import SuccessModal from '@/components/ui/SuccessModal'
 import ErrorModal from '@/components/ui/ErrorModal'
 
@@ -12,6 +13,7 @@ const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 export default function ContactPage() {
   const searchParams = useSearchParams()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     rating: 0,
   })
@@ -86,6 +88,32 @@ export default function ContactPage() {
             <p className="text-lg sm:text-xl md:text-2xl text-white opacity-90 mb-6 sm:mb-8 drop-shadow-md">
               We're Vincere Engineering Solutions Cooperative, ready to lead you into the future of engineering excellence.
             </p>
+            
+            {/* Logged-in User Display */}
+            {user && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-3 border border-white/20"
+              >
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg overflow-hidden border-2 border-white/30">
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user.name?.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-white/70 text-xs font-medium">Logged in as</span>
+                  <span className="text-white font-semibold text-sm">{user.name}</span>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 

@@ -55,11 +55,11 @@ export default function ContactPage() {
 
   const headquarters = [
     {
-      region: 'Sri Lanka Office',
-      address: 'University of Moratuwa',
-      city: 'Moratuwa',
-      postalCode: '10400',
-      phone: '+94 77 123 4567'
+      region: 'VESCO Engineering Team',
+      address: 'Faculty of Engineering, University of Ruhuna',
+      city: 'Galle',
+      postalCode: '80000',
+      phone: '071-1103585'
     }
   ]
 
@@ -84,7 +84,7 @@ export default function ContactPage() {
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-white drop-shadow-lg">Get in touch</h1>
             <p className="text-lg sm:text-xl md:text-2xl text-white opacity-90 mb-6 sm:mb-8 drop-shadow-md">
-              We're ready to lead you into the future of engineering excellence.
+              We're Vincere Engineering Solutions Cooperative, ready to lead you into the future of engineering excellence.
             </p>
           </motion.div>
         </div>
@@ -308,7 +308,7 @@ export default function ContactPage() {
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Get Support</h3>
               <p className="text-sm text-gray-600 mb-6">
-                Need help with Vesco Engineering products or services?
+                Need help with VESCO Engineering products or services?
               </p>
               
               <div className="space-y-4">
@@ -324,13 +324,13 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Email us</p>
-                    <p className="text-gray-900">support@vesco.com</p>
+                    <p className="text-gray-900">contact@vesco.lk</p>
                   </div>
                 </motion.a>
 
                 <motion.a
                   whileHover={{ scale: 1.05, x: 5 }}
-                  href="tel:+94771234567"
+                  href="tel:0711103585"
                   className="flex items-center gap-3 bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-all"
                 >
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -340,7 +340,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Call us</p>
-                    <p className="text-gray-900">+94 77 123 4567</p>
+                    <p className="text-gray-900">071-1103585</p>
                   </div>
                 </motion.a>
               </div>

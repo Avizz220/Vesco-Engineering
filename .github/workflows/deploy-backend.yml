@@ -41,7 +41,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            mkdir -p ~/app
+            mkdir -p app
 
       - name: Copy Compose and Caddy Files to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -50,8 +50,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.prod.yml,Caddyfile"
-          target: "/home/${{ secrets.EC2_USERNAME }}/app"
+          target: "app"
           overwrite: true
+          debug: true
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3

@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { API_URL } from '@/lib/api'
+
 interface User {
   id: string
   email: string
@@ -55,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       // Call real backend API
-      const response = await fetch('http://localhost:5000/api/auth/signin', {
+      const response = await fetch(`${API_URL}/auth/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       // Call real backend API
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       // Call real backend API for Google authentication
-      const response = await fetch('http://localhost:5000/api/auth/google', {
+      const response = await fetch(`${API_URL}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,10 +136,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ credential }),
       })
 
-      const data = await response.json()
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('❌ Non-JSON Response from Backend:', text);
+        try {
+           // Attempt to parse text in case header was wrong
+           data = JSON.parse(text);
+        } catch (e) {
+           throw new Error(`Server returned ${response.status} ${response.statusText} (non-JSON). See console.`);
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || 'Google sign in failed')
+        console.error('❌ Google Sign-In Error Response:', data)
+        throw new Error(data.message || 'Google sign in failed - check console for details')
       }
 
       // Create user object from backend response
@@ -164,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       // Call backend logout endpoint to clear cookie
-      await fetch('http://localhost:5000/api/auth/logout', {
+      await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       })
@@ -187,7 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const changePassword = async (currentPassword: string, newPassword: string) => {
     if (!user) throw new Error('Not authenticated')
     
-    const response = await fetch('http://localhost:5000/api/auth/change-password', {
+    const response = await fetch(`${API_URL}/auth/change-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

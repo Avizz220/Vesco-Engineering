@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SuccessModal from '@/components/ui/SuccessModal'
 import ErrorModal from '@/components/ui/ErrorModal'
+import { API_URL } from '@/lib/api'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
@@ -21,7 +22,7 @@ export default function SignInPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signin', {
+      const response = await fetch(`${API_URL}/auth/signin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

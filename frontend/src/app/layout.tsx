@@ -36,8 +36,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="http://localhost:5000" />
-        <link rel="dns-prefetch" href="http://localhost:5000" />
         <script async src="https://accounts.google.com/gsi/client"></script>
       </head>
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>

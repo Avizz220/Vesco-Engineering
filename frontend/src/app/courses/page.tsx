@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
+import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 interface Course {
   id: string
@@ -55,7 +56,7 @@ export default function CoursesPage() {
   const fetchCourses = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:5000/api/courses', {
+      const response = await fetch(`${API_URL}/courses`, {
         credentials: 'include',
       })
       if (response.ok) {
@@ -88,7 +89,7 @@ export default function CoursesPage() {
     setConfirmMessage(`Are you sure you want to delete "${course.title}"?`)
     setConfirmAction(() => async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/courses/${course.id}`, {
+        const response = await fetch(`${API_URL}/courses/${course.id}`, {
           method: 'DELETE',
           credentials: 'include',
         })
@@ -148,8 +149,8 @@ export default function CoursesPage() {
         }
 
         const url = editingCourse
-          ? `http://localhost:5000/api/courses/${editingCourse.id}`
-          : 'http://localhost:5000/api/courses'
+          ? `${API_URL}/courses/${editingCourse.id}`
+          : `${API_URL}/courses`
         
         const response = await fetch(url, {
           method: editingCourse ? 'PUT' : 'POST',
@@ -285,7 +286,7 @@ export default function CoursesPage() {
               >
                 <div className="relative w-full overflow-hidden bg-slate-100 aspect-[4/3]">
                   <Image
-                    src={course.imageUrl ? `http://localhost:5000${course.imageUrl}` : defaultImage}
+                    src={course.imageUrl ? (course.imageUrl.startsWith('http') ? course.imageUrl : `${IMAGE_URL_PREFIX}${course.imageUrl}`) : defaultImage}
                     alt={course.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"

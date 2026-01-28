@@ -1,7 +1,13 @@
 import axios from 'axios'
 
+// Determine the API URL based on the environment
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (process.env.NODE_ENV === 'production' ? '/api/proxy' : 'http://localhost:5000/api')
+
+export const IMAGE_URL_PREFIX = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000'
+
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

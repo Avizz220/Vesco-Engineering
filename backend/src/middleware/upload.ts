@@ -1,18 +1,49 @@
 import multer from 'multer'
 import path from 'path'
 import { Request } from 'express'
+import { v2 as cloudinary } from 'cloudinary'
+import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { AppError } from './errorHandler'
 
+// Configure Cloudinary
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  })
+}
+
 // Configure storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.env.UPLOAD_DIR || './uploads')
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
-  },
-})
+const getStorage = () => {
+  // Use Cloudinary for production or if credentials exist
+  if (process.env.NODE_ENV === 'production' || process.env.CLOUDINARY_CLOUD_NAME) {
+    return new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: 'vesco-engineering',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'gif'],
+        public_id: (req: any, file: any) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+          return file.fieldname + '-' + uniqueSuffix
+        },
+      } as any, // Type assertion needed for some multer-storage-cloudinary versions
+    })
+  }
+
+  // Fallback to local disk storage
+  return multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, process.env.UPLOAD_DIR || './uploads')
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
+    },
+  })
+}
+
+const storage = getStorage()
 
 // File filter
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {

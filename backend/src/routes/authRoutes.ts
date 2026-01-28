@@ -9,7 +9,8 @@ const router = Router()
 const prisma = new PrismaClient()
 
 // Initialize Google OAuth2 Client
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+// NOTE: We validate the token against process.env.GOOGLE_CLIENT_ID at request time.
+const googleClient = new OAuth2Client()
 
 // Helper function to determine user role
 const determineUserRole = (email: string, password: string): Role => {
@@ -105,7 +106,8 @@ router.post(
       console.error('Sign up error:', error)
       return res.status(500).json({ 
         success: false,
-        message: 'Server error during sign up' 
+        message: error.message || 'Server error during sign up',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       })
     }
   }
@@ -267,58 +269,112 @@ router.post(
 // @desc    Google OAuth sign in
 // @access  Public
 router.post('/google', async (req: Request, res: Response) => {
+  // Wrap entire handler in a try-catch block to ensure NO crash escapes
   try {
-    const { credential } = req.body
-
-    if (!credential) {
-      return res.status(400).json({ message: 'Credential is required' })
+    console.log('🔵 GOOGLE AUTH ENDPOINT HIT')
+    
+    // Log environment status (Masked)
+    const envClientId = process.env.GOOGLE_CLIENT_ID;
+    console.log(`🔧 Env Client ID Length: ${envClientId ? envClientId.length : 'MISSING'}`)
+    
+    // 1. Basic Config Checks
+    if (!envClientId) {
+       console.error('❌ FATAL: GOOGLE_CLIENT_ID is missing from process.env');
+       return res.status(500).json({ 
+         success: false, 
+         message: 'Internal Configuration Error: Missing Google Client ID',
+         code: 'CONFIG_MISSING' 
+       });
     }
 
-    // Verify the Google token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    })
+    const { credential } = req.body
+    if (!credential) {
+      return res.status(400).json({ success:false, message: 'No credential provided' });
+    }
+
+    // 2. Token Verification
+    console.log('🔐 Verifying ID Token with Google...');
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: envClientId,
+      })
+    } catch (verifyError: any) {
+      console.error('❌ Verify Failed:', verifyError.message);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Google Token Verification Failed', 
+        details: verifyError.message,
+        tip: 'Check if NEXT_PUBLIC_GOOGLE_CLIENT_ID matches GOOGLE_CLIENT_ID exactly.'
+      });
+    }
 
     const payload = ticket.getPayload()
-    
-    if (!payload) {
-      return res.status(401).json({ message: 'Invalid Google token' })
+    if (!payload || !payload.email) {
+      return res.status(400).json({ success: false, message: 'Invalid Token Payload (No Email)' });
     }
 
     const { email, name, picture, sub: googleId } = payload
+    console.log(`✅ Token Valid. User: ${email}`);
 
-    if (!email) {
-      return res.status(400).json({ message: 'Email not provided by Google' })
-    }
+    // 3. User Lookup/Create
+    let user = await prisma.user.findUnique({ where: { email } })
 
-    // Check if user exists
-    let user = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    // If user doesn't exist, create new user
     if (!user) {
+      console.log('👤 Creating new user...');
       user = await prisma.user.create({
         data: {
           email,
           fullName: name || email.split('@')[0],
           image: picture || null,
           googleId,
-          password: null, // No password for Google OAuth users
           role: Role.MEMBER,
         },
       })
     } else if (!user.googleId) {
-      // Update existing user with Google ID if they signed up with email/password first
+      console.log('↻ Linking Google ID to existing user...');
       user = await prisma.user.update({
         where: { email },
         data: { googleId },
       })
     }
 
-    // Create JWT token
+    // 4. Session Token
     const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback-secret',
+      { expiresIn: '7d' }
+    )
+
+    console.log('🍪 Setting Cookie...');
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'none' for cross-site (Vercel->AWS)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.fullName,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+      },
+    })
+
+  } catch (fatalError: any) {
+    console.error('🔥 UNCAUGHT HANDLER ERROR:', fatalError);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Fatal Server Error during Google Auth',
+      details: fatalError.message || 'Unknown Error'
+    });
+  }
+})
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
@@ -344,10 +400,10 @@ router.post('/google', async (req: Request, res: Response) => {
     })
   } catch (error: any) {
     console.error('Google sign in error:', error)
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
       message: 'Server error during Google sign in',
-      error: error.message 
+      details: error?.message,
     })
   }
 })
@@ -405,109 +461,6 @@ router.get('/admins', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Get admins error:', error)
     return res.status(500).json({ message: 'Server error' })
-  }
-})
-
-// @route   POST /api/auth/google
-// @desc    Authenticate with Google OAuth
-// @access  Public
-router.post('/google', async (req: Request, res: Response) => {
-  try {
-    const { credential } = req.body
-
-    if (!credential) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Google credential is required' 
-      })
-    }
-
-    // Decode the JWT credential from Google
-    const base64Url = credential.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const payload = JSON.parse(Buffer.from(base64, 'base64').toString())
-
-    const { sub: googleId, email, name, picture } = payload
-
-    if (!email || !googleId) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Invalid Google credential' 
-      })
-    }
-
-    // Check if user exists with this Google ID
-    let user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { googleId: googleId },
-          { email: email }
-        ]
-      }
-    })
-
-    if (user) {
-      // Update existing user with Google ID if not set
-      if (!user.googleId) {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: { 
-            googleId: googleId,
-            image: picture || user.image
-          }
-        })
-      }
-    } else {
-      // Create new user with Google authentication
-      user = await prisma.user.create({
-        data: {
-          fullName: name,
-          email: email,
-          googleId: googleId,
-          password: null, // No password for Google auth users
-          image: picture,
-          role: email.toLowerCase().startsWith('vescoenjos') ? Role.ADMIN : Role.MEMBER
-        }
-      })
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user.id, 
-        email: user.email, 
-        role: user.role 
-      },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
-
-    // Set HTTP-only cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    })
-
-    return res.status(200).json({
-      success: true,
-      message: 'Google authentication successful',
-      user: {
-        id: user.id,
-        fullName: user.fullName,
-        email: user.email,
-        image: user.image,
-        role: user.role
-      }
-    })
-  } catch (error: any) {
-    console.error('Google auth error:', error)
-    return res.status(500).json({ 
-      success: false,
-      message: 'Google authentication failed',
-      error: error.message 
-    })
   }
 })
 

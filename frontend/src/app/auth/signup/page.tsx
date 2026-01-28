@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SuccessModal from '@/components/ui/SuccessModal'
 import ErrorModal from '@/components/ui/ErrorModal'
+import { API_URL } from '@/lib/api'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -53,7 +54,7 @@ export default function SignUpPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

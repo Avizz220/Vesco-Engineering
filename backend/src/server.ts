@@ -18,20 +18,47 @@ dotenv.config()
 const app: Application = express()
 const PORT = process.env.PORT || 5000
 
+// Trust proxy (Required for Vercel/AWS Caddy)
+app.set('trust proxy', 1)
+
 // Security middleware with relaxed CSP for images
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "http://localhost:3000", "http://localhost:5000", "https://*.vercel.app", "https://*.vesco.lk", "https://*.googleusercontent.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+      connectSrc: ["'self'", "http://localhost:3000", "http://localhost:5000", "https://accounts.google.com", "https://*.vercel.app", "https://*.vesco.lk"],
+      frameSrc: ["'self'", "https://accounts.google.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
     },
   },
 }))
+
+// Allowed origins list
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'https://vesco-engineering.vercel.app',
+  'https://www.vesco.lk',
+  'https://vesco.lk',
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [])
+]
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true)
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      callback(null, true)
+    } else {
+      console.log('❌ Blocked by CORS:', origin)
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
 }))
 

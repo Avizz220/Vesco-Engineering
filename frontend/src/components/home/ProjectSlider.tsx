@@ -44,7 +44,7 @@ export default function ProjectSlider() {
     const fetchProjects = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch('http://localhost:5000/api/projects')
+        const response = await fetch(`${API_URL}/projects`)
         const data = await response.json()
 
         if (data.success && data.projects.length > 0) {
@@ -52,7 +52,7 @@ export default function ProjectSlider() {
             id: project.id,
             title: project.title,
             description: project.description,
-            imageUrl: project.imageUrl ? `http://localhost:5000${project.imageUrl}` : roboticImg.src,
+            imageUrl: project.imageUrl ? `${IMAGE_URL_PREFIX}${project.imageUrl}` : roboticImg.src,
             technologies: Array.isArray(project.technologies) ? project.technologies : [],
             githubUrl: project.githubUrl,
             liveUrl: project.liveUrl,

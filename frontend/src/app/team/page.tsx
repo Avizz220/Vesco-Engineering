@@ -7,6 +7,7 @@ import { TeamMember, Project } from '@/types'
 import TeamMemberCard from '@/components/team/TeamMemberCard'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
+import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 type Department = 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
 
@@ -47,7 +48,7 @@ export default function TeamPage() {
 
   const fetchAdminUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/admins')
+      const response = await fetch(`${API_URL}/auth/admins`)
       if (response.ok) {
         const admins = await response.json()
         setAdminUsers(admins)
@@ -60,7 +61,7 @@ export default function TeamPage() {
   const fetchTeamMembers = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('http://localhost:5000/api/team')
+      const response = await fetch(`${API_URL}/team`)
       if (response.ok) {
         const data = await response.json()
         setMembers(data)
@@ -94,8 +95,8 @@ export default function TeamPage() {
       }
 
       const url = editingMember 
-        ? `http://localhost:5000/api/team/${editingMember.id}`
-        : 'http://localhost:5000/api/team'
+        ? `${API_URL}/team/${editingMember.id}`
+        : `${API_URL}/team`
       
       const response = await fetch(url, {
         method: editingMember ? 'PUT' : 'POST',
@@ -138,7 +139,7 @@ export default function TeamPage() {
 
   const handleViewProjects = async (memberName: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/projects')
+      const response = await fetch(`${API_URL}/projects`)
       if (response.ok) {
         const data = await response.json()
         const projects = data.projects || []
@@ -554,7 +555,7 @@ export default function TeamPage() {
                         {project.imageUrl ? (
                           <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
                             <Image
-                              src={project.imageUrl.startsWith('http') ? project.imageUrl : `http://localhost:5000${project.imageUrl}`}
+                              src={project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`}
                               alt={project.title}
                               fill
                               className="object-cover"

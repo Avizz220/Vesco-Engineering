@@ -124,23 +124,30 @@ jobs:
             fi
 
             # Create .env file from GitHub Secrets
-            if [ -z "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then echo "Missing DOCKER_HUB_USERNAME secret"; exit 1; fi
-            if [ -z "${{ secrets.DB_PASSWORD }}" ]; then echo "Missing DB_PASSWORD secret"; exit 1; fi
-            if [ -z "${{ secrets.JWT_SECRET }}" ]; then echo "Missing JWT_SECRET secret"; exit 1; fi
-            if [ -z "${{ secrets.GOOGLE_CLIENT_ID }}" ]; then echo "Missing GOOGLE_CLIENT_ID secret"; exit 1; fi
+            # NOTE: Secrets sometimes accidentally include a trailing newline (copy/paste).
+            # That breaks dotenv parsing and can make GOOGLE_CLIENT_ID look "missing" in the container.
+            DOCKER_HUB_USERNAME_CLEAN=$(printf '%s' "${{ secrets.DOCKER_HUB_USERNAME }}" | tr -d '\r\n')
+            DB_PASSWORD_CLEAN=$(printf '%s' "${{ secrets.DB_PASSWORD }}" | tr -d '\r\n')
+            JWT_SECRET_CLEAN=$(printf '%s' "${{ secrets.JWT_SECRET }}" | tr -d '\r\n')
+            GOOGLE_CLIENT_ID_CLEAN=$(printf '%s' "${{ secrets.GOOGLE_CLIENT_ID }}" | tr -d '\r\n')
+
+            if [ -z "$DOCKER_HUB_USERNAME_CLEAN" ]; then echo "Missing DOCKER_HUB_USERNAME secret"; exit 1; fi
+            if [ -z "$DB_PASSWORD_CLEAN" ]; then echo "Missing DB_PASSWORD secret"; exit 1; fi
+            if [ -z "$JWT_SECRET_CLEAN" ]; then echo "Missing JWT_SECRET secret"; exit 1; fi
+            if [ -z "$GOOGLE_CLIENT_ID_CLEAN" ]; then echo "Missing GOOGLE_CLIENT_ID secret"; exit 1; fi
 
             cat > .env <<EOF
-            DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@db:5432/vesco_db
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            DATABASE_URL=postgresql://postgres:${DB_PASSWORD_CLEAN}@db:5432/vesco_db
+            DB_PASSWORD=${DB_PASSWORD_CLEAN}
+            JWT_SECRET=${JWT_SECRET_CLEAN}
             CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
             CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
             CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
             CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}
             NODE_ENV=production
             PORT=5000
-            DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            DOCKER_HUB_USERNAME=${DOCKER_HUB_USERNAME_CLEAN}
+            GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID_CLEAN}
             EOF
 
             # Confirm Google client id is present (print length only)

@@ -90,26 +90,7 @@ export default function ContactPage() {
             </p>
             
             {/* Logged-in User Display */}
-            {user && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-3 border border-white/20"
-              >
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg overflow-hidden border-2 border-white/30">
-                  <img
-                    src="/profilepic.png"
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-white/70 text-xs font-medium">Logged in as</span>
-                  <span className="text-white font-semibold text-sm">{user.name}</span>
-                </div>
-              </motion.div>
-            )}
+            
           </motion.div>
         </div>
 
@@ -262,7 +243,7 @@ export default function ContactPage() {
                     type="text"
                     name="affiliation"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
-                    placeholder="e.g., University of Moratuwa / Software Engineer"
+                    placeholder="e.g.,Software Engineer"
                   />
                 </div>
 

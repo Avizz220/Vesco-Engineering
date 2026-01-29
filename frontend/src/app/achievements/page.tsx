@@ -261,7 +261,7 @@ export default function AchievementsPage() {
             <div className="flex-1 hidden md:block"></div>
             <div className="flex-1 text-center">
               <p className="text-xs uppercase tracking-[0.3em] text-sky-600/80 mb-2 sm:mb-3">Competitions & Wins</p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 text-slate-900">Our Achievements</h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 text-slate-900 whitespace-nowrap">Our Achievements</h1>
             </div>
             <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">
               {user?.isAdmin && (

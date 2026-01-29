@@ -374,7 +374,7 @@ export default function ProjectsPage() {
         >
           <div className="flex flex-col md:flex-row items-center justify-between mb-6 sm:mb-8 gap-4">
             <div className="flex-1 hidden md:block"></div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-4 md:flex-1">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2 sm:mb-4 md:flex-1 whitespace-nowrap">
               Our Projects
             </h1>
             <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">

@@ -215,6 +215,7 @@ export default function ProjectsPage() {
         formData.append('contributors', JSON.stringify(newProject.contributors))
         formData.append('category', newProject.relatedAreas[0] || 'Other')
         formData.append('githubUrl', newProject.githubLink || '')
+        formData.append('linkedInUrl', newProject.linkedInLink || '')
         formData.append('liveUrl', newProject.youtubeLink || '')
         if (newProject.photo) {
           formData.append('image', newProject.photo)
@@ -245,6 +246,7 @@ export default function ProjectsPage() {
         formData.append('contributors', JSON.stringify(newProject.contributors))
         formData.append('category', newProject.relatedAreas[0] || 'Other')
         formData.append('githubUrl', newProject.githubLink || '')
+        formData.append('linkedInUrl', newProject.linkedInLink || '')
         formData.append('liveUrl', newProject.youtubeLink || '')
         formData.append('featured', 'false')
         if (newProject.photo) {
@@ -789,6 +791,21 @@ export default function ProjectsPage() {
                   onChange={(e) => setNewProject(prev => ({ ...prev, youtubeLink: e.target.value }))}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
                   placeholder="https://youtube.com/..."
+                />
+              </div>
+
+              {/* LinkedIn Link */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800" htmlFor="linkedin">
+                  LinkedIn Link <span className="text-gray-500 font-normal">(Optional)</span>
+                </label>
+                <input
+                  id="linkedin"
+                  type="url"
+                  value={newProject.linkedInLink}
+                  onChange={(e) => setNewProject(prev => ({ ...prev, linkedInLink: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none"
+                  placeholder="https://linkedin.com/..."
                 />
               </div>
 

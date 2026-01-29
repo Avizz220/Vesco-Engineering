@@ -7,6 +7,7 @@ export interface Project {
   videoUrl?: string
   youtubeUrl?: string
   githubUrl?: string
+  linkedInUrl?: string
   liveUrl?: string
   category: string
   contributors?: string[]

@@ -28,6 +28,7 @@ model Project {
   technologies Json     // Array of technologies
   imageUrl     String?
   githubUrl    String?
+  linkedInUrl  String?
   liveUrl      String?
   category     String
   featured     Boolean  @default(false)

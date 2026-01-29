@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "Project" ADD COLUMN "linkedInUrl" TEXT;
+ALTER TABLE "projects" ADD COLUMN "linkedInUrl" TEXT;

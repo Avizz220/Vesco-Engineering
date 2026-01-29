@@ -218,8 +218,8 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8 relative">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95%] sm:max-w-md md:max-w-lg mx-auto p-4 sm:p-6 md:p-8 relative max-h-[95vh] overflow-y-auto">
           <Script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" strategy="afterInteractive" />
           {/* Close Button */}
           <button
@@ -233,18 +233,19 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
           </button>
 
           {/* Header */}
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
-            <p className="text-gray-600">Welcome back to VESCO</p>
+          <div className="mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Sign In</h2>
+            <p className="text-sm sm:text-base text-gray-600">Welcome back to VESCO</p>
           </div>
 
           {/* Telecommunication Animation */}
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-3 sm:mb-4">
             <lottie-player
               src="/Telecommunications%20Engineering.json"
               background="transparent"
               speed="1"
-              style={{ width: '180px', height: '180px' }}
+              style={{ width: '120px', height: '120px' }}
+              className="sm:!w-[150px] sm:!h-[150px] md:!w-[180px] md:!h-[180px]"
               loop
               autoplay
             ></lottie-player>
@@ -258,10 +259,10 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Email Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Email Address</label>
               <input
                 type="email"
                 value={email}
@@ -269,13 +270,13 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
                 placeholder="you@example.com"
                 required
                 minLength={5}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm text-gray-900"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm text-gray-900"
               />
             </div>
 
             {/* Password Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -284,7 +285,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm text-gray-900 pr-11"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm text-gray-900 pr-10 sm:pr-11"
                 />
                 <button
                   type="button"
@@ -320,16 +321,16 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 sm:py-3 rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="my-6 flex items-center">
+          <div className="my-4 sm:my-6 flex items-center">
             <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-gray-500 text-sm">Or</span>
+            <span className="px-3 sm:px-4 text-gray-500 text-xs sm:text-sm">Or</span>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
@@ -337,7 +338,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
           <div id="googleSignInButton" className="w-full flex justify-center"></div>
 
           {/* Sign Up Link */}
-          <p className="text-center text-gray-600 mt-6">
+          <p className="text-center text-gray-600 mt-4 sm:mt-6 text-sm sm:text-base">
             Don't have an account?{' '}
             <button
               type="button"

@@ -137,7 +137,7 @@ const ProjectModal = ({ project, isOpen, onClose, adminUsers = [] }: ProjectModa
 
                 {/* Technologies */}
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Technologies Used</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Related Areas</h3>
                   <div className="flex flex-wrap gap-3">
                     {project.technologies.map((tech, idx) => (
                       <span

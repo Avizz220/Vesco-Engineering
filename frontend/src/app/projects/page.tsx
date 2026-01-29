@@ -88,6 +88,7 @@ export default function ProjectsPage() {
           contributors: Array.isArray(project.contributors) ? project.contributors : [],
           liveUrl: project.liveUrl,
           githubUrl: project.githubUrl,
+          linkedInUrl: project.linkedInUrl,
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
         }))
@@ -110,7 +111,7 @@ export default function ProjectsPage() {
       description: project.description,
       photo: null,
       githubLink: project.githubUrl || '',
-      linkedInLink: '',
+      linkedInLink: project.linkedInUrl || '',
       youtubeLink: project.liveUrl || '',
     })
     setEditingIndex(index)

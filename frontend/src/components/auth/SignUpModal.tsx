@@ -175,8 +175,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onSwitchToSi
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div
-        className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95%] sm:max-w-md md:max-w-lg mx-auto p-4 sm:p-6 md:p-8 relative max-h-[95vh] overflow-y-auto"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 #f1f5f9' }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-[95%] sm:max-w-md md:max-w-lg mx-auto p-4 sm:p-6 md:p-8 relative max-h-[95vh] overflow-y-auto overflow-x-hidden"
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 #f1f5f9', borderRadius: '1rem' }}
       >
         <Script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js" strategy="afterInteractive" />
         {/* Close Button */}

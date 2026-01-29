@@ -159,25 +159,12 @@ const Navbar = () => {
                     onClick={() => user?.isGoogleUser ? setShowProfileModal(true) : setShowSettingsModal(true)}
                     className="flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
-                    {user?.image ? (
-                      <img 
-                        src={user.image} 
-                        alt={user.name || 'User'} 
-                        className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          console.error('Image failed to load:', user.image)
-                          e.currentTarget.style.display = 'none'
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden')
-                        }}
-                      />
-                    ) : null}
-                    {!user?.image || user?.image ? (
-                      <div className={`w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-semibold ${user?.image ? 'hidden' : ''}`}>
-                        {user?.name?.charAt(0).toUpperCase()}
-                      </div>
-                    ) : null}
-                    <span className="text-gray-700 font-medium text-sm">{user?.name}</span>
+                    <img 
+                      src="/profilepic.png" 
+                      alt="Profile" 
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                    />
+                    <span className="text-black font-medium text-sm">{user?.name}</span>
                   </button>
                   {!user?.isGoogleUser && (
                     <button
@@ -296,20 +283,12 @@ const Navbar = () => {
                     }}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
-                    {user?.image ? (
-                      <img 
-                        src={user.image} 
-                        alt={user.name || 'User'} 
-                        className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : null}
-                    {!user?.image || user?.image ? (
-                      <div className={`w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-semibold ${user?.image ? 'hidden' : ''}`}>
-                        {user?.name?.charAt(0).toUpperCase()}
-                      </div>
-                    ) : null}
-                    <span className="text-gray-700 font-medium text-base">{user?.name}</span>
+                    <img 
+                      src="/profilepic.png" 
+                      alt="Profile" 
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                    />
+                    <span className="text-black font-medium text-base">{user?.name}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -375,13 +354,7 @@ const Navbar = () => {
                 <div className="flex flex-col items-center gap-2">
                   <div className="relative">
                     <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
-                      {user?.image ? (
-                        <img src={user.image} alt={user.name || 'Profile'} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-3xl font-bold text-white bg-gradient-to-br from-primary-500 to-primary-700">
-                          {user?.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+                      <img src="/profilepic.png" alt="Profile" className="h-full w-full object-cover" />
                     </div>
                     <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
                   </div>
@@ -672,18 +645,11 @@ const Navbar = () => {
                 {/* Profile Picture with Ring */}
                 <div className="relative mb-3">
                   <div className="h-20 w-20 rounded-full overflow-hidden border-3 border-white shadow-xl ring-2 ring-blue-400/50">
-                    {user?.image ? (
-                      <img 
-                        src={user.image} 
-                        alt={user.name || 'Profile'} 
-                        className="h-full w-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center text-2xl font-bold text-white bg-gradient-to-br from-blue-600 to-blue-800">
-                        {user?.name?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <img 
+                      src="/profilepic.png" 
+                      alt="Profile" 
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   {/* Online Status Indicator */}
                   <div className="absolute bottom-0 right-0 h-5 w-5 rounded-full bg-green-500 border-3 border-white shadow-md"></div>

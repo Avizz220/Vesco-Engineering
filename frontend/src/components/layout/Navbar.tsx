@@ -157,14 +157,14 @@ const Navbar = () => {
                 <>
                   <button
                     onClick={() => user?.isGoogleUser ? setShowProfileModal(true) : setShowSettingsModal(true)}
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
                       src="/profilepic.png" 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                     />
-                    <span className="text-black font-medium text-sm">{user?.name}</span>
+                    <span className="text-gray-900 font-semibold text-sm whitespace-nowrap">{user?.name}</span>
                   </button>
                   {!user?.isGoogleUser && (
                     <button

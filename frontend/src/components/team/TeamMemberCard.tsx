@@ -71,8 +71,8 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
           </button>
         )}
 
-        {/* Delete Button for Admins */}
-        {isAdmin && onDelete && !isOwnProfile && (
+        {/* Delete Button for Admins (including their own profile) */}
+        {isAdmin && onDelete && (
           <button
             onClick={() => onDelete(member.id)}
             className="absolute bottom-4 left-4 bg-red-500/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-red-600 transition-colors z-10"

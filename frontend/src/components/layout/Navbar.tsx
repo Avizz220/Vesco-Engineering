@@ -160,9 +160,10 @@ const Navbar = () => {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
-                      src="/profilepic.png" 
+                      src={user?.isGoogleUser ? user.image : "/profilepic.png"} 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                      referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
                     />
                     <span className="text-gray-900 font-semibold text-sm whitespace-nowrap">{user?.name}</span>
                   </button>
@@ -284,9 +285,10 @@ const Navbar = () => {
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
-                      src="/profilepic.png" 
+                      src={user?.isGoogleUser ? user.image : "/profilepic.png"} 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                      referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
                     />
                     <span className="text-black font-medium text-base">{user?.name}</span>
                   </button>
@@ -354,7 +356,12 @@ const Navbar = () => {
                 <div className="flex flex-col items-center gap-2">
                   <div className="relative">
                     <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
-                      <img src="/profilepic.png" alt="Profile" className="h-full w-full object-cover" />
+                      <img 
+                        src={user?.isGoogleUser ? user.image : "/profilepic.png"} 
+                        alt="Profile" 
+                        className="h-full w-full object-cover"
+                        referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
+                      />
                     </div>
                     <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
                   </div>

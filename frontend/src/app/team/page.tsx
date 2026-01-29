@@ -29,6 +29,9 @@ export default function TeamPage() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [dialogMessage, setDialogMessage] = useState('')
   const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])
+  const [showSlideshow, setShowSlideshow] = useState(true)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -45,6 +48,14 @@ export default function TeamPage() {
     fetchTeamMembers()
     fetchAdminUsers()
   }, [])
+
+  useEffect(() => {
+    if (!showSlideshow) return
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [showSlideshow])
 
   const fetchAdminUsers = async () => {
     try {
@@ -192,9 +203,46 @@ export default function TeamPage() {
     }
   }
 
+  const handleDeleteProfile = async (memberId: string) => {
+    setDeletingMemberId(memberId)
+    setDialogMessage('Are you sure you want to delete this profile?')
+    setShowConfirmDialog(true)
+  }
+
+  const confirmDelete = async () => {
+    setShowConfirmDialog(false)
+    if (!deletingMemberId) return
+
+    try {
+      const response = await fetch(`${API_URL}/team/${deletingMemberId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete profile')
+      }
+
+      setDialogMessage('Profile deleted successfully!')
+      setShowSuccessDialog(true)
+      setDeletingMemberId(null)
+      fetchTeamMembers()
+    } catch (error: any) {
+      setDialogMessage(error.message || 'Failed to delete profile')
+      setShowSuccessDialog(true)
+      setDeletingMemberId(null)
+    }
+  }
+
   // Check if logged-in user has a profile
   const userProfile = members.find(m => m.email === user?.email)
   const canCreateProfile = user?.isAdmin && !userProfile
+
+  const groupImages = [
+    '/group1.jpeg',
+    '/group2.jpeg',
+    '/group3.jpeg',
+  ]
 
   // Categorize members by department
   const categorizedMembers: CategorizedMembers = {
@@ -229,6 +277,87 @@ export default function TeamPage() {
 
   return (
     <>
+      {showSlideshow ? (
+        <div className="min-h-screen pt-24 sm:pt-26 md:pt-28 pb-12 sm:pb-14 md:pb-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-10 sm:mb-12 md:mb-16"
+            >
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Meet Our Team
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-2 mb-8">
+                A talented group of professionals from diverse engineering disciplines
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="max-w-5xl mx-auto"
+            >
+              <div 
+                className="relative rounded-3xl overflow-hidden shadow-2xl cursor-pointer group"
+                onClick={() => setShowSlideshow(false)}
+              >
+                <div className="relative h-[60vh] md:h-[70vh]">
+                  {groupImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${
+                        currentSlide === idx ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <Image
+                        src={img}
+                        alt={`Team photo ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                        priority={idx === 0}
+                      />
+                    </div>
+                  ))}
+                  
+                  {/* Overlay with click instruction */}
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                    <div className="text-center text-white transform group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-16 h-16 mx-auto mb-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <p className="text-xl font-bold mb-2">Click to View Team Profiles</p>
+                      <p className="text-sm opacity-90">Meet our talented engineers</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Slide indicators */}
+                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-3">
+                  {groupImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCurrentSlide(idx)
+                      }}
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                        currentSlide === idx 
+                          ? 'bg-white w-8' 
+                          : 'bg-white/50 hover:bg-white/75'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      ) : (
       <div className="min-h-screen pt-24 sm:pt-26 md:pt-28 pb-12 sm:pb-14 md:pb-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6">
           {/* Header */}
@@ -307,7 +436,9 @@ export default function TeamPage() {
                         member={member}
                         index={index}
                         isOwnProfile={user?.email === member.email}
+                        isAdmin={user?.isAdmin || false}
                         onEdit={handleEditProfile}
+                        onDelete={handleDeleteProfile}
                         onViewProjects={handleViewProjects}
                       />
                     ))}
@@ -320,6 +451,20 @@ export default function TeamPage() {
 
       </div>
     </div>
+      )}
+
+      {/* Back to Slideshow Button */}
+      {!showSlideshow && (
+        <button
+          onClick={() => setShowSlideshow(true)}
+          className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-50"
+          title="Back to slideshow"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </button>
+      )}
 
       {/* Add/Edit Profile Modal */}
       {showAddModal && (
@@ -632,12 +777,18 @@ export default function TeamPage() {
       {/* Confirmation Dialog */}
       <Dialog
         isOpen={showConfirmDialog}
-        onClose={() => setShowConfirmDialog(false)}
+        onClose={() => {
+          setShowConfirmDialog(false)
+          setDeletingMemberId(null)
+        }}
         type="confirm"
         title="Confirm Action"
-        message={editingMember ? "Are you sure you want to update your profile?" : "Are you sure you want to create your profile?"}
-        onConfirm={confirmAddOrUpdate}
-        onCancel={() => setShowConfirmDialog(false)}
+        message={deletingMemberId ? dialogMessage : (editingMember ? "Are you sure you want to update your profile?" : "Are you sure you want to create your profile?")}
+        onConfirm={deletingMemberId ? confirmDelete : confirmAddOrUpdate}
+        onCancel={() => {
+          setShowConfirmDialog(false)
+          setDeletingMemberId(null)
+        }}
         confirmText="Yes, Proceed"
         cancelText="Cancel"
       />

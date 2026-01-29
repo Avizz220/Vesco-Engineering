@@ -765,7 +765,7 @@ export default function ProjectsPage() {
               {/* GitHub Link */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-800" htmlFor="github">
-                  GitHub Link
+                  GitHub Link <span className="text-gray-500 font-normal">(Optional)</span>
                 </label>
                 <input
                   id="github"
@@ -780,7 +780,7 @@ export default function ProjectsPage() {
               {/* YouTube Link */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-800" htmlFor="youtube">
-                  YouTube Link
+                  YouTube Link <span className="text-gray-500 font-normal">(Optional)</span>
                 </label>
                 <input
                   id="youtube"

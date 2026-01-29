@@ -77,7 +77,7 @@ const Navbar = () => {
     { href: '/', label: 'Home', protected: false },
     { href: '/projects', label: 'Projects', protected: true },
     { href: '/achievements', label: 'Achievements', protected: true },
-    { href: '/courses', label: 'Courses', protected: true },
+    { href: '/courses', label: 'Courses', protected: true, hidden: true },
     { href: '/team', label: 'Team', protected: true },
     { href: '/#services', label: 'Services', protected: false },
     { href: '/contact', label: 'Contact', protected: true },
@@ -128,7 +128,7 @@ const Navbar = () => {
 
             {/* Navigation Links */}
             <div className="hidden lg:flex items-center space-x-6 xl:space-x-10">
-              {navLinks.map((link) => (
+              {navLinks.filter(link => !link.hidden).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -247,7 +247,7 @@ const Navbar = () => {
 
             {/* Mobile Navigation Links */}
             <div className="flex flex-col space-y-6 mb-8">
-              {navLinks.map((link) => (
+              {navLinks.filter(link => !link.hidden).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

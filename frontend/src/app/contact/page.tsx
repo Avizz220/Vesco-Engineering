@@ -98,15 +98,11 @@ export default function ContactPage() {
                 className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-3 border border-white/20"
               >
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg overflow-hidden border-2 border-white/30">
-                  {user.image ? (
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    user.name?.charAt(0).toUpperCase()
-                  )}
+                  <img
+                    src="/profilepic.png"
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="flex flex-col items-start">
                   <span className="text-white/70 text-xs font-medium">Logged in as</span>

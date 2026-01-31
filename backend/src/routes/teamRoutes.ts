@@ -81,6 +81,116 @@ router.post('/', verifyAdmin, upload.single('image'), async (req: Request, res: 
   }
 })
 
+// @route   POST /api/team/my-profile
+// @desc    Create or update logged-in user's team profile
+// @access  Private (Authenticated users)
+router.post('/my-profile', authenticate, upload.single('image'), async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id
+    const { name, role, bio, linkedinUrl, githubUrl, department } = req.body
+
+    if (!name || !role) {
+      return res.status(400).json({ message: 'Name and role are required' })
+    }
+
+    // Get user's email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, image: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const imageUrl = getImageUrl(req.file)
+
+    // Check if user already has a team profile
+    const existingProfile = await prisma.teamMember.findFirst({
+      where: { email: user.email }
+    })
+
+    let teamMember
+
+    if (existingProfile) {
+      // Update existing profile
+      teamMember = await prisma.teamMember.update({
+        where: { id: existingProfile.id },
+        data: {
+          name,
+          role,
+          bio,
+          linkedinUrl,
+          githubUrl,
+          department,
+          ...(imageUrl && { imageUrl }),
+        },
+      })
+    } else {
+      // Create new profile
+      teamMember = await prisma.teamMember.create({
+        data: {
+          name,
+          role,
+          bio,
+          linkedinUrl,
+          githubUrl,
+          email: user.email,
+          department,
+          imageUrl: imageUrl || user.image,
+          joinedDate: new Date(),
+        },
+      })
+    }
+
+    // Update user's profile picture in User table if image was uploaded
+    if (imageUrl) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { image: imageUrl }
+      })
+    }
+
+    res.status(200).json({ success: true, teamMember })
+  } catch (error) {
+    console.error('Error creating/updating user profile:', error)
+    res.status(500).json({ success: false, message: 'Error creating/updating profile' })
+  }
+})
+
+// @route   GET /api/team/my-profile
+// @desc    Get logged-in user's team profile
+// @access  Private (Authenticated users)
+router.get('/my-profile', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id
+
+    // Get user's email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Find team member profile by email
+    const teamMember = await prisma.teamMember.findFirst({
+      where: { email: user.email }
+    })
+
+    if (!teamMember) {
+      return res.status(404).json({ message: 'Profile not found' })
+    }
+
+    res.json(teamMember)
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+    res.status(500).json({ message: 'Error fetching profile' })
+  }
+})
+
 // @route   PUT /api/team/:id
 // @desc    Update team member
 // @access  Private (Admin only)

@@ -105,12 +105,26 @@ export default function TeamPage() {
         submitFormData.append('image', formData.photo)
       }
 
-      const url = editingMember 
-        ? `${API_URL}/team/${editingMember.id}`
-        : `${API_URL}/team`
+      // Use different endpoint based on user role
+      let url: string
+      let method: string
+      
+      if (user?.isAdmin && editingMember) {
+        // Admin editing existing member
+        url = `${API_URL}/team/${editingMember.id}`
+        method = 'PUT'
+      } else if (user?.isAdmin && !editingMember) {
+        // Admin creating new member
+        url = `${API_URL}/team`
+        method = 'POST'
+      } else {
+        // Regular user creating/updating their own profile
+        url = `${API_URL}/team/my-profile`
+        method = 'POST'
+      }
       
       const response = await fetch(url, {
-        method: editingMember ? 'PUT' : 'POST',
+        method,
         credentials: 'include',
         body: submitFormData,
       })
@@ -127,6 +141,13 @@ export default function TeamPage() {
       setEditingMember(null)
       resetForm()
       fetchTeamMembers()
+      
+      // Refresh user profile in navbar if not admin
+      if (!user?.isAdmin) {
+        const { refreshUserProfile } = await import('@/context/AuthContext')
+        // This will update the navbar picture
+        window.location.reload()
+      }
     } catch (error: any) {
       setDialogMessage(error.message || 'Failed to save profile')
       setShowSuccessDialog(true)
@@ -236,7 +257,7 @@ export default function TeamPage() {
 
   // Check if logged-in user has a profile
   const userProfile = members.find(m => m.email === user?.email)
-  const canCreateProfile = user?.isAdmin && !userProfile
+  const canCreateProfile = user && !userProfile
 
   const groupImages = [
     '/group1.jpeg',
@@ -373,21 +394,34 @@ export default function TeamPage() {
                 Meet Our Team
               </h1>
               <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">
-                {canCreateProfile && (
+                {user && (
                   <button
                     onClick={() => {
-                      setEditingMember(null)
-                      resetForm()
-                      setFormData(prev => ({ ...prev, email: user?.email || '', name: user?.name || '' }))
-                      setShowAddModal(true)
+                      if (userProfile) {
+                        handleEditProfile(userProfile)
+                      } else {
+                        setEditingMember(null)
+                        resetForm()
+                        setFormData(prev => ({ ...prev, email: user?.email || '', name: user?.name || '' }))
+                        setShowAddModal(true)
+                      }
                     }}
                     className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
+                      {userProfile ? (
+                        <>
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </>
+                      ) : (
+                        <>
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </>
+                      )}
                     </svg>
-                    Create My Profile
+                    {userProfile ? 'Edit My Profile' : 'Create My Profile'}
                   </button>
                 )}
               </div>

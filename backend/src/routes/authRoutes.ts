@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { PrismaClient, Role } from '@prisma/client'
 import { OAuth2Client } from 'google-auth-library'
+import { upload, getImageUrl } from '../middleware/upload'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -513,6 +514,100 @@ router.post(
     }
   }
 )
+
+// @route   PUT /api/auth/profile-picture
+// @desc    Update user profile picture
+// @access  Private
+router.put('/profile-picture', verifyToken, upload.single('image'), async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id
+    const imageUrl = getImageUrl(req.file)
+
+    if (!imageUrl) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'No image file provided' 
+      })
+    }
+
+    // Update user's image in database
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { image: imageUrl },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        image: true,
+        role: true,
+      }
+    })
+
+    console.log('✅ Profile picture updated for user:', userId)
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile picture updated successfully',
+      user: {
+        id: updatedUser.id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        image: updatedUser.image,
+        role: updatedUser.role,
+      }
+    })
+  } catch (error: any) {
+    console.error('Profile picture update error:', error)
+    return res.status(500).json({ 
+      success: false,
+      message: 'Server error while updating profile picture' 
+    })
+  }
+})
+
+// @route   GET /api/auth/me
+// @desc    Get current user profile
+// @access  Private
+router.get('/me', verifyToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        image: true,
+        role: true,
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found' 
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+      }
+    })
+  } catch (error: any) {
+    console.error('Get user profile error:', error)
+    return res.status(500).json({ 
+      success: false,
+      message: 'Server error' 
+    })
+  }
+})
 
 export default router
 

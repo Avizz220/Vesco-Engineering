@@ -27,7 +27,7 @@ const Navbar = () => {
   })
   const pathname = usePathname()
   const router = useRouter()
-  const { isAuthenticated, user, logout, updateProfile, changePassword } = useAuth()
+  const { isAuthenticated, user, logout, updateProfile, changePassword, refreshUserProfile } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +36,13 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Refresh user profile when navbar mounts to get latest image
+  useEffect(() => {
+    if (isAuthenticated && user && !user.isGoogleUser) {
+      refreshUserProfile()
+    }
+  }, [isAuthenticated])
 
   // Handle scroll to services section when navigating from other pages
   useEffect(() => {
@@ -159,7 +166,13 @@ const Navbar = () => {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
-                      src={user?.isGoogleUser ? user.image : "/profilepic.png"} 
+                      src={
+                        user?.isGoogleUser 
+                          ? user.image 
+                          : user?.image 
+                            ? (user.image.startsWith('http') ? user.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.image}`)
+                            : "/profilepic.png"
+                      } 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                       referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
@@ -284,7 +297,13 @@ const Navbar = () => {
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
-                      src={user?.isGoogleUser ? user.image : "/profilepic.png"} 
+                      src={
+                        user?.isGoogleUser 
+                          ? user.image 
+                          : user?.image 
+                            ? (user.image.startsWith('http') ? user.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.image}`)
+                            : "/profilepic.png"
+                      } 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                       referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
@@ -356,7 +375,13 @@ const Navbar = () => {
                   <div className="relative">
                     <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
                       <img 
-                        src={user?.isGoogleUser ? user.image : "/profilepic.png"} 
+                        src={
+                          user?.isGoogleUser 
+                            ? user.image 
+                            : user?.image 
+                              ? (user.image.startsWith('http') ? user.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.image}`)
+                              : "/profilepic.png"
+                        } 
                         alt="Profile" 
                         className="h-full w-full object-cover"
                         referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}

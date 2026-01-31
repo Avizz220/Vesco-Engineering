@@ -27,6 +27,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   updateProfile: (updates: Partial<User>) => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  refreshUserProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -221,6 +222,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return data
   }
 
+  const refreshUserProfile = async () => {
+    if (!user) return
+    
+    try {
+      const response = await fetch(`${API_URL}/auth/me`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile')
+      }
+
+      const data = await response.json()
+      
+      const updatedUser: User = {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.fullName,
+        image: data.user.image,
+        isAdmin: data.user.role === 'ADMIN',
+        isGoogleUser: user.isGoogleUser,
+      }
+
+      setUser(updatedUser)
+      localStorage.setItem('vescoUser', JSON.stringify(updatedUser))
+    } catch (error) {
+      console.error('Error refreshing user profile:', error)
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -233,6 +265,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         updateProfile,
         changePassword,
+        refreshUserProfile,
       }}
     >
       {children}

@@ -182,7 +182,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 text-orange-200"
           >
-            Vincere Engineering Solutions Cooperative
+            Vincere Engineering Services
           </motion.p>
 
           {/* Description */}

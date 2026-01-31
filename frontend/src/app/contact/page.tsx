@@ -57,7 +57,7 @@ export default function ContactPage() {
 
   const headquarters = [
     {
-      region: 'VESCO Engineering Team',
+      region: 'VES Engineering Team',
       address: 'Faculty of Engineering, University of Ruhuna',
       city: 'Galle',
       postalCode: '80000',
@@ -86,7 +86,7 @@ export default function ContactPage() {
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-white drop-shadow-lg">Get in touch</h1>
             <p className="text-lg sm:text-xl md:text-2xl text-white opacity-90 mb-6 sm:mb-8 drop-shadow-md">
-              We're Vincere Engineering Solutions Cooperative, ready to lead you into the future of engineering excellence.
+              We're Vincere Engineering Services, ready to lead you into the future of engineering excellence.
             </p>
             
             {/* Logged-in User Display */}

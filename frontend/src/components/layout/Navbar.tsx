@@ -123,7 +123,6 @@ const Navbar = () => {
             {/* Logo */}
             <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center">
               <span className="text-primary-600">VES</span>
-              <span className="text-2xl text-orange-500 ml-0.5">CO</span>
             </Link>
 
             {/* Navigation Links */}

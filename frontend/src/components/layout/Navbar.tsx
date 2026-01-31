@@ -39,7 +39,7 @@ const Navbar = () => {
 
   // Refresh user profile when navbar mounts to get latest image
   useEffect(() => {
-    if (isAuthenticated && user && !user.isGoogleUser) {
+    if (isAuthenticated && user) {
       refreshUserProfile()
     }
   }, [isAuthenticated])
@@ -89,6 +89,20 @@ const Navbar = () => {
     { href: '/#services', label: 'Services', protected: false },
     { href: '/contact', label: 'Contact', protected: false },
   ]
+
+  // Helper function to get the correct profile image URL
+  const getProfileImageUrl = () => {
+    if (!user?.image) return "/profilepic.png"
+    
+    // If it's a full URL (Google image or external), use as is
+    if (user.image.startsWith('http://') || user.image.startsWith('https://')) {
+      return user.image
+    }
+    
+    // If it's a relative path (uploaded image), prepend the API URL
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'
+    return `${baseUrl}${user.image}`
+  }
 
   const handleNavClick = (href: string, isProtected: boolean) => {
     if (href === '/') {
@@ -166,16 +180,10 @@ const Navbar = () => {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
-                      src={
-                        user?.isGoogleUser 
-                          ? user.image 
-                          : user?.image 
-                            ? (user.image.startsWith('http') ? user.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.image}`)
-                            : "/profilepic.png"
-                      } 
+                      src={getProfileImageUrl()} 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                      referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
+                      referrerPolicy="no-referrer"
                     />
                     <span className="text-gray-900 font-semibold text-sm whitespace-nowrap">{user?.name}</span>
                   </button>
@@ -297,16 +305,10 @@ const Navbar = () => {
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
                     <img 
-                      src={
-                        user?.isGoogleUser 
-                          ? user.image 
-                          : user?.image 
-                            ? (user.image.startsWith('http') ? user.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.image}`)
-                            : "/profilepic.png"
-                      } 
+                      src={getProfileImageUrl()} 
                       alt="Profile" 
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                      referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
+                      referrerPolicy="no-referrer"
                     />
                     <span className="text-black font-medium text-base">{user?.name}</span>
                   </button>
@@ -375,16 +377,10 @@ const Navbar = () => {
                   <div className="relative">
                     <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
                       <img 
-                        src={
-                          user?.isGoogleUser 
-                            ? user.image 
-                            : user?.image 
-                              ? (user.image.startsWith('http') ? user.image : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.image}`)
-                              : "/profilepic.png"
-                        } 
+                        src={getProfileImageUrl()} 
                         alt="Profile" 
                         className="h-full w-full object-cover"
-                        referrerPolicy={user?.isGoogleUser ? "no-referrer" : undefined}
+                        referrerPolicy="no-referrer"
                       />
                     </div>
                     <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>

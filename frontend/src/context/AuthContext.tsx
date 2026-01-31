@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: data.id || data.user?.id,
         email: data.email || data.user?.email,
         name: data.fullName || data.user?.fullName || data.name || data.user?.name,
-        image: data.image || data.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
+        image: data.image || data.user?.image,
         isAdmin: data.role === 'ADMIN' || data.user?.role === 'ADMIN',
         isGoogleUser: false,
       }
@@ -162,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: data.user.id,
         email: data.user.email,
         name: data.user.name,
-        image: data.user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.email}`,
+        image: data.user.image,
         isAdmin: data.user.role === 'ADMIN',
         isGoogleUser: true,
       }

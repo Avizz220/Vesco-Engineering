@@ -183,6 +183,14 @@ router.post(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
 
+      // Check if user has a team member profile with a photo
+      const teamMemberProfile = await prisma.teamMember.findFirst({
+        where: { email: user.email }
+      })
+
+      // Use team member photo if available, otherwise use user image
+      const profileImage = teamMemberProfile?.imageUrl || user.image
+
       return res.status(200).json({
         success: true,
         message: 'Login successful',
@@ -191,7 +199,7 @@ router.post(
           fullName: user.fullName,
           email: user.email,
           role: user.role,
-          image: user.image,
+          image: profileImage,
         }
       })
     } catch (error: any) {
@@ -356,13 +364,28 @@ router.post('/google', async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
 
+    // Check if user has a team member profile with a photo
+    const teamMemberProfile = await prisma.teamMember.findFirst({
+      where: { email: user.email }
+    })
+
+    // Priority: team member photo > google image > user image
+    const profileImage = teamMemberProfile?.imageUrl || picture || user.image
+
+    console.log('📸 Profile Image Source:', {
+      hasTeamProfile: !!teamMemberProfile?.imageUrl,
+      hasGooglePicture: !!picture,
+      hasUserImage: !!user.image,
+      finalImage: profileImage
+    })
+
     return res.status(200).json({
       success: true,
       user: {
         id: user.id,
         name: user.fullName,
         email: user.email,
-        image: user.image,
+        image: profileImage,
         role: user.role,
       },
     })
@@ -590,13 +613,21 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
       })
     }
 
+    // Check if user has a team member profile with a photo
+    const teamMemberProfile = await prisma.teamMember.findFirst({
+      where: { email: user.email }
+    })
+
+    // Use team member photo if available, otherwise use user image
+    const profileImage = teamMemberProfile?.imageUrl || user.image
+
     return res.status(200).json({
       success: true,
       user: {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
-        image: user.image,
+        image: profileImage,
         role: user.role,
       }
     })

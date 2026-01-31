@@ -235,7 +235,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, onSwitchToSi
           {/* Header */}
           <div className="mb-4 sm:mb-6">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Sign In</h2>
-            <p className="text-sm sm:text-base text-gray-600">Welcome back to VESCO</p>
+            <p className="text-sm sm:text-base text-gray-600">Welcome back to VES</p>
           </div>
 
           {/* Telecommunication Animation */}

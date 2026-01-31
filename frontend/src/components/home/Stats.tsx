@@ -22,12 +22,12 @@ const Stats = () => {
   }
 
   const services = [
-    { name: 'Web Development', image: '/web_dev.jpg' },
-    { name: 'Software Services', image: '/software_service.jpg' },
-    { name: 'Solid Work Designs', image: '/solid.png' },
-    { name: 'Electrical Services', image: '/elec_service.jpg' },
-    { name: 'Machine Learning & AI', image: '/ai_and_ml.jpg' },
-    { name: 'IoT Services', image: '/iot_servicesjpg.jpg' },
+    { name: 'Web Development', image: '/webdevelopmentnew.jpg' },
+    { name: 'Software Services', image: '/softwarenew.png' },
+    { name: 'SolidWorks Designs', image: '/solidworksnew.jpg' },
+    { name: 'Electrical Services', image: '/electricalnew.jpg' },
+    { name: 'Machine Learning & AI', image: '/ainew.jpg' },
+    { name: 'IoT Services', image: '/iotnew.jpg' },
   ]
 
   useEffect(() => {

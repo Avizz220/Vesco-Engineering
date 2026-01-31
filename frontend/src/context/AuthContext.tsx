@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const authenticatedUser: User = {
         id: data.id || data.user?.id,
         email: data.email || data.user?.email,
-        name: data.name || data.user?.name,
+        name: data.fullName || data.user?.fullName || data.name || data.user?.name,
         image: data.image || data.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
         isAdmin: data.role === 'ADMIN' || data.user?.role === 'ADMIN',
         isGoogleUser: false,

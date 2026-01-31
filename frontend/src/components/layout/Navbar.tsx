@@ -75,12 +75,12 @@ const Navbar = () => {
 
   const navLinks = [
     { href: '/', label: 'Home', protected: false },
-    { href: '/projects', label: 'Projects', protected: true },
-    { href: '/achievements', label: 'Achievements', protected: true },
+    { href: '/projects', label: 'Projects', protected: false },
+    { href: '/achievements', label: 'Achievements', protected: false },
     { href: '/courses', label: 'Courses', protected: true, hidden: true },
-    { href: '/team', label: 'Team', protected: true },
+    { href: '/team', label: 'Team', protected: false },
     { href: '/#services', label: 'Services', protected: false },
-    { href: '/contact', label: 'Contact', protected: true },
+    { href: '/contact', label: 'Contact', protected: false },
   ]
 
   const handleNavClick = (href: string, isProtected: boolean) => {

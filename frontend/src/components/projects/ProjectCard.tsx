@@ -135,9 +135,6 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
       <div className="p-6">
         {/* Category Badges - Display all categories/technologies */}
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
-            {project.category}
-          </span>
           {project.technologies.slice(0, 3).map((tech, idx) => (
             <span
               key={idx}

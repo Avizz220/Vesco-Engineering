@@ -84,7 +84,7 @@ const About = () => {
           </h2>
           <div className="w-20 sm:w-24 h-1 bg-orange-500 mx-auto mb-4 sm:mb-6"></div>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
-            VES (Vincere Engineering Services) is a student-led engineering team
+            VES (Vincere Engineering Services) is a engineering team
             committed to excellence, innovation, and making a positive impact through technology.
           </p>
         </motion.div>

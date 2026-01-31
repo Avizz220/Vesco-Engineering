@@ -172,7 +172,7 @@ const Hero = () => {
             transition={{ duration: 0.8 }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6"
           >
-            Welcome to Team <span className="text-primary-600">VES</span><span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-orange-500">CO</span>
+            Welcome to Team <span className="text-primary-600">VES</span>
           </motion.h1>
 
           {/* Subtitle */}

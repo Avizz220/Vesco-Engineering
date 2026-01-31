@@ -64,7 +64,7 @@ const ComingSoonModal = ({ isOpen, onClose, serviceName }: ComingSoonModalProps)
                       className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors"
                     >
                       <Mail className="w-4 h-4" />
-                      <span className="text-sm">contact@ves.lk</span>
+                      <span className="text-sm">contact@vesco.lk</span>
                     </a>
                     
                     <a

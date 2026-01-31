@@ -22,12 +22,12 @@ const Stats = () => {
   }
 
   const services = [
-    { name: 'Web Development', image: '/webdevelopmentnew.jpg' },
-    { name: 'Software Services', image: '/softwarenew.png' },
-    { name: 'SolidWorks Designs', image: '/solidworksnew.jpg' },
-    { name: 'Electrical Services', image: '/electricalnew.jpg' },
-    { name: 'Machine Learning & AI', image: '/ainew.jpg' },
-    { name: 'IoT Services', image: '/iotnew.jpg' },
+    { name: 'Web Development', image: '/web_dev.jpg' },
+    { name: 'Software Services', image: '/software_service.jpg' },
+    { name: 'Solid Work Designs', image: '/solid.png' },
+    { name: 'Electrical Services', image: '/elec_service.jpg' },
+    { name: 'Machine Learning & AI', image: '/ai_and_ml.jpg' },
+    { name: 'IoT Services', image: '/iot_servicesjpg.jpg' },
   ]
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const Stats = () => {
             </h2>
             
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
-              <span className="text-blue-700 font-semibold">VES</span><span className="text-orange-500 font-semibold text-base">CO</span> provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
+              <span className="text-blue-700 font-semibold">VES</span>provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
             </p>
 
             <div className="pt-2 sm:pt-4">

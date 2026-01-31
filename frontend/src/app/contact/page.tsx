@@ -122,13 +122,14 @@ export default function ContactPage() {
               </div>
               <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">We'd love to hear from you.</p>
 
-              <form action="https://formsubmit.co/ahirushan629@gmail.com,contact@vesco.lk" method="POST" className="space-y-6">
+              <form action="https://formsubmit.co/ahirushan629@gmail.com" method="POST" className="space-y-6">
                 {/* Hidden inputs for FormSubmit configuration */}
                 <input type="hidden" name="_subject" value="New Contact Form Submission from VESCO Website" />
                 <input type="hidden" name="_captcha" value="false" />
                 <input type="hidden" name="_template" value="table" />
                 <input type="hidden" name="_next" value={`${typeof window !== 'undefined' ? window.location.origin : ''}/contact?success=true`} />
                 <input type="hidden" name="_error" value={`${typeof window !== 'undefined' ? window.location.origin : ''}/contact?error=true`} />
+                                <input type="hidden" name="_cc" value="contact@vesco.lk" />
                 
                 {/* Name */}
                 <div>

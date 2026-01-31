@@ -358,7 +358,7 @@ export default function ContactPage() {
               <div className="flex gap-3">
                 <motion.a
                   whileHover={{ scale: 1.1, y: -2 }}
-                  href="https://linkedin.com/company/vesco"
+                  href="https://www.linkedin.com/company/vincere-engineering-services-ves"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-700 transition-colors"
@@ -369,7 +369,7 @@ export default function ContactPage() {
                 </motion.a>
                 <motion.a
                   whileHover={{ scale: 1.1, y: -2 }}
-                  href="https://facebook.com/vesco"
+                  href="https://web.facebook.com/profile.php?id=61576463671476"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-blue-700 rounded-lg flex items-center justify-center text-white hover:bg-blue-800 transition-colors"

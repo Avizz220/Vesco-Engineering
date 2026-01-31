@@ -60,19 +60,19 @@ const ComingSoonModal = ({ isOpen, onClose, serviceName }: ComingSoonModalProps)
                   
                   <div className="space-y-3">
                     <a
-                      href="mailto:info@vesco.lk"
+                      href="mailto:contact@vesco.lk"
                       className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors"
                     >
                       <Mail className="w-4 h-4" />
-                      <span className="text-sm">info@vesco.lk</span>
+                      <span className="text-sm">contact@vesco.lk</span>
                     </a>
                     
                     <a
-                      href="tel:+94123456789"
+                      href="tel:0711103585"
                       className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors"
                     >
                       <Phone className="w-4 h-4" />
-                      <span className="text-sm">+94 12 345 6789</span>
+                      <span className="text-sm">0711103585</span>
                     </a>
                   </div>
                 </div>

@@ -58,9 +58,7 @@ export default function ContactPage() {
   const headquarters = [
     {
       region: 'VES Engineering Team',
-      address: 'Faculty of Engineering, University of Ruhuna',
-      city: 'Galle',
-      postalCode: '80000',
+     
       phone: '071-1103585'
     }
   ]
@@ -293,9 +291,6 @@ export default function ContactPage() {
                   <h3 className="text-lg font-bold text-gray-900">{hq.region}</h3>
                 </div>
                 <div className="space-y-3 text-sm text-gray-600">
-                  <p>{hq.address}</p>
-                  <p>{hq.city}</p>
-                  <p className="font-medium">{hq.postalCode}</p>
                   <div className="pt-3 border-t border-gray-200">
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

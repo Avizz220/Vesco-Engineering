@@ -56,7 +56,7 @@ const Stats = () => {
             </h2>
             
             <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
-              <span className="text-blue-700 font-semibold">VES</span>provides <span className="font-semibold">engineering service solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
+              <span className="text-blue-700 font-semibold">VES</span> provides <span className="font-semibold">engineering services and solutions</span> across a wide range of technical disciplines, ensuring the right expertise is available when and where your project needs it.
             </p>
 
             <div className="pt-2 sm:pt-4">

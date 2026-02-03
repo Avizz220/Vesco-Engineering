@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from '@/hooks/useInView'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import ComingSoonModal from './ComingSoonModal'
+import ServicesButtons from './ServicesButtons'
 
 const Stats = () => {
   const [ref, inView] = useInView({
@@ -13,13 +13,7 @@ const Stats = () => {
   })
 
   const [activeIndex, setActiveIndex] = useState(0)
-  const [showComingSoonModal, setShowComingSoonModal] = useState(false)
-  const [selectedService, setSelectedService] = useState('')
 
-  const handleServiceClick = (serviceName: string) => {
-    setSelectedService(serviceName)
-    setShowComingSoonModal(true)
-  }
 
   const services = [
     { name: 'Web Development', image: '/webdevelopmentnew.jpg' },
@@ -88,20 +82,9 @@ const Stats = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.9 }}
-              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 sm:pt-4"
+              className="pt-2 sm:pt-4"
             >
-              <button
-                onClick={() => handleServiceClick('Prime Tronics')}
-                className="bg-blue-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md w-full sm:w-auto"
-              >
-                Prime Tronics
-              </button>
-              <button
-                onClick={() => handleServiceClick('Elechub')}
-                className="bg-blue-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md w-full sm:w-auto"
-              >
-                Elechub
-              </button>
+              <ServicesButtons className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3" />
             </motion.div>
 
             <p className="text-gray-700 text-sm sm:text-base pt-2 sm:pt-4 leading-relaxed">
@@ -138,11 +121,6 @@ const Stats = () => {
         </div>
       </div>
 
-      <ComingSoonModal
-        isOpen={showComingSoonModal}
-        onClose={() => setShowComingSoonModal(false)}
-        serviceName={selectedService}
-      />
     </section>
   )
 }

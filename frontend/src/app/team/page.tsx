@@ -56,7 +56,7 @@ export default function TeamPage() {
   useEffect(() => {
     if (!showSlideshow) return
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3)
+      setCurrentSlide((prev) => (prev + 1) % groupImages.length)
     }, 3000)
     return () => clearInterval(interval)
   }, [showSlideshow])
@@ -287,7 +287,6 @@ export default function TeamPage() {
   const canCreateProfile = user && !userProfile
 
   const groupImages = [
-    '/group1.jpeg',
     '/group2.jpeg',
     '/group3.jpeg',
   ]
@@ -371,12 +370,12 @@ export default function TeamPage() {
                   ))}
                   
                   {/* Overlay with button */}
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-all duration-300 flex items-end justify-center pb-6">
                     <button
                       type="button"
-                      className="px-6 py-3 rounded-full bg-white/90 text-gray-900 font-semibold shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/70"
+                      className="px-6 py-2.5 rounded-full border border-white/80 text-white font-semibold bg-transparent shadow-sm transition-all duration-300 opacity-0 group-hover:opacity-100 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60"
                     >
-                      View Team Member
+                      View Team Members
                     </button>
                   </div>
                 </div>

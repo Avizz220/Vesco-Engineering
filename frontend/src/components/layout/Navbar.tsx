@@ -145,7 +145,7 @@ const Navbar = () => {
             {/* Logo */}
             <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
               <Image
-                src="/WHITE.png"
+                src="/WITH TEXT.png"
                 alt="VES logo"
                 width={180}
                 height={60}

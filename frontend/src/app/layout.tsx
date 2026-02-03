@@ -27,9 +27,9 @@ export const metadata: Metadata = {
   keywords: ['VESCO', 'engineering', 'university', 'projects', 'competitions', 'team'],
   authors: [{ name: 'VESCO Team' }],
   icons: {
-    icon: [{ url: '/ONLY LOGO.png', sizes: '32x32', type: 'image/png' }],
-    shortcut: '/ONLY LOGO.png',
-    apple: [{ url: '/ONLY LOGO.png', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/WHITE.png', sizes: '32x32', type: 'image/png' }],
+    shortcut: '/WHITE.png',
+    apple: [{ url: '/WHITE.png', sizes: '180x180', type: 'image/png' }],
   },
 }
 

@@ -4,24 +4,12 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useState } from 'react'
-import { useAuth } from '@/context/AuthContext'
-import SignInModal from '@/components/auth/SignInModal'
 import roboticImg from '@/assets/robotic.jpg'
 import eieImg from '@/assets/eie.jpg'
 import arduinoImg from '@/assets/arduino.jpg'
 import aerospaceImg from '@/assets/aerospace.jpg'
 
 const Hero = () => {
-  const { isAuthenticated } = useAuth()
-  const [showSignInModal, setShowSignInModal] = useState(false)
-
-  const handleProtectedNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (!isAuthenticated) {
-      e.preventDefault()
-      setShowSignInModal(true)
-    }
-    // If authenticated, let the Link component handle navigation
-  }
   return (
     <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-24 sm:pt-28 md:pt-32 lg:pt-32 pb-16 sm:pb-20 md:pb-24 lg:pb-12 overflow-hidden">
       {/* Animated Background Pattern */}
@@ -205,7 +193,6 @@ const Hero = () => {
           >
             <Link
               href="/projects"
-              onClick={(e) => handleProtectedNavigation(e, '/projects')}
               className="group bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2 w-full sm:w-auto justify-center"
             >
               View Our Projects
@@ -220,7 +207,6 @@ const Hero = () => {
             </Link>
             <Link
               href="/team"
-              onClick={(e) => handleProtectedNavigation(e, '/team')}
               className="bg-transparent border-2 border-blue-400 text-blue-400 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto justify-center"
             >
               Meet the Team
@@ -239,12 +225,6 @@ const Hero = () => {
         </svg>
       </div>
 
-      {/* Sign In Modal */}
-      <SignInModal 
-        isOpen={showSignInModal} 
-        onClose={() => setShowSignInModal(false)}
-        onSwitchToSignUp={() => {}}
-      />
     </section>
   )
 }

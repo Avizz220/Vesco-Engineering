@@ -189,8 +189,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10 lg:mb-12 text-gray-200 max-w-3xl mx-auto px-2 sm:px-4"
           >
-            We are a passionate team of innovators from our university, dedicated to solving real-world
-            problems through cutting-edge technology, robotics, AI, and creative engineering solutions.
+          Innovating at the intersection of robotics, AI, and engineering to solve real-world challenges.
           </motion.p>
 
           {/* CTA Buttons */}

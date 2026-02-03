@@ -11,7 +11,7 @@ import aerospaceImg from '@/assets/aerospace.jpg'
 
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-24 sm:pt-28 md:pt-32 lg:pt-32 pb-16 sm:pb-20 md:pb-24 lg:pb-12 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-12 sm:pb-16 md:pb-20 lg:pb-12 overflow-hidden">
       {/* Animated Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-40 h-40 sm:w-72 sm:h-72 bg-orange-500 rounded-full blur-3xl animate-pulse"></div>
@@ -158,9 +158,17 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4"
           >
-            Welcome to Team <span className="text-primary-600"><p>VES</p></span>
+            <span className="whitespace-nowrap">Welcome to Team</span>
+            <Image
+              src="/WHITE.png"
+              alt="VES logo"
+              width={200}
+              height={80}
+              className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto inline-block"
+              priority
+            />
           </motion.h1>
 
           {/* Subtitle */}

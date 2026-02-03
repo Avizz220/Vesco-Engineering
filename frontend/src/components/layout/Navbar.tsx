@@ -140,16 +140,16 @@ const Navbar = () => {
           isScrolled ? 'bg-white shadow-md' : 'bg-white'
         }`}
       >
-        <div className="container mx-auto px-6 py-6">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="hover:opacity-90 transition-all">
+            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
               <Image
-                src="/WITH TEXT.png"
+                src="/WHITE.png"
                 alt="VES logo"
-                width={220}
-                height={170}
-                className="h-16 w-auto"
+                width={180}
+                height={60}
+                className="h-12 sm:h-14 lg:h-16 w-auto"
                 priority
               />
             </Link>
@@ -258,14 +258,13 @@ const Navbar = () => {
           <div className="container mx-auto px-6 py-6">
             {/* Mobile Header */}
             <div className="flex items-center justify-between mb-8">
-              <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-3">
-                {/*  <span className="text-primary-600">VES</span> */}
+              <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
                 <Image
-                  src="/WITH TEXT.png"
+                  src="/WHITE.png"
                   alt="VES logo"
-                  width={260}
-                  height={200}
-                  className="h-14 w-auto"
+                  width={180}
+                  height={60}
+                  className="h-12 w-auto"
                   priority
                 />
               </Link>

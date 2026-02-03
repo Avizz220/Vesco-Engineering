@@ -106,6 +106,12 @@ export default function ProjectsPage() {
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
         }))
+        
+        // Sort projects by creation date (newest first)
+        transformedProjects.sort((a: any, b: any) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        })
+        
         setProjectsList(transformedProjects)
       }
     } catch (error) {

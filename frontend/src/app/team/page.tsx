@@ -7,6 +7,7 @@ import { TeamMember, Project } from '@/types'
 import TeamMemberCard from '@/components/team/TeamMemberCard'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
+import ImageCropper from '@/components/ui/ImageCropper'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 type Department = 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
@@ -32,6 +33,9 @@ export default function TeamPage() {
   const [showSlideshow, setShowSlideshow] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
+  const [showImageCropper, setShowImageCropper] = useState(false)
+  const [imageForCropping, setImageForCropping] = useState<string | null>(null)
+  const [originalFileName, setOriginalFileName] = useState<string>('')
   
   const [formData, setFormData] = useState({
     name: '',
@@ -220,8 +224,27 @@ export default function TeamPage() {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({ ...prev, photo: e.target.files![0] }))
+      const file = e.target.files[0]
+      setOriginalFileName(file.name)
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImageForCropping(reader.result as string)
+        setShowImageCropper(true)
+      }
+      reader.readAsDataURL(file)
     }
+  }
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const croppedFile = new File([croppedBlob], originalFileName, { type: 'image/jpeg' })
+    setFormData(prev => ({ ...prev, photo: croppedFile }))
+    setShowImageCropper(false)
+    setImageForCropping(null)
+  }
+
+  const handleCropCancel = () => {
+    setShowImageCropper(false)
+    setImageForCropping(null)
   }
 
   const handleDeleteProfile = async (memberId: string) => {
@@ -835,6 +858,15 @@ export default function TeamPage() {
         onConfirm={() => setShowSuccessDialog(false)}
         confirmText="OK"
       />
+
+      {/* Image Cropper */}
+      {showImageCropper && imageForCropping && (
+        <ImageCropper
+          image={imageForCropping}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
     </>
   )
 }

@@ -21,7 +21,7 @@ const FeaturedProjects = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
-  const MAX_DESCRIPTION_LENGTH = 150
+  const MAX_DESCRIPTION_LENGTH = 120
 
   // Define gradient colors for featured projects
   const gradients = [
@@ -169,22 +169,22 @@ const FeaturedProjects = () => {
                   <div className="inline-block bg-white/30 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-4 font-semibold">
                     {projects[currentSlide].category}
                   </div>
-                  <h3 className="text-3xl md:text-5xl font-bold mb-4">
+                  <h3 className="text-3xl md:text-5xl font-bold mb-4 line-clamp-2">
                     {projects[currentSlide].title}
                   </h3>
-                  <p className="text-lg md:text-xl mb-8 text-white/95 min-h-[84px]">
+                  <p className="text-base md:text-lg mb-6 text-white/95 line-clamp-3">
                     {truncateDescription(projects[currentSlide].description)}
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-3">
                     <button 
                       onClick={() => handleSeeMore(projects[currentSlide].id)}
-                      className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+                      className="bg-white text-gray-900 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg text-sm md:text-base"
                     >
-                      See More
+                      See More Details
                     </button>
                     <button 
                       onClick={() => router.push('/projects')}
-                      className="bg-white/20 backdrop-blur-sm text-white border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                      className="bg-white/20 backdrop-blur-sm text-white border-2 border-white px-6 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition-colors text-sm md:text-base"
                     >
                       View All Projects
                     </button>

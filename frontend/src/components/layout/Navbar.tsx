@@ -143,14 +143,13 @@ const Navbar = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-3">
-              <span className="text-primary-600">VES</span>
+            <Link href="/" className="hover:opacity-90 transition-all">
               <Image
                 src="/WITH TEXT.png"
                 alt="VES logo"
-                width={260}
-                height={200}
-                className="h-20 w-auto"
+                width={220}
+                height={170}
+                className="h-16 w-auto"
                 priority
               />
             </Link>

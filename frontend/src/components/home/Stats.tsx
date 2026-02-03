@@ -29,7 +29,7 @@ const Stats = () => {
     
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % services.length)
-    }, 2500)
+    }, 4500)
 
     return () => clearInterval(interval)
   }, [inView, services.length])

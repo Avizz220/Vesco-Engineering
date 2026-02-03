@@ -493,7 +493,7 @@ export default function TeamPage() {
                         member={member}
                         index={index}
                         isOwnProfile={user?.email === member.email}
-                        isAdmin={user?.isAdmin || false}
+                        canDelete={user?.email === member.email}
                         onEdit={handleEditProfile}
                         onDelete={handleDeleteProfile}
                         onViewProjects={handleViewProjects}

@@ -11,13 +11,13 @@ interface TeamMemberCardProps {
   member: TeamMember
   index: number
   isOwnProfile?: boolean
-  isAdmin?: boolean
+  canDelete?: boolean
   onEdit?: (member: TeamMember) => void
   onDelete?: (memberId: string) => void
   onViewProjects?: (memberName: string) => void
 }
 
-const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete, onViewProjects }: TeamMemberCardProps) => {
+const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDelete, onViewProjects }: TeamMemberCardProps) => {
   const [showFullBio, setShowFullBio] = useState(false)
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
@@ -42,7 +42,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
       className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col"
     >
       {/* Member Image */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
+      <div className="relative h-40 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
         {member.imageUrl ? (
           <Image
             src={member.imageUrl.startsWith('http') ? member.imageUrl : `${IMAGE_URL_PREFIX}${member.imageUrl}`}
@@ -54,7 +54,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
             <svg
-              className="w-24 h-24 text-blue-300"
+              className="w-20 h-20 text-blue-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -86,7 +86,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
           )}
 
           {/* Delete Button for Admins */}
-          {isAdmin && onDelete && (
+          {canDelete && onDelete && (
             <button
               onClick={() => onDelete(member.id)}
               className="bg-red-500/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-red-600 transition-colors"
@@ -221,37 +221,26 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
             <p className="text-gray-700 font-mono text-sm break-all">{member.email}</p>
           </div>
           
-          <div className="flex gap-3">
-            <button
-              onClick={handleCopyEmail}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              {emailCopied ? (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Email
-                </>
-              )}
-            </button>
-            <a
-              href={`mailto:${member.email}`}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-              </svg>
-              Send Email
-            </a>
-          </div>
+          <button
+            onClick={handleCopyEmail}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            {emailCopied ? (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Copied!
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copy Email
+              </>
+            )}
+          </button>
         </div>
       </div>
     )}

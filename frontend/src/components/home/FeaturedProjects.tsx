@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 interface Project {
@@ -15,9 +16,12 @@ interface Project {
 }
 
 const FeaturedProjects = () => {
+  const router = useRouter()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  
+  const MAX_DESCRIPTION_LENGTH = 150
 
   // Define gradient colors for featured projects
   const gradients = [
@@ -27,6 +31,17 @@ const FeaturedProjects = () => {
     'from-orange-600 to-red-600',
     'from-indigo-600 to-purple-600',
   ]
+  
+  const truncateDescription = (text: string) => {
+    if (text.length <= MAX_DESCRIPTION_LENGTH) return text
+    return text.substring(0, MAX_DESCRIPTION_LENGTH).trim() + '...'
+  }
+  
+  const handleSeeMore = (projectId: string) => {
+    // Store project ID in sessionStorage so projects page can open the modal
+    sessionStorage.setItem('openProjectId', projectId)
+    router.push('/projects')
+  }
 
   // Fetch featured projects from backend
   useEffect(() => {
@@ -157,15 +172,23 @@ const FeaturedProjects = () => {
                   <h3 className="text-3xl md:text-5xl font-bold mb-4">
                     {projects[currentSlide].title}
                   </h3>
-                  <p className="text-lg md:text-xl mb-8 text-white/95 line-clamp-3">
-                    {projects[currentSlide].description}
+                  <p className="text-lg md:text-xl mb-8 text-white/95 min-h-[84px]">
+                    {truncateDescription(projects[currentSlide].description)}
                   </p>
-                  <button 
-                    onClick={() => window.location.href = '/projects'}
-                    className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
-                  >
-                    View Projects
-                  </button>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => handleSeeMore(projects[currentSlide].id)}
+                      className="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+                    >
+                      See More
+                    </button>
+                    <button 
+                      onClick={() => router.push('/projects')}
+                      className="bg-white/20 backdrop-blur-sm text-white border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                    >
+                      View All Projects
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

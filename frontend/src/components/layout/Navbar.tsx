@@ -253,7 +253,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/*  Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden bg-white">
           <div className="container mx-auto px-6 py-6">

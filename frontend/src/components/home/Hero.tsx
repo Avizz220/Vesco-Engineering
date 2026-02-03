@@ -160,6 +160,7 @@ const Hero = () => {
             transition={{ duration: 0.8 }}
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 flex flex-col items-center justify-center gap-3 sm:gap-4"
           >
+            <br/><br/>
             <span className="whitespace-nowrap">Welcome To Team</span>
             <Image
               src="/WHITE.png"

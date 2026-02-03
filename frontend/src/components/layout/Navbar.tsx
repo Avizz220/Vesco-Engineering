@@ -260,7 +260,7 @@ const Navbar = () => {
             {/* Mobile Header */}
             <div className="flex items-center justify-between mb-8">
               <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-3">
-                {/* <span className="text-primary-600">VES</span> */}
+                {/*  <span className="text-primary-600">VES</span> */}
                 <Image
                   src="/WITH TEXT.png"
                   alt="VES logo"

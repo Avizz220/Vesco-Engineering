@@ -163,7 +163,7 @@ const Hero = () => {
             
             <span className="whitespace-nowrap">Welcome To Team</span>
             <Image
-              src="/WHITE.png"
+              src="/WHITE%20WITH%20TEXT.png"
               alt="VES logo"
               width={300}
               height={120}
@@ -172,16 +172,6 @@ const Hero = () => {
             />
           </motion.h1>
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 text-orange-200"
-          >
-            Vincere Engineering Services
-          </motion.p>
-
           {/* Description */}
           <motion.p
             initial={{ opacity: 0, y: 30 }}
@@ -189,7 +179,8 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10 lg:mb-12 text-gray-200 max-w-3xl mx-auto px-2 sm:px-4"
           >
-          Innovating at the intersection of robotics, AI, and engineering to solve real-world challenges.
+            We are a passionate team of innovators from our university, dedicated to solving real-world
+            problems through cutting-edge technology, robotics, AI, and creative engineering solutions.
           </motion.p>
 
           {/* CTA Buttons */}

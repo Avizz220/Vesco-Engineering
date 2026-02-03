@@ -21,7 +21,7 @@ const FeaturedProjects = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
-  const MAX_DESCRIPTION_LENGTH = 75
+  const MAX_DESCRIPTION_WORDS = 50
 
   // Define gradient colors for featured projects
   const gradients = [
@@ -32,9 +32,13 @@ const FeaturedProjects = () => {
     'from-indigo-600 to-purple-600',
   ]
   
-  const truncateDescription = (text: string) => {
-    if (text.length <= MAX_DESCRIPTION_LENGTH) return text
-    return text.substring(0, MAX_DESCRIPTION_LENGTH).trim() + '...'
+  const truncateDescriptionByWords = (text: string, maxWords: number) => {
+    const words = text.split(' ')
+    if (words.length <= maxWords) return { text, isTruncated: false }
+    return { 
+      text: words.slice(0, maxWords).join(' ') + '...', 
+      isTruncated: true 
+    }
   }
   
   const handleSeeMore = (projectId: string) => {
@@ -79,25 +83,34 @@ const FeaturedProjects = () => {
           
           console.log('🎨 Transformed projects:', transformedProjects)
           
-          // Filter out seed/default projects - only show real user-added projects
-          // Exclude projects with titles like 'Autonomous Robot', 'Smart Home System', 'E-commerce Platform'
-          const seedProjectTitles = [
-            'Autonomous Robot',
-            'Smart Home System',
-            'E-commerce Platform',
-            'autonomous inspection drone'
+          // Filter out ALL seed/default projects - be very strict
+          const seedProjectKeywords = [
+            'autonomous robot',
+            'smart home',
+            'e-commerce',
+            'autonomous inspection',
+            'drone',
+            'sample',
+            'test',
+            'demo'
           ]
           
-          const realProjects = transformedProjects.filter((p: any) => 
-            !seedProjectTitles.some(seedTitle => 
-              p.title.toLowerCase().includes(seedTitle.toLowerCase())
+          const realProjects = transformedProjects.filter((p: any) => {
+            const titleLower = p.title.toLowerCase()
+            const descLower = p.description.toLowerCase()
+            
+            // Check if title or description contains any seed keywords
+            const hasSeedKeyword = seedProjectKeywords.some(keyword => 
+              titleLower.includes(keyword) || descLower.includes(keyword)
             )
-          )
+            
+            return !hasSeedKeyword
+          })
           
-          // Display up to 10 real projects
+          // Display up to 10 real user-added projects
           const projectsToDisplay = realProjects.slice(0, 10)
           
-          console.log('✅ Projects to display:', projectsToDisplay.length)
+          console.log('✅ Real projects to display:', projectsToDisplay.length)
           setProjects(projectsToDisplay)
         }
       } catch (error) {
@@ -115,8 +128,11 @@ const FeaturedProjects = () => {
     return null
   }
 
-  // Don't render featured projects section - only show in projects page
-  return null
+  // Don't render if no real projects available
+  if (projects.length === 0) {
+    console.log('⚠️ No real user-added projects to display in FeaturedProjects')
+    return null
+  }
 
   // Auto-advance slides
   useEffect(() => {
@@ -178,16 +194,16 @@ const FeaturedProjects = () => {
                   <h3 className="text-3xl md:text-5xl font-bold mb-4 line-clamp-2">
                     {projects[currentSlide].title}
                   </h3>
-                  <p className="text-base md:text-lg mb-6 text-white/95 line-clamp-2">
-                    {truncateDescription(projects[currentSlide].description)}
+                  <p className="text-base md:text-lg mb-6 text-white/95">
+                    {truncateDescriptionByWords(projects[currentSlide].description, MAX_DESCRIPTION_WORDS).text}
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    {projects[currentSlide].description.length > MAX_DESCRIPTION_LENGTH && (
+                    {truncateDescriptionByWords(projects[currentSlide].description, MAX_DESCRIPTION_WORDS).isTruncated && (
                       <button 
                         onClick={() => handleSeeMore(projects[currentSlide].id)}
                         className="bg-white text-gray-900 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg text-sm md:text-base"
                       >
-                        See More Details
+                        View More
                       </button>
                     )}
                     <button 

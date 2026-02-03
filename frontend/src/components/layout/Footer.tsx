@@ -10,8 +10,11 @@ const Footer = () => {
   return (
     <>
       {/* CTA Section */}
-      <section className="bg-blue-600 text-white py-10 sm:py-12 md:py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 text-center">
+      <section className="relative overflow-hidden text-white py-10 sm:py-12 md:py-16">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900 to-blue-900" />
+        <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-blue-500/15 blur-3xl" />
+        <div className="absolute -right-10 top-6 h-40 w-40 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
             Need Engineering Solutions?
           </h2>

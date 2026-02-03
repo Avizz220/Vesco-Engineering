@@ -271,6 +271,8 @@ export default function ProjectsPage() {
         setShowSuccessDialog(true)
         setEditingIndex(null)
         await fetchProjects()
+        // Reset to page 1 to see the updated project
+        setCurrentPage(1)
       } else {
         // Add new project to backend with FormData for file upload
         const formData = new FormData()
@@ -302,8 +304,9 @@ export default function ProjectsPage() {
         setDialogMessage('Project created successfully!')
         setShowSuccessDialog(true)
         
-        // Refresh projects list
+        // Refresh projects list and reset to page 1 to see the new project
         await fetchProjects()
+        setCurrentPage(1)
       }
       
       setShowAddProjectModal(false)
@@ -466,18 +469,22 @@ export default function ProjectsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
-            {displayedProjects.map((project, index) => (
-              <ProjectCard 
-                key={project.id} 
-                project={project} 
-                index={index}
-                onViewDetails={handleViewDetails}
-                onEdit={handleEditProject}
-                onDelete={handleDeleteProject}
-                showAdminControls={user?.isAdmin}
-                adminUsers={adminUsers}
-              />
-            ))}
+            {displayedProjects.map((project, displayIndex) => {
+              // Find the actual index in the full projectsList
+              const actualIndex = projectsList.findIndex(p => p.id === project.id)
+              return (
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  index={actualIndex}
+                  onViewDetails={handleViewDetails}
+                  onEdit={handleEditProject}
+                  onDelete={handleDeleteProject}
+                  showAdminControls={user?.isAdmin}
+                  adminUsers={adminUsers}
+                />
+              )
+            })}
           </div>
         )}
 

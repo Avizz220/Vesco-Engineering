@@ -164,9 +164,9 @@ const Hero = () => {
             <Image
               src="/WHITE.png"
               alt="VES logo"
-              width={200}
-              height={80}
-              className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto"
+              width={300}
+              height={120}
+              className="h-16 sm:h-20 md:h-24 lg:h-32 xl:h-36 w-auto"
               priority
             />
           </motion.h1>

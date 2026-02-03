@@ -140,16 +140,16 @@ const Navbar = () => {
           isScrolled ? 'bg-white shadow-md' : 'bg-white'
         }`}
       >
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-3">
+          <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo */}
             <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
               <Image
                 src="/WITH TEXT.png"
                 alt="VES logo"
-                width={180}
-                height={60}
-                className="h-12 sm:h-14 lg:h-16 w-auto"
+                width={240}
+                height={80}
+                className="h-16 sm:h-18 lg:h-20 w-auto"
                 priority
               />
             </Link>

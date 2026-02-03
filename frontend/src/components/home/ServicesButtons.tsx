@@ -27,7 +27,7 @@ const ServicesButtons = () => {
               </button>
               <button
                 onClick={() => handleServiceClick('ElecHub')}
-                className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md"
+                className="bg-blue-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors duration-300 shadow-sm hover:shadow-md"
               >
                 ElecHub
               </button>

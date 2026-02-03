@@ -158,7 +158,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 flex flex-col items-center justify-center gap-1 sm:gap-2"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 flex flex-col items-center justify-center gap-0 sm:gap-1"
           >
             
             <span className="whitespace-nowrap">Welcome To Team</span>

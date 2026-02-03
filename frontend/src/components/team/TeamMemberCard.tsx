@@ -35,7 +35,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col"
+      className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col h-full"
     >
       {/* Member Image */}
       <div className="relative h-56 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
@@ -100,36 +100,38 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
       </div>
 
       {/* Member Info */}
-      <div className="p-6">
+      <div className="p-6 flex flex-col h-full">
         {/* Name */}
-        <h3 className="text-2xl font-bold text-gray-900 mb-1">
+        <h3 className="text-2xl font-bold text-gray-900 mb-1 leading-snug min-h-[56px]">
           {member.name}
         </h3>
 
         {/* Role Subtext */}
-        <p className="text-blue-600 font-semibold mb-3 text-sm">
+        <p className="text-blue-600 font-semibold mb-3 text-sm min-h-[20px]">
           {member.role}
         </p>
 
         {/* Bio */}
-        {member.bio && (
-          <p className="text-gray-600 text-sm mb-4">
+        {member.bio ? (
+          <p className="text-gray-600 text-sm mb-4 min-h-[64px]">
             {member.bio}
           </p>
+        ) : (
+          <div className="min-h-[64px] mb-4" />
         )}
 
         {/* Joined Date */}
-        {member.joinedDate && (
-          <p className="text-gray-500 text-xs mb-4">
-            Joined: {new Date(member.joinedDate).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-            })}
-          </p>
-        )}
+        <p className="text-gray-500 text-xs mb-4 min-h-[18px]">
+          {member.joinedDate
+            ? `Joined: ${new Date(member.joinedDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+              })}`
+            : ''}
+        </p>
 
         {/* Social Links */}
-        <div className="flex gap-2 pt-4 border-t border-blue-100 mb-4">
+        <div className="flex gap-2 pt-4 border-t border-blue-100 mb-4 mt-auto">
           {/* LinkedIn */}
           {member.linkedinUrl && (
             <Link

@@ -63,7 +63,12 @@ export default function AchievementsPage() {
 
   const fetchAdminUsers = async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/admins`)
+      const response = await fetch(`${API_URL}/auth/admins`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
       if (response.ok) {
         const admins = await response.json()
         setAdminUsers(admins)
@@ -76,7 +81,12 @@ export default function AchievementsPage() {
   const fetchAchievements = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`${API_URL}/achievements`)
+      const response = await fetch(`${API_URL}/achievements`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
       const data = await response.json()
 
       if (data.success) {
@@ -345,7 +355,7 @@ export default function AchievementsPage() {
             {displayedAchievements.map((achievement, index) => (
               <div
                 key={achievement.id}
-                className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
               >
                 {user?.isAdmin && (
                   <div className="absolute top-3 right-3 z-10 flex gap-2">
@@ -394,11 +404,11 @@ export default function AchievementsPage() {
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1">
                       <p className="text-xs uppercase tracking-[0.2em] text-sky-700/80">{achievement.competition}</p>
-                      <h3 className="text-xl font-semibold text-slate-900 leading-snug">{achievement.title}</h3>
+                      <h3 className="text-xl font-semibold text-slate-900 leading-snug line-clamp-2 h-14">{achievement.title}</h3>
                       
                       {/* Categories */}
                       {achievement.categories && achievement.categories.length > 0 && (
@@ -416,7 +426,7 @@ export default function AchievementsPage() {
                     </div>
                   </div>
 
-                  <p className="text-sm text-slate-600 leading-relaxed mb-4">
+                  <p className="text-sm text-slate-600 leading-relaxed mb-4 line-clamp-3 h-16">
                     {achievement.description.length <= MAX_DESCRIPTION_LENGTH
                       ? achievement.description
                       : `${achievement.description.substring(0, MAX_DESCRIPTION_LENGTH)}...`}
@@ -435,7 +445,7 @@ export default function AchievementsPage() {
 
                   {/* Participants */}
                   {achievement.participants && achievement.participants.length > 0 && (
-                    <div className="mb-4">
+                    <div className="mb-4 min-h-[60px]">
                       <p className="text-xs font-semibold text-gray-700 mb-2">Participants:</p>
                       <div className="flex flex-wrap gap-2">
                         {achievement.participants.map((participantId, idx) => {
@@ -453,7 +463,7 @@ export default function AchievementsPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                       {achievement.linkedinUrl && (
                         <a 

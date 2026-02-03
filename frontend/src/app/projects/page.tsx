@@ -62,7 +62,12 @@ export default function ProjectsPage() {
 
   const fetchAdminUsers = async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/admins`)
+      const response = await fetch(`${API_URL}/auth/admins`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
       if (response.ok) {
         const admins = await response.json()
         setAdminUsers(admins)
@@ -75,7 +80,12 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`${API_URL}/projects`)
+      const response = await fetch(`${API_URL}/projects`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
       const data = await response.json()
 
       if (data.success) {

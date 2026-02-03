@@ -21,7 +21,7 @@ const FeaturedProjects = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   
-  const MAX_DESCRIPTION_LENGTH = 120
+  const MAX_DESCRIPTION_LENGTH = 75
 
   // Define gradient colors for featured projects
   const gradients = [
@@ -79,8 +79,23 @@ const FeaturedProjects = () => {
           
           console.log('🎨 Transformed projects:', transformedProjects)
           
-          // Show ALL projects (not filtered by image) - display up to 10
-          const projectsToDisplay = transformedProjects.slice(0, 10)
+          // Filter out seed/default projects - only show real user-added projects
+          // Exclude projects with titles like 'Autonomous Robot', 'Smart Home System', 'E-commerce Platform'
+          const seedProjectTitles = [
+            'Autonomous Robot',
+            'Smart Home System',
+            'E-commerce Platform',
+            'autonomous inspection drone'
+          ]
+          
+          const realProjects = transformedProjects.filter((p: any) => 
+            !seedProjectTitles.some(seedTitle => 
+              p.title.toLowerCase().includes(seedTitle.toLowerCase())
+            )
+          )
+          
+          // Display up to 10 real projects
+          const projectsToDisplay = realProjects.slice(0, 10)
           
           console.log('✅ Projects to display:', projectsToDisplay.length)
           setProjects(projectsToDisplay)
@@ -172,16 +187,18 @@ const FeaturedProjects = () => {
                   <h3 className="text-3xl md:text-5xl font-bold mb-4 line-clamp-2">
                     {projects[currentSlide].title}
                   </h3>
-                  <p className="text-base md:text-lg mb-6 text-white/95 line-clamp-3">
+                  <p className="text-base md:text-lg mb-6 text-white/95 line-clamp-2">
                     {truncateDescription(projects[currentSlide].description)}
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <button 
-                      onClick={() => handleSeeMore(projects[currentSlide].id)}
-                      className="bg-white text-gray-900 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg text-sm md:text-base"
-                    >
-                      See More Details
-                    </button>
+                    {projects[currentSlide].description.length > MAX_DESCRIPTION_LENGTH && (
+                      <button 
+                        onClick={() => handleSeeMore(projects[currentSlide].id)}
+                        className="bg-white text-gray-900 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg text-sm md:text-base"
+                      >
+                        See More Details
+                      </button>
+                    )}
                     <button 
                       onClick={() => router.push('/projects')}
                       className="bg-white/20 backdrop-blur-sm text-white border-2 border-white px-6 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition-colors text-sm md:text-base"

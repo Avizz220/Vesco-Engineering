@@ -116,8 +116,7 @@ const About = () => {
           <div className="max-w-4xl mx-auto">
             <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">Our Mission</h3>
             <p className="text-base sm:text-lg text-gray-700 leading-relaxed text-center">
-              To deliver efficient, reliable, and innovative engineering solutions and services through technology-driven approaches. We focus on solving real-world challenges, optimizing systems, and pushing engineering boundaries to create impactful, sustainable, and future-ready solutions for society.
-            </p>
+              To deliver efficient, reliable, and innovative engineering solutions and services through technology-driven approaches. 
           </div>
         </motion.div>
       </div>

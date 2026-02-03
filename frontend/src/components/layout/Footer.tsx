@@ -41,7 +41,7 @@ const Footer = () => {
               alt="VES logo"
               width={250}
               height={200}
-              className="h-14 w-auto"
+              className="h-18 w-auto"
             />
           </p>
           <p className="text-sm sm:text-base text-gray-400">Vincere Engineering Services</p>

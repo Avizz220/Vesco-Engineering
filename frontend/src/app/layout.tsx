@@ -26,6 +26,11 @@ export const metadata: Metadata = {
   description: 'Showcasing innovative projects and competition achievements of the VESCO university team',
   keywords: ['VESCO', 'engineering', 'university', 'projects', 'competitions', 'team'],
   authors: [{ name: 'VESCO Team' }],
+  icons: {
+    icon: '/ONLY LOGO.png',
+    shortcut: '/ONLY LOGO.png',
+    apple: '/ONLY LOGO.png',
+  },
 }
 
 export default function RootLayout({

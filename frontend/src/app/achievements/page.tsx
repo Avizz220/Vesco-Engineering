@@ -41,7 +41,7 @@ export default function AchievementsPage() {
   const [showImageCropper, setShowImageCropper] = useState(false)
   const [imageForCropping, setImageForCropping] = useState<string | null>(null)
   const [originalFileName, setOriginalFileName] = useState<string>('')
-  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>>([])
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])
   const [categoryInput, setCategoryInput] = useState('')
   
   const [newAchievement, setNewAchievement] = useState({

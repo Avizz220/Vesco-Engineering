@@ -3,20 +3,9 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import roboticImg from "@/assets/robotic.jpg"
 import { API_URL, IMAGE_URL_PREFIX } from "@/lib/api"
-
-// Fallback projects if API fails or no projects exist
-const fallbackProjects = [
-  {
-    id: "fallback-1",
-    title: "Autonomous Inspection Drone",
-    description:
-      "AI-guided aerial platform for precision inspections with live analytics and automated flight paths.",
-    imageUrl: roboticImg.src,
-    technologies: ["AI/ML", "Computer Vision", "Edge Compute"],
-  },
-]
 
 interface Project {
   id: string
@@ -35,17 +24,39 @@ const cardVariants = {
 }
 
 export default function ProjectSlider() {
-  const [projects, setProjects] = useState<Project[]>(fallbackProjects)
+  const router = useRouter()
+  const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [index, setIndex] = useState(0)
   const length = projects.length
+
+  const MAX_DESCRIPTION_WORDS = 50
+
+  const truncateDescriptionByWords = (text: string, maxWords: number) => {
+    const words = text.split(" ")
+    if (words.length <= maxWords) return { text, isTruncated: false }
+    return {
+      text: words.slice(0, maxWords).join(" ") + "...",
+      isTruncated: true,
+    }
+  }
+
+  const handleViewMore = (projectId: string) => {
+    sessionStorage.setItem("openProjectId", projectId)
+    router.push("/projects")
+  }
 
   // Fetch real projects from API
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch(`${API_URL}/projects`)
+        const response = await fetch(`${API_URL}/projects`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        })
         const data = await response.json()
 
         if (data.success && data.projects.length > 0) {
@@ -53,12 +64,37 @@ export default function ProjectSlider() {
             id: project.id,
             title: project.title,
             description: project.description,
-            imageUrl: project.imageUrl ? `${IMAGE_URL_PREFIX}${project.imageUrl}` : roboticImg.src,
+            imageUrl: project.imageUrl
+              ? project.imageUrl.startsWith("http")
+                ? project.imageUrl
+                : `${IMAGE_URL_PREFIX}${project.imageUrl}`
+              : roboticImg.src,
             technologies: Array.isArray(project.technologies) ? project.technologies : [],
             githubUrl: project.githubUrl,
             liveUrl: project.liveUrl,
           }))
-          setProjects(transformedProjects)
+
+          const seedProjectKeywords = [
+            "autonomous robot",
+            "smart home",
+            "e-commerce",
+            "autonomous inspection",
+            "drone",
+            "sample",
+            "test",
+            "demo",
+          ]
+
+          const realProjects = transformedProjects.filter((project: Project) => {
+            const titleLower = project.title.toLowerCase()
+            const descLower = project.description.toLowerCase()
+            return !seedProjectKeywords.some(
+              (keyword) => titleLower.includes(keyword) || descLower.includes(keyword)
+            )
+          })
+
+          setProjects(realProjects)
+          setIndex(0)
         }
       } catch (error) {
         console.error('Error fetching projects:', error)
@@ -71,7 +107,7 @@ export default function ProjectSlider() {
     fetchProjects()
   }, [])
 
-  const current = useMemo(() => projects[index], [index])
+  const current = useMemo(() => projects[index], [index, projects])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -81,6 +117,10 @@ export default function ProjectSlider() {
   }, [length])
 
   const goTo = (i: number) => setIndex((i + length) % length)
+
+  if (isLoading || projects.length === 0) {
+    return null
+  }
 
   return (
     <section className="relative overflow-hidden py-12 sm:py-14 md:py-16">
@@ -135,7 +175,20 @@ export default function ProjectSlider() {
                     Live delivery
                   </div>
                   <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mt-2 sm:mt-3">{current.title}</h3>
-                  <p className="text-blue-100 mt-1.5 sm:mt-2 leading-relaxed text-sm md:text-base">{current.description}</p>
+                  <p className="text-blue-100 mt-1.5 sm:mt-2 leading-relaxed text-sm md:text-base">
+                    {truncateDescriptionByWords(current.description, MAX_DESCRIPTION_WORDS).text}
+                  </p>
+                  {truncateDescriptionByWords(current.description, MAX_DESCRIPTION_WORDS).isTruncated && (
+                    <button
+                      onClick={() => handleViewMore(current.id)}
+                      className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition"
+                    >
+                      View More
+                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
                   <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4 sm:mt-5">
                     {current.technologies.map((tag) => (
                       <span

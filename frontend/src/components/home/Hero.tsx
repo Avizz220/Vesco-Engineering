@@ -11,7 +11,7 @@ import aerospaceImg from '@/assets/aerospace.jpg'
 
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-12 sm:pb-16 md:pb-20 lg:pb-12 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 text-white pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-12 sm:pb-16 md:pb-20 lg:pb-12 overflow-hidden">
       {/* Animated Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-40 h-40 sm:w-72 sm:h-72 bg-orange-500 rounded-full blur-3xl animate-pulse"></div>
@@ -221,6 +221,16 @@ const Hero = () => {
             </Link>
           </motion.div>
         </div>
+      </div>
+
+      {/* Decorative Wave */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+            fill="white"
+          />
+        </svg>
       </div>
 
     </section>

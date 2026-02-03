@@ -39,8 +39,8 @@ const Footer = () => {
             <Image
               src="/WITH TEXT.png"
               alt="VES logo"
-              width={180}
-              height={120}
+              width={250}
+              height={200}
               className="h-14 w-auto"
             />
           </p>

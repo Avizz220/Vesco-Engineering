@@ -264,8 +264,8 @@ const Navbar = () => {
                 <Image
                   src="/WITH TEXT.png"
                   alt="VES logo"
-                  width={180}
-                  height={120}
+                  width={250}
+                  height={200}
                   className="h-12 w-auto"
                   priority
                 />

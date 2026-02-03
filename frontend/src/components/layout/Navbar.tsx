@@ -61,7 +61,7 @@ const Navbar = () => {
   useEffect(() => {
     if (!showSettingsModal) return
     if (typeof window === 'undefined') return
-    
+
     // Reset edit mode and initialize profile data from user
     setIsEditingProfile(false)
     if (user) {
@@ -70,7 +70,7 @@ const Navbar = () => {
         email: user.email || '',
       })
     }
-    
+
     const scriptId = 'lottie-player'
     if (!document.getElementById(scriptId)) {
       const script = document.createElement('script')
@@ -94,12 +94,12 @@ const Navbar = () => {
   // Helper function to get the correct profile image URL
   const getProfileImageUrl = () => {
     if (!user?.image) return "/profilepic.png"
-    
+
     // If it's a full URL (Google image or external), use as is
     if (user.image.startsWith('http://') || user.image.startsWith('https://')) {
       return user.image
     }
-    
+
     // If it's a relative path (uploaded image), prepend the API URL
     const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'
     return `${baseUrl}${user.image}`
@@ -136,9 +136,8 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white shadow-md' : 'bg-white'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md' : 'bg-white'
+          }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-3">
           <div className="flex items-center justify-between h-16 sm:h-20">
@@ -168,11 +167,10 @@ const Navbar = () => {
                       router.push('/')
                     }
                   }}
-                  className={`text-base xl:text-lg font-medium transition-colors hover:text-primary-600 ${
-                    pathname === link.href
+                  className={`text-base xl:text-lg font-medium transition-colors hover:text-primary-600 ${pathname === link.href
                       ? 'text-primary-600'
                       : 'text-gray-700'
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>
@@ -187,9 +185,9 @@ const Navbar = () => {
                     onClick={() => user?.isGoogleUser ? setShowProfileModal(true) : setShowSettingsModal(true)}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
-                    <img 
-                      src={getProfileImageUrl()} 
-                      alt="Profile" 
+                    <img
+                      src={getProfileImageUrl()}
+                      alt="Profile"
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                       referrerPolicy="no-referrer"
                     />
@@ -233,7 +231,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="lg:hidden text-gray-700"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle mobile menu"
@@ -260,11 +258,11 @@ const Navbar = () => {
             <div className="flex items-center justify-between mb-8">
               <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
                 <Image
-                  src="/WHITE.png"
+                  src="/WITH TEXT.png"
                   alt="VES logo"
-                  width={180}
-                  height={60}
-                  className="h-12 w-auto"
+                  width={480} // Doubled from 240
+                  height={160} // Doubled from 80
+                  className="h-32 sm:h-40 lg:h-48 w-auto" // Increased height classes (h-16 -> h-32, etc.)
                   priority
                 />
               </Link>
@@ -296,11 +294,10 @@ const Navbar = () => {
                       setIsMobileMenuOpen(false)
                     }
                   }}
-                  className={`text-xl font-medium transition-colors hover:text-primary-600 ${
-                    pathname === link.href
+                  className={`text-xl font-medium transition-colors hover:text-primary-600 ${pathname === link.href
                       ? 'text-primary-600'
                       : 'text-gray-700'
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>
@@ -318,9 +315,9 @@ const Navbar = () => {
                     }}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
                   >
-                    <img 
-                      src={getProfileImageUrl()} 
-                      alt="Profile" 
+                    <img
+                      src={getProfileImageUrl()}
+                      alt="Profile"
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                       referrerPolicy="no-referrer"
                     />
@@ -390,9 +387,9 @@ const Navbar = () => {
                 <div className="flex flex-col items-center gap-2">
                   <div className="relative">
                     <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg ring-2 ring-primary-100">
-                      <img 
-                        src={getProfileImageUrl()} 
-                        alt="Profile" 
+                      <img
+                        src={getProfileImageUrl()}
+                        alt="Profile"
                         className="h-full w-full object-cover"
                         referrerPolicy="no-referrer"
                       />
@@ -419,7 +416,7 @@ const Navbar = () => {
                 {/* Profile Edit Form */}
                 <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
                   <p className="text-xs uppercase tracking-[0.2em] text-primary-600 font-semibold">Profile Information</p>
-                  
+
                   <form
                     id="profile-form"
                     className="space-y-3"
@@ -536,7 +533,7 @@ const Navbar = () => {
                   onSubmit={async (e) => {
                     e.preventDefault()
                     setPasswordMessage(null)
-                    
+
                     if (!currentPassword) {
                       setPasswordMessage('Please enter your current password.')
                       return
@@ -609,11 +606,10 @@ const Navbar = () => {
                   </div>
 
                   {passwordMessage && (
-                    <p className={`text-sm rounded-lg px-3 py-2 ${
-                      passwordMessage.includes('success') || passwordMessage.includes('successfully')
+                    <p className={`text-sm rounded-lg px-3 py-2 ${passwordMessage.includes('success') || passwordMessage.includes('successfully')
                         ? 'text-green-700 bg-green-50 border border-green-200'
                         : 'text-red-700 bg-red-50 border border-red-200'
-                    }`}>
+                      }`}>
                       {passwordMessage}
                     </p>
                   )}
@@ -686,9 +682,9 @@ const Navbar = () => {
                 {/* Profile Picture with Ring */}
                 <div className="relative mb-3">
                   <div className="h-20 w-20 rounded-full overflow-hidden border-3 border-white shadow-xl ring-2 ring-blue-400/50">
-                    <img 
-                      src="/profilepic.png" 
-                      alt="Profile" 
+                    <img
+                      src="/profilepic.png"
+                      alt="Profile"
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -709,11 +705,11 @@ const Navbar = () => {
                 {/* Colored Google Icon */}
                 <div className="flex-shrink-0">
                   <svg className="h-8 w-8" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                    <path fill="none" d="M0 0h48v48H0z" />
                   </svg>
                 </div>
                 <div className="flex-1">
@@ -735,7 +731,7 @@ const Navbar = () => {
                   </svg>
                   <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Account Details</h3>
                 </div>
-                
+
                 <div className="space-y-2">
                   {/* Full Name */}
                   <div className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">

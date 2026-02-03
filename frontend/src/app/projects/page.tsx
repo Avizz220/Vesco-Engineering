@@ -7,6 +7,7 @@ import ProjectModal from '@/components/projects/ProjectModal'
 import { Project } from '@/types'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
+import ImageCropper from '@/components/ui/ImageCropper'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 export default function ProjectsPage() {
@@ -25,8 +26,9 @@ export default function ProjectsPage() {
   const [dialogMessage, setDialogMessage] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'update', index?: number } | null>(null)
-  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])
-  const [newProject, setNewProject] = useState({
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])  const [showImageCropper, setShowImageCropper] = useState(false)
+  const [imageForCropping, setImageForCropping] = useState<string | null>(null)
+  const [originalFileName, setOriginalFileName] = useState<string>('')  const [newProject, setNewProject] = useState({
     title: '',
     contributors: [] as string[],
     relatedAreas: [] as string[],
@@ -194,8 +196,27 @@ export default function ProjectsPage() {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setNewProject(prev => ({ ...prev, photo: e.target.files![0] }))
+      const file = e.target.files[0]
+      setOriginalFileName(file.name)
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImageForCropping(reader.result as string)
+        setShowImageCropper(true)
+      }
+      reader.readAsDataURL(file)
     }
+  }
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const croppedFile = new File([croppedBlob], originalFileName, { type: 'image/jpeg' })
+    setNewProject(prev => ({ ...prev, photo: croppedFile }))
+    setShowImageCropper(false)
+    setImageForCropping(null)
+  }
+
+  const handleCropCancel = () => {
+    setShowImageCropper(false)
+    setImageForCropping(null)
   }
 
   const handleSubmitProject = async (e: React.FormEvent) => {
@@ -905,6 +926,15 @@ export default function ProjectsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Image Cropper */}
+      {showImageCropper && imageForCropping && (
+        <ImageCropper
+          image={imageForCropping}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
       )}
     </div>
   )

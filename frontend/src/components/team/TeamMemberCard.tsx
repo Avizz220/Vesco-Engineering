@@ -18,12 +18,8 @@ interface TeamMemberCardProps {
 }
 
 const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDelete, onViewProjects }: TeamMemberCardProps) => {
-  const [showFullBio, setShowFullBio] = useState(false)
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
-  
-  const MAX_BIO_LENGTH = 120
-  const shouldTruncateBio = member.bio && member.bio.length > MAX_BIO_LENGTH
 
   const handleCopyEmail = () => {
     if (member.email) {
@@ -42,7 +38,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
       className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col"
     >
       {/* Member Image */}
-      <div className="relative h-40 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
+      <div className="relative h-56 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
         {member.imageUrl ? (
           <Image
             src={member.imageUrl.startsWith('http') ? member.imageUrl : `${IMAGE_URL_PREFIX}${member.imageUrl}`}
@@ -54,7 +50,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200">
             <svg
-              className="w-20 h-20 text-blue-300"
+              className="w-28 h-28 text-blue-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -117,21 +113,9 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
 
         {/* Bio */}
         {member.bio && (
-          <div className="mb-4">
-            <p className="text-gray-600 text-sm">
-              {shouldTruncateBio && !showFullBio 
-                ? `${member.bio.substring(0, MAX_BIO_LENGTH)}...` 
-                : member.bio}
-            </p>
-            {shouldTruncateBio && (
-              <button
-                onClick={() => setShowFullBio(true)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-1 transition-colors"
-              >
-                Read More
-              </button>
-            )}
-          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            {member.bio}
+          </p>
         )}
 
         {/* Joined Date */}
@@ -240,39 +224,6 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
                 Copy Email
               </>
             )}
-          </button>
-        </div>
-      </div>
-    )}
-
-    {/* Full Bio Modal */}
-    {showFullBio && (
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4" onClick={() => setShowFullBio(false)}>
-        <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-gray-900">{member.name}</h3>
-            <button
-              onClick={() => setShowFullBio(false)}
-              className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-          
-          <p className="text-blue-600 font-semibold mb-4">{member.role}</p>
-          
-          <div className="prose max-w-none">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{member.bio}</p>
-          </div>
-          
-          <button
-            onClick={() => setShowFullBio(false)}
-            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold transition-colors"
-          >
-            Close
           </button>
         </div>
       </div>

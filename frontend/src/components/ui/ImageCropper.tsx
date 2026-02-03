@@ -90,12 +90,12 @@ const ImageCropper = ({ image, onCropComplete, onCancel }: ImageCropperProps) =>
             image={image}
             crop={crop}
             zoom={zoom}
-            aspect={1}
+            aspect={4 / 3}
             onCropChange={setCrop}
             onCropComplete={onCropCompleteHandler}
             onZoomChange={setZoom}
-            cropShape="round"
-            showGrid={false}
+            cropShape="rect"
+            showGrid={true}
           />
         </div>
 

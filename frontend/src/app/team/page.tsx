@@ -464,45 +464,26 @@ export default function TeamPage() {
             <p className="text-gray-600 text-lg">No team members found.</p>
           </div>
         ) : (
-          /* Categorized Team Members Sections */
+          /* All Team Members Grid */
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="space-y-12 sm:space-y-14 md:space-y-16"
           >
-            {departments.map((department) => {
-              const deptMembers = categorizedMembers[department]
-              if (deptMembers.length === 0) return null
-
-              return (
-                <div key={department} className={`rounded-lg p-5 sm:p-6 md:p-8 border ${departmentColors[department]} shadow-sm`}>
-                  {/* Department Header */}
-                  <div className="mb-6 sm:mb-8 md:mb-10">
-                    <h2 className={`text-2xl sm:text-3xl font-bold ${departmentTitleColors[department]} mb-2`}>
-                      {department}
-                    </h2>
-                    <div className={`w-20 sm:w-24 h-1 rounded-full ${departmentAccentColors[department]}`}></div>
-                  </div>
-
-                  {/* Department Members Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
-                    {deptMembers.map((member, index) => (
-                      <TeamMemberCard
-                        key={member.id}
-                        member={member}
-                        index={index}
-                        isOwnProfile={user?.email === member.email}
-                        canDelete={user?.email === member.email}
-                        onEdit={handleEditProfile}
-                        onDelete={handleDeleteProfile}
-                        onViewProjects={handleViewProjects}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+              {members.map((member, index) => (
+                <TeamMemberCard
+                  key={member.id}
+                  member={member}
+                  index={index}
+                  isOwnProfile={user?.email === member.email}
+                  canDelete={user?.email === member.email}
+                  onEdit={handleEditProfile}
+                  onDelete={handleDeleteProfile}
+                  onViewProjects={handleViewProjects}
+                />
+              ))}
+            </div>
           </motion.div>
         )}
 
@@ -614,15 +595,23 @@ export default function TeamPage() {
               {/* Bio */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-800">
-                  Bio/Description
+                  Bio/Description (Max 15 words)
                 </label>
                 <textarea
                   value={formData.bio}
-                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                  rows={4}
+                  onChange={(e) => {
+                    const words = e.target.value.trim().split(/\s+/).filter(w => w.length > 0)
+                    if (words.length <= 15 || e.target.value.length < formData.bio.length) {
+                      setFormData(prev => ({ ...prev, bio: e.target.value }))
+                    }
+                  }}
+                  rows={3}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-none"
-                  placeholder="Tell us about yourself, your expertise, and interests..."
+                  placeholder="Brief description (max 15 words)..."
                 />
+                <p className="text-xs text-gray-500">
+                  {formData.bio ? formData.bio.trim().split(/\s+/).filter(w => w.length > 0).length : 0} / 15 words
+                </p>
               </div>
 
               {/* LinkedIn URL */}

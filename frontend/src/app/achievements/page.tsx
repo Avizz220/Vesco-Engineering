@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
+import ImageCropper from '@/components/ui/ImageCropper'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 
 interface Achievement {
@@ -36,6 +37,9 @@ export default function AchievementsPage() {
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null)
   const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false)
   const MAX_DESCRIPTION_LENGTH = 100
+  const [showImageCropper, setShowImageCropper] = useState(false)
+  const [imageForCropping, setImageForCropping] = useState<string | null>(null)
+  const [originalFileName, setOriginalFileName] = useState<string>('')
   
   const [newAchievement, setNewAchievement] = useState({
     title: '',
@@ -72,8 +76,27 @@ export default function AchievementsPage() {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setNewAchievement(prev => ({ ...prev, photo: e.target.files![0] }))
+      const file = e.target.files[0]
+      setOriginalFileName(file.name)
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImageForCropping(reader.result as string)
+        setShowImageCropper(true)
+      }
+      reader.readAsDataURL(file)
     }
+  }
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const croppedFile = new File([croppedBlob], originalFileName, { type: 'image/jpeg' })
+    setNewAchievement(prev => ({ ...prev, photo: croppedFile }))
+    setShowImageCropper(false)
+    setImageForCropping(null)
+  }
+
+  const handleCropCancel = () => {
+    setShowImageCropper(false)
+    setImageForCropping(null)
   }
 
   const handleEditAchievement = (achievement: Achievement, index: number) => {
@@ -860,6 +883,15 @@ export default function AchievementsPage() {
         </>
         )}
       </AnimatePresence>
+
+      {/* Image Cropper */}
+      {showImageCropper && imageForCropping && (
+        <ImageCropper
+          image={imageForCropping}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
     </div>
   )
 }

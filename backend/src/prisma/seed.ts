@@ -64,14 +64,16 @@ async function main() {
       title: 'National Robotics Competition',
       description: 'Won first place in the autonomous navigation challenge at the National Robotics Competition.',
       date: new Date('2025-09-15'),
-      position: '1st Place',
+      categories: ['Robotics', 'AI', 'Automation'],
+      participants: [],
       competition: 'National Robotics Competition 2025',
     },
     {
       title: 'IEEE Innovation Challenge',
       description: 'Secured second place in the IEEE Innovation Challenge with our IoT-based solution.',
       date: new Date('2025-06-20'),
-      position: '2nd Place',
+      categories: ['IoT', 'Innovation', 'Hardware'],
+      participants: [],
       competition: 'IEEE Innovation Challenge 2025',
     },
   ]

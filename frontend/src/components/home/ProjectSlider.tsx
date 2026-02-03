@@ -30,13 +30,12 @@ export default function ProjectSlider() {
   const [index, setIndex] = useState(0)
   const length = projects.length
 
-  const MAX_DESCRIPTION_WORDS = 50
+  const MAX_DESCRIPTION_CHARS = 200
 
-  const truncateDescriptionByWords = (text: string, maxWords: number) => {
-    const words = text.split(" ")
-    if (words.length <= maxWords) return { text, isTruncated: false }
+  const truncateDescriptionByChars = (text: string, maxChars: number) => {
+    if (text.length <= maxChars) return { text, isTruncated: false }
     return {
-      text: words.slice(0, maxWords).join(" ") + "...",
+      text: text.substring(0, maxChars).trim() + "...",
       isTruncated: true,
     }
   }
@@ -176,9 +175,9 @@ export default function ProjectSlider() {
                   </div>
                   <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mt-2 sm:mt-3">{current.title}</h3>
                   <p className="text-blue-100 mt-1.5 sm:mt-2 leading-relaxed text-sm md:text-base">
-                    {truncateDescriptionByWords(current.description, MAX_DESCRIPTION_WORDS).text}
+                    {truncateDescriptionByChars(current.description, MAX_DESCRIPTION_CHARS).text}
                   </p>
-                  {truncateDescriptionByWords(current.description, MAX_DESCRIPTION_WORDS).isTruncated && (
+                  {truncateDescriptionByChars(current.description, MAX_DESCRIPTION_CHARS).isTruncated && (
                     <button
                       onClick={() => handleViewMore(current.id)}
                       className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition"

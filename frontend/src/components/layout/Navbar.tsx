@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -142,7 +143,15 @@ const Navbar = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center">
+            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
+              <Image
+                src="/WITH TEXT.png"
+                alt="VES logo"
+                width={40}
+                height={40}
+                className="h-9 w-auto"
+                priority
+              />
               <span className="text-primary-600">VES</span>
             </Link>
 
@@ -250,9 +259,16 @@ const Navbar = () => {
           <div className="container mx-auto px-6 py-6">
             {/* Mobile Header */}
             <div className="flex items-center justify-between mb-8">
-              <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center">
+              <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
+                <Image
+                  src="/WITH TEXT.png"
+                  alt="VES logo"
+                  width={40}
+                  height={40}
+                  className="h-9 w-auto"
+                  priority
+                />
                 <span className="text-primary-600">VES</span>
-                
               </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}

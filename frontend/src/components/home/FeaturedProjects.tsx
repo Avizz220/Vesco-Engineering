@@ -112,20 +112,11 @@ const FeaturedProjects = () => {
 
   // Show loading state or render empty div during loading
   if (isLoading) {
-    return (
-      <section className="py-20 bg-gray-100">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-gray-500">Loading projects...</p>
-        </div>
-      </section>
-    )
-  }
-
-  // Don't render if no projects
-  if (projects.length === 0) {
-    console.log('⚠️ No projects to display in FeaturedProjects')
     return null
   }
+
+  // Don't render featured projects section - only show in projects page
+  return null
 
   // Auto-advance slides
   useEffect(() => {

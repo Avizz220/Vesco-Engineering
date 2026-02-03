@@ -26,9 +26,11 @@ export default function ProjectsPage() {
   const [dialogMessage, setDialogMessage] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'update', index?: number } | null>(null)
-  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])  const [showImageCropper, setShowImageCropper] = useState(false)
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>([])
+  const [showImageCropper, setShowImageCropper] = useState(false)
   const [imageForCropping, setImageForCropping] = useState<string | null>(null)
-  const [originalFileName, setOriginalFileName] = useState<string>('')  const [newProject, setNewProject] = useState({
+  const [originalFileName, setOriginalFileName] = useState<string>('')
+  const [newProject, setNewProject] = useState({
     title: '',
     contributors: [] as string[],
     relatedAreas: [] as string[],

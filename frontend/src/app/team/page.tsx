@@ -148,7 +148,6 @@ export default function TeamPage() {
       
       // Refresh user profile in navbar if not admin
       if (!user?.isAdmin) {
-        const { refreshUserProfile } = await import('@/context/AuthContext')
         // This will update the navbar picture
         window.location.reload()
       }

@@ -158,7 +158,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 flex flex-col items-center justify-center gap-3 sm:gap-4"
           >
             <span className="whitespace-nowrap">Welcome to Team</span>
             <Image
@@ -166,7 +166,7 @@ const Hero = () => {
               alt="VES logo"
               width={200}
               height={80}
-              className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto inline-block"
+              className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto"
               priority
             />
           </motion.h1>

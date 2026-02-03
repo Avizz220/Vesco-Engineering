@@ -36,13 +36,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 text-center">
           <p className="text-base sm:text-lg mb-2 inline-flex items-center gap-3 flex-wrap justify-center">
             &copy; {currentYear} Team <span className="text-white font-bold">VES</span>. All rights reserved.
-            <Image
-              src="/WITH TEXT.png"
-              alt="VES logo"
-              width={250}
-              height={200}
-              className="h-18 w-auto"
-            />
+           
           </p>
           <p className="text-sm sm:text-base text-gray-400">Vincere Engineering Services</p>
         </div>

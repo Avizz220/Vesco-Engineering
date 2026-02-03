@@ -42,16 +42,17 @@ model Project {
 }
 
 model Achievement {
-  id          String   @id @default(uuid())
-  title       String
-  description String   @db.Text
-  date        DateTime
-  imageUrl    String?
-  linkedinUrl String?
-  position    String   // e.g., "1st Place", "Winner", "Runner-up"
-  competition String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(uuid())
+  title        String
+  description  String   @db.Text
+  date         DateTime
+  imageUrl     String?
+  linkedinUrl  String?
+  categories   Json     // Array of category strings (max 3)
+  participants Json     // Array of participant user IDs
+  competition  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("achievements")
   @@index([date])

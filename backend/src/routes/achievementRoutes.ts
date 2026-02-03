@@ -95,7 +95,8 @@ router.post(
   [
     body('title').trim().notEmpty().withMessage('Title is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
-    body('position').trim().notEmpty().withMessage('Position is required'),
+    body('categories').notEmpty().withMessage('Categories are required'),
+    body('participants').notEmpty().withMessage('Participants are required'),
     body('competition').trim().notEmpty().withMessage('Competition is required'),
     body('date').isISO8601().withMessage('Valid date is required'),
   ],
@@ -115,11 +116,16 @@ router.post(
       const {
         title,
         description,
-        position,
+        categories,
+        participants,
         competition,
         date,
         linkedinUrl
       } = req.body
+
+      // Parse JSON strings
+      const categoriesArray = typeof categories === 'string' ? JSON.parse(categories) : categories
+      const participantsArray = typeof participants === 'string' ? JSON.parse(participants) : participants
 
       // Handle Cloudinary URL or local path
       const imageUrl = getImageUrl(req.file)
@@ -128,7 +134,8 @@ router.post(
         data: {
           title,
           description,
-          position,
+          categories: categoriesArray,
+          participants: participantsArray,
           competition,
           date: new Date(date),
           imageUrl,
@@ -163,11 +170,16 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
     const {
       title,
       description,
-      position,
+      categories,
+      participants,
       competition,
       date,
       linkedinUrl
     } = req.body
+
+    // Parse JSON strings
+    const categoriesArray = categories ? (typeof categories === 'string' ? JSON.parse(categories) : categories) : undefined
+    const participantsArray = participants ? (typeof participants === 'string' ? JSON.parse(participants) : participants) : undefined
 
     // Handle Cloudinary URL or local path
     const imageUrl = req.file ? getImageUrl(req.file) : undefined
@@ -177,7 +189,8 @@ router.put('/:id', verifyAdmin, upload.single('image'), async (req: Request, res
       data: {
         ...(title && { title }),
         ...(description && { description }),
-        ...(position && { position }),
+        ...(categoriesArray && { categories: categoriesArray }),
+        ...(participantsArray && { participants: participantsArray }),
         ...(competition && { competition }),
         ...(date && { date: new Date(date) }),
         ...(linkedinUrl !== undefined && { linkedinUrl }),

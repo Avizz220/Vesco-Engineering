@@ -12,7 +12,8 @@ interface Achievement {
   id: string
   title: string
   description: string
-  position: string
+  categories: string[]
+  participants: string[]
   competition: string
   date: string
   imageUrl?: string
@@ -40,11 +41,14 @@ export default function AchievementsPage() {
   const [showImageCropper, setShowImageCropper] = useState(false)
   const [imageForCropping, setImageForCropping] = useState<string | null>(null)
   const [originalFileName, setOriginalFileName] = useState<string>('')
+  const [adminUsers, setAdminUsers] = useState<Array<{ id: string; fullName: string; email: string }>>>([])
+  const [categoryInput, setCategoryInput] = useState('')
   
   const [newAchievement, setNewAchievement] = useState({
     title: '',
     description: '',
-    position: '',
+    categories: [] as string[],
+    participants: [] as string[],
     competition: '',
     date: '',
     linkedinUrl: '',
@@ -54,7 +58,20 @@ export default function AchievementsPage() {
   // Fetch achievements from backend
   useEffect(() => {
     fetchAchievements()
+    fetchAdminUsers()
   }, [])
+
+  const fetchAdminUsers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/auth/admins`)
+      if (response.ok) {
+        const admins = await response.json()
+        setAdminUsers(admins)
+      }
+    } catch (error) {
+      console.error('Error fetching admin users:', error)
+    }
+  }
 
   const fetchAchievements = async () => {
     try {
@@ -103,12 +120,14 @@ export default function AchievementsPage() {
     setNewAchievement({
       title: achievement.title,
       description: achievement.description,
-      position: achievement.position,
+      categories: achievement.categories || [],
+      participants: achievement.participants || [],
       competition: achievement.competition,
       date: achievement.date.split('T')[0],
       linkedinUrl: achievement.linkedinUrl || '',
       photo: null,
     })
+    setCategoryInput((achievement.categories || []).join(', '))
     setEditingIndex(index)
     setShowAddAchievementModal(true)
   }
@@ -158,7 +177,8 @@ export default function AchievementsPage() {
         const formData = new FormData()
         formData.append('title', newAchievement.title)
         formData.append('description', newAchievement.description)
-        formData.append('position', newAchievement.position)
+        formData.append('categories', JSON.stringify(newAchievement.categories))
+        formData.append('participants', JSON.stringify(newAchievement.participants))
         formData.append('competition', newAchievement.competition)
         formData.append('date', newAchievement.date)
         if (newAchievement.linkedinUrl) {
@@ -189,7 +209,8 @@ export default function AchievementsPage() {
         const formData = new FormData()
         formData.append('title', newAchievement.title)
         formData.append('description', newAchievement.description)
-        formData.append('position', newAchievement.position)
+        formData.append('categories', JSON.stringify(newAchievement.categories))
+        formData.append('participants', JSON.stringify(newAchievement.participants))
         formData.append('competition', newAchievement.competition)
         formData.append('date', newAchievement.date)
         if (newAchievement.linkedinUrl) {
@@ -220,12 +241,14 @@ export default function AchievementsPage() {
       setNewAchievement({
         title: '',
         description: '',
-        position: '',
+        categories: [],
+        participants: [],
         competition: '',
         date: '',
         linkedinUrl: '',
         photo: null,
       })
+      setCategoryInput('')
     } catch (error: any) {
       setDialogMessage(error.message || 'Failed to save achievement')
       setShowErrorDialog(true)
@@ -373,13 +396,24 @@ export default function AchievementsPage() {
                 {/* Content */}
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-3 mb-3">
-                    <div>
+                    <div className="flex-1">
                       <p className="text-xs uppercase tracking-[0.2em] text-sky-700/80">{achievement.competition}</p>
                       <h3 className="text-xl font-semibold text-slate-900 leading-snug">{achievement.title}</h3>
+                      
+                      {/* Categories */}
+                      {achievement.categories && achievement.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {achievement.categories.map((category, idx) => (
+                            <span 
+                              key={idx}
+                              className="inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-3 py-1 text-xs font-medium border border-sky-200"
+                            >
+                              {category}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-sm font-semibold border border-emerald-200">
-                      {achievement.position}
-                    </span>
                   </div>
 
                   <p className="text-sm text-slate-600 leading-relaxed mb-4">
@@ -398,6 +432,26 @@ export default function AchievementsPage() {
                       </button>
                     )}
                   </p>
+
+                  {/* Participants */}
+                  {achievement.participants && achievement.participants.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-gray-700 mb-2">Participants:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {achievement.participants.map((participantId, idx) => {
+                          const participant = adminUsers.find(u => u.id === participantId)
+                          return participant ? (
+                            <span 
+                              key={idx}
+                              className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-xs font-medium border border-emerald-200"
+                            >
+                              {participant.fullName}
+                            </span>
+                          ) : null
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -598,23 +652,76 @@ export default function AchievementsPage() {
                 />
               </div>
 
-              {/* Position */}
+              {/* Categories */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-800">
-                  Position/Award <span className="text-red-500">*</span>
+                  Related Categories (Max 3) <span className="text-red-500">*</span>
                 </label>
-                <select
+                <input
+                  type="text"
                   required
-                  value={newAchievement.position}
-                  onChange={(e) => setNewAchievement(prev => ({ ...prev, position: e.target.value }))}
+                  value={categoryInput}
+                  onChange={(e) => {
+                    setCategoryInput(e.target.value)
+                    const categories = e.target.value
+                      .split(',')
+                      .map(c => c.trim())
+                      .filter(c => c.length > 0)
+                      .slice(0, 3)
+                    setNewAchievement(prev => ({ ...prev, categories }))
+                  }}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-100 outline-none"
-                >
-                  <option value="">Select position...</option>
-                  <option value="Winner">Winner</option>
-                  <option value="1st Runner-up">1st Runner-up</option>
-                  <option value="2nd Runner-up">2nd Runner-up</option>
-                  <option value="Participation">Participation</option>
-                </select>
+                  placeholder="e.g., Robotics, AI, Hardware (separate by commas)"
+                />
+                <p className="text-xs text-gray-500">
+                  {newAchievement.categories.length} / 3 categories
+                  {newAchievement.categories.length > 0 && (
+                    <span className="ml-2 text-sky-600">
+                      [{newAchievement.categories.join(', ')}]
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* Participants */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-800">
+                  Participants <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-2">
+                  <div className="border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto bg-gray-50">
+                    {adminUsers.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-2">No team members available</p>
+                    ) : (
+                      adminUsers.map((admin) => (
+                        <label key={admin.id} className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={newAchievement.participants.includes(admin.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setNewAchievement(prev => ({
+                                  ...prev,
+                                  participants: [...prev.participants, admin.id]
+                                }))
+                              } else {
+                                setNewAchievement(prev => ({
+                                  ...prev,
+                                  participants: prev.participants.filter(id => id !== admin.id)
+                                }))
+                              }
+                            }}
+                            className="w-4 h-4 text-sky-600 border-gray-300 rounded focus:ring-sky-500"
+                          />
+                          <span className="text-sm text-gray-700">{admin.fullName}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {newAchievement.participants.length} participant(s) selected
+                  </p>
+                </div>
               </div>
 
               {/* Date */}
@@ -825,20 +932,54 @@ export default function AchievementsPage() {
 
               {/* Content */}
               <div className="p-6 md:p-8">
-                {/* Competition & Position Badge */}
-                <div className="flex items-center justify-between mb-4">
+                {/* Competition */}
+                <div className="mb-4">
                   <p className="text-xs uppercase tracking-[0.25em] text-sky-700 font-semibold">
                     {selectedAchievement.competition}
                   </p>
-                  <span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-4 py-1.5 text-sm font-bold border-2 border-emerald-200">
-                    {selectedAchievement.position}
-                  </span>
                 </div>
 
                 {/* Title */}
                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
                   {selectedAchievement.title}
                 </h2>
+
+                {/* Categories */}
+                {selectedAchievement.categories && selectedAchievement.categories.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Categories:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAchievement.categories.map((category, idx) => (
+                        <span 
+                          key={idx}
+                          className="inline-flex items-center rounded-full bg-sky-100 text-sky-700 px-4 py-1.5 text-sm font-medium border border-sky-200"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Participants */}
+                {selectedAchievement.participants && selectedAchievement.participants.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Participants:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAchievement.participants.map((participantId, idx) => {
+                        const participant = adminUsers.find(u => u.id === participantId)
+                        return participant ? (
+                          <span 
+                            key={idx}
+                            className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-4 py-1.5 text-sm font-medium border border-emerald-200"
+                          >
+                            {participant.fullName}
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Date & LinkedIn */}
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-200">

@@ -426,7 +426,7 @@ export default function ProjectsPage() {
               {user?.isAdmin && (
                 <button
                   onClick={() => setShowAddProjectModal(true)}
-                  className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
+                  className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-2.5 md:py-3 rounded-lg font-semibold text-sm sm:text-sm md:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                     <line x1="12" y1="5" x2="12" y2="19" />

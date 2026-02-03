@@ -187,7 +187,7 @@ export default function ProjectsPage() {
       }
     })
     // Add some default options if no projects exist yet
-    const defaultAreas = ['IoT', 'Web Development', 'AI/ML', 'Robotics', 'Electronics', 'Software', 'Aerospace', 'Manufacturing']
+    const defaultAreas = ['IoT', 'Web Development', 'Mobile Application', 'AI/ML', 'Robotics', 'Electronics', 'Software', 'Aerospace', 'Manufacturing']
     defaultAreas.forEach(area => allAreas.add(area))
     return Array.from(allAreas).sort()
   }, [projectsList])

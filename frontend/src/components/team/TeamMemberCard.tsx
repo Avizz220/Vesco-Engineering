@@ -18,15 +18,31 @@ interface TeamMemberCardProps {
 }
 
 const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete, onViewProjects }: TeamMemberCardProps) => {
+  const [showFullBio, setShowFullBio] = useState(false)
+  const [showEmailDialog, setShowEmailDialog] = useState(false)
+  const [emailCopied, setEmailCopied] = useState(false)
+  
+  const MAX_BIO_LENGTH = 120
+  const shouldTruncateBio = member.bio && member.bio.length > MAX_BIO_LENGTH
+
+  const handleCopyEmail = () => {
+    if (member.email) {
+      navigator.clipboard.writeText(member.email)
+      setEmailCopied(true)
+      setTimeout(() => setEmailCopied(false), 2000)
+    }
+  }
+
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100"
+      className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col"
     >
       {/* Member Image */}
-      <div className="relative h-80 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden">
+      <div className="relative h-56 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
         {member.imageUrl ? (
           <Image
             src={member.imageUrl.startsWith('http') ? member.imageUrl : `${IMAGE_URL_PREFIX}${member.imageUrl}`}
@@ -102,9 +118,21 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
 
         {/* Bio */}
         {member.bio && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {member.bio}
-          </p>
+          <div className="mb-4">
+            <p className="text-gray-600 text-sm">
+              {shouldTruncateBio && !showFullBio 
+                ? `${member.bio.substring(0, MAX_BIO_LENGTH)}...` 
+                : member.bio}
+            </p>
+            {shouldTruncateBio && (
+              <button
+                onClick={() => setShowFullBio(true)}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-1 transition-colors"
+              >
+                Read More
+              </button>
+            )}
+          </div>
         )}
 
         {/* Joined Date */}
@@ -151,15 +179,15 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
 
           {/* Email */}
           {member.email && (
-            <Link
-              href={`mailto:${member.email}`}
+            <button
+              onClick={() => setShowEmailDialog(true)}
               className="flex-1 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-700 font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
-              title="Send Email"
+              title="View Email"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
               </svg>
-            </Link>
+            </button>
           )}
         </div>
 
@@ -172,6 +200,96 @@ const TeamMemberCard = ({ member, index, isOwnProfile, isAdmin, onEdit, onDelete
         </button>
       </div>
     </motion.div>
+
+    {/* Email Copy Dialog */}
+    {showEmailDialog && (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4" onClick={() => setShowEmailDialog(false)}>
+        <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Contact Email</h3>
+            <button
+              onClick={() => setShowEmailDialog(false)}
+              className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+            <p className="text-gray-700 font-mono text-sm break-all">{member.email}</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={handleCopyEmail}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              {emailCopied ? (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy Email
+                </>
+              )}
+            </button>
+            <a
+              href={`mailto:${member.email}`}
+              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+              </svg>
+              Send Email
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Full Bio Modal */}
+    {showFullBio && (
+      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4" onClick={() => setShowFullBio(false)}>
+        <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold text-gray-900">{member.name}</h3>
+            <button
+              onClick={() => setShowFullBio(false)}
+              className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          
+          <p className="text-blue-600 font-semibold mb-4">{member.role}</p>
+          
+          <div className="prose max-w-none">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{member.bio}</p>
+          </div>
+          
+          <button
+            onClick={() => setShowFullBio(false)}
+            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
 

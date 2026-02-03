@@ -582,11 +582,10 @@ export default function TeamPage() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-gray-50"
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
                   placeholder="your.email@example.com"
-                  disabled={true}
                 />
-                <p className="text-xs text-gray-500">Email cannot be changed</p>
+                <p className="text-xs text-gray-500">Enter your contact email address</p>
               </div>
 
               {/* Bio */}

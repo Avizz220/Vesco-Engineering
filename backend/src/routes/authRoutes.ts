@@ -172,7 +172,7 @@ router.post(
           role: user.role 
         },
         process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '7d' }
+        { expiresIn: '1h' }
       )
 
       // Set cookie
@@ -180,7 +180,7 @@ router.post(
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 60 * 60 * 1000,
       })
 
       // Check if user has a team member profile with a photo
@@ -247,7 +247,7 @@ router.post(
       const token = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '7d' }
+        { expiresIn: '1h' }
       )
 
       // Set cookie
@@ -255,7 +255,7 @@ router.post(
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 60 * 60 * 1000,
       })
 
       return res.status(200).json({
@@ -353,7 +353,7 @@ router.post('/google', async (req: Request, res: Response) => {
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: '7d' }
+      { expiresIn: '1h' }
     )
 
     console.log('🍪 Setting Cookie...');
@@ -361,7 +361,7 @@ router.post('/google', async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'none' for cross-site (Vercel->AWS)
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 60 * 60 * 1000,
     })
 
     // Check if user has a team member profile with a photo

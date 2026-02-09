@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SuccessModal from '@/components/ui/SuccessModal'
 import ErrorModal from '@/components/ui/ErrorModal'
-import { API_URL } from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
@@ -14,6 +14,7 @@ export default function SignInPage() {
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { signIn } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,28 +23,7 @@ export default function SignInPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${API_URL}/auth/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setErrorMessage(data.message || 'Invalid email or password')
-        setShowErrorModal(true)
-        return
-      }
-
-      // Store user data in localStorage
-      localStorage.setItem('user', JSON.stringify(data.user))
+      await signIn(email, password)
 
       // Show success modal
       setShowSuccessModal(true)

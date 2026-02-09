@@ -46,13 +46,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Load user from localStorage after hydration to avoid SSR/client mismatch
     try {
       const savedUser = localStorage.getItem('vescoUser')
-      if (savedUser) {
-        setUser(JSON.parse(savedUser))
+      const loginTime = localStorage.getItem('vescoLoginTime')
+
+      if (savedUser && loginTime) {
+        const currentTime = new Date().getTime()
+        const oneHour = 60 * 60 * 1000 // 1 hour in milliseconds
+        
+        if (currentTime - parseInt(loginTime) > oneHour) {
+          // Session expired
+          localStorage.removeItem('vescoUser')
+          localStorage.removeItem('vescoLoginTime')
+          setUser(null)
+        } else {
+          setUser(JSON.parse(savedUser))
+        }
       }
     } catch {
       localStorage.removeItem('vescoUser')
+      localStorage.removeItem('vescoLoginTime')
     }
   }, [])
+
+  // Auto-logout effect: check every minute if the session has expired
+  useEffect(() => {
+    if (!user) return
+
+    const checkExpiration = () => {
+      const loginTime = localStorage.getItem('vescoLoginTime')
+      if (loginTime) {
+        const currentTime = new Date().getTime()
+        const oneHour = 60 * 60 * 1000
+        if (currentTime - parseInt(loginTime) > oneHour) {
+          console.log('Session expired, logging out...')
+          logout()
+        }
+      }
+    }
+
+    const interval = setInterval(checkExpiration, 60000) // Check every 60 seconds
+    return () => clearInterval(interval)
+  }, [user])
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true)
@@ -85,8 +118,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('✅ Sign In Success - User:', authenticatedUser)
 
+      const now = new Date().getTime().toString()
       setUser(authenticatedUser)
       localStorage.setItem('vescoUser', JSON.stringify(authenticatedUser))
+      localStorage.setItem('vescoLoginTime', now)
     } catch (error: any) {
       throw new Error(error.message || 'Sign in failed')
     } finally {
@@ -169,8 +204,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('✅ Google Sign In Success - User:', authenticatedUser)
 
+      const now = new Date().getTime().toString()
       setUser(authenticatedUser)
       localStorage.setItem('vescoUser', JSON.stringify(authenticatedUser))
+      localStorage.setItem('vescoLoginTime', now)
     } catch (error: any) {
       throw new Error(error.message || 'Google sign in failed')
     } finally {
@@ -191,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(null)
     localStorage.removeItem('vescoUser')
+    localStorage.removeItem('vescoLoginTime')
     router.push('/')
   }
 

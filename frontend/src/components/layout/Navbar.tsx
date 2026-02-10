@@ -147,10 +147,10 @@ const Navbar = () => {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md' : 'bg-white'
           }`}
       >
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div className="container mx-auto pl-0 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
+            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2 pl-0">
               <Image
                 src="/WITH TEXT.png"
                 alt="VES logo"

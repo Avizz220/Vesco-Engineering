@@ -150,7 +150,7 @@ const Navbar = () => {
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2 ml-2 sm:ml-4 lg:ml-8">
+            <Link href="/" className="text-3xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
               <Image
                 src="/WITH TEXT.png"
                 alt="VES logo"

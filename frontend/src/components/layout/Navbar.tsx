@@ -21,11 +21,14 @@ const Navbar = () => {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [profileMessage, setProfileMessage] = useState<string | null>(null)
+  const [originalEmail, setOriginalEmail] = useState<string>('')
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
+  const [dialogMessage, setDialogMessage] = useState('')
+  const [dialogType, setDialogType] = useState<'profile' | 'password' | 'profileWithLogout'>('profile')
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -73,6 +76,7 @@ const Navbar = () => {
         name: user.name || '',
         email: user.email || '',
       })
+      setOriginalEmail(user.email || '') // Store original email for comparison
     }
 
     const scriptId = 'lottie-player'
@@ -426,22 +430,30 @@ const Navbar = () => {
                     className="space-y-3"
                     onSubmit={async (e) => {
                       e.preventDefault()
-                      setProfileMessage(null)
                       try {
-                        await updateProfile({
+                        const emailChanged = profileData.email !== originalEmail
+                        const result = await updateProfile({
                           name: profileData.name,
                           email: profileData.email,
                         })
-                        setProfileMessage('Profile updated successfully! Please sign in again.')
+                        
+                        // Refresh user profile to update navbar display
+                        await refreshUserProfile()
+                        
                         setIsEditingProfile(false)
-                        // Wait 2 seconds then logout
-                        setTimeout(() => {
-                          logout()
-                          setShowSettingsModal(false)
-                          router.push('/')
-                        }, 2000)
-                      } catch (error) {
-                        setProfileMessage('Failed to update profile')
+                        
+                        if (emailChanged) {
+                          setDialogMessage('Profile updated successfully! Please sign in again with your new email.')
+                          setDialogType('profileWithLogout')
+                          setShowSuccessDialog(true)
+                        } else {
+                          setDialogMessage('Profile updated successfully!')
+                          setDialogType('profile')
+                          setShowSuccessDialog(true)
+                        }
+                      } catch (error: any) {
+                        setDialogMessage(error.message || 'Failed to update profile')
+                        setShowErrorDialog(true)
                       }
                     }}
                   >
@@ -473,11 +485,6 @@ const Navbar = () => {
                       />
                     </div>
 
-                    {profileMessage && (
-                      <div className={`text-sm font-medium ${profileMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
-                        {profileMessage}
-                      </div>
-                    )}
                   </form>
 
                   {/* Edit/Save Profile Button - Shows at bottom */}
@@ -486,7 +493,6 @@ const Navbar = () => {
                       onClick={(e) => {
                         if (!isEditingProfile) {
                           setIsEditingProfile(true)
-                          setProfileMessage(null)
                         } else {
                           const form = document.querySelector('form[id="profile-form"]') as HTMLFormElement
                           if (form) {
@@ -536,39 +542,39 @@ const Navbar = () => {
                   className="space-y-3"
                   onSubmit={async (e) => {
                     e.preventDefault()
-                    setPasswordMessage(null)
 
                     if (!currentPassword) {
-                      setPasswordMessage('Please enter your current password.')
+                      setDialogMessage('Please enter your current password.')
+                      setShowErrorDialog(true)
                       return
                     }
                     if (!newPassword || !confirmPassword) {
-                      setPasswordMessage('Please enter and confirm your new password.')
+                      setDialogMessage('Please enter and confirm your new password.')
+                      setShowErrorDialog(true)
                       return
                     }
                     if (newPassword !== confirmPassword) {
-                      setPasswordMessage('New password and confirmation do not match.')
+                      setDialogMessage('New password and confirmation do not match.')
+                      setShowErrorDialog(true)
                       return
                     }
                     if (newPassword.length < 6) {
-                      setPasswordMessage('New password must be at least 6 characters long.')
+                      setDialogMessage('New password must be at least 6 characters long.')
+                      setShowErrorDialog(true)
                       return
                     }
 
                     try {
                       await changePassword(currentPassword, newPassword)
-                      setPasswordMessage('Password changed successfully! Please sign in again with your new password.')
                       setCurrentPassword('')
                       setNewPassword('')
                       setConfirmPassword('')
-                      // Wait 2 seconds then logout
-                      setTimeout(() => {
-                        logout()
-                        setShowSettingsModal(false)
-                        router.push('/')
-                      }, 2000)
+                      setDialogMessage('Password changed successfully! Please sign in again with your new password.')
+                      setDialogType('password')
+                      setShowSuccessDialog(true)
                     } catch (error: any) {
-                      setPasswordMessage(error.message || 'Failed to update password')
+                      setDialogMessage(error.message || 'Failed to update password')
+                      setShowErrorDialog(true)
                     }
                   }}
                 >
@@ -639,15 +645,6 @@ const Navbar = () => {
                     </div>
                   </div>
 
-                  {passwordMessage && (
-                    <p className={`text-sm rounded-lg px-3 py-2 ${passwordMessage.includes('success') || passwordMessage.includes('successfully')
-                        ? 'text-green-700 bg-green-50 border border-green-200'
-                        : 'text-red-700 bg-red-50 border border-red-200'
-                      }`}>
-                      {passwordMessage}
-                    </p>
-                  )}
-
                   <div className="flex items-center justify-end gap-3 pt-2">
                     <button
                       type="button"
@@ -655,7 +652,6 @@ const Navbar = () => {
                         setCurrentPassword('')
                         setNewPassword('')
                         setConfirmPassword('')
-                        setPasswordMessage(null)
                         setShowSettingsModal(false)
                       }}
                       className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
@@ -676,7 +672,9 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setPasswordMessage('Password reset email sent to ' + user?.email)
+                      setDialogMessage('Password reset email sent to ' + user?.email)
+                      setDialogType('profile')
+                      setShowSuccessDialog(true)
                     }}
                     className="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-2"
                   >
@@ -856,6 +854,89 @@ const Navbar = () => {
           setShowSignInModal(true)
         }}
       />
+
+      {/* Success Dialog */}
+      {showSuccessDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg
+                  className="h-6 w-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Success!
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                {dialogMessage}
+              </p>
+              <button
+                onClick={() => {
+                  setShowSuccessDialog(false)
+                  if (dialogType === 'password' || dialogType === 'profileWithLogout') {
+                    setTimeout(() => {
+                      logout()
+                      setShowSettingsModal(false)
+                      router.push('/')
+                    }, 300)
+                  }
+                }}
+                className="w-full px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Dialog */}
+      {showErrorDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Error
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                {dialogMessage}
+              </p>
+              <button
+                onClick={() => setShowErrorDialog(false)}
+                className="w-full px-4 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Logout Confirmation Dialog */}
       {showLogoutConfirm && (

@@ -233,10 +233,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const updateProfile = async (updates: Partial<User>) => {
-    if (!user) return
-    const updatedUser = { ...user, ...updates }
+    if (!user) throw new Error('Not authenticated')
+    
+    const response = await fetch(`${API_URL}/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(updates),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Profile update failed')
+    }
+
+    // Update local user state with the new data
+    const updatedUser: User = {
+      ...user,
+      name: data.user.fullName,
+      email: data.user.email,
+      image: data.user.image,
+    }
+    
     setUser(updatedUser)
     localStorage.setItem('vescoUser', JSON.stringify(updatedUser))
+
+    return data // Return the response data (includes emailChanged flag)
   }
 
   const changePassword = async (currentPassword: string, newPassword: string) => {

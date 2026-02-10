@@ -538,6 +538,89 @@ router.post(
   }
 )
 
+// @route   PUT /api/auth/profile
+// @desc    Update user profile (name and/or email)
+// @access  Private
+router.put(
+  '/profile',
+  verifyToken,
+  [
+    body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
+    body('email').optional().isEmail().withMessage('Please provide a valid email'),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false,
+        message: errors.array()[0].msg,
+        errors: errors.array() 
+      })
+    }
+
+    try {
+      const userId = (req as any).user.id
+      const { name, email } = req.body
+
+      // Build update data object
+      const updateData: any = {}
+      if (name) updateData.fullName = name
+      if (email) updateData.email = email.toLowerCase()
+
+      // If email is being changed, check if it's already taken
+      if (email) {
+        const existingUser = await prisma.user.findFirst({
+          where: {
+            email: email.toLowerCase(),
+            NOT: { id: userId }
+          }
+        })
+
+        if (existingUser) {
+          return res.status(400).json({ 
+            success: false,
+            message: 'Email already in use by another account' 
+          })
+        }
+      }
+
+      // Update user in database
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          image: true,
+          role: true,
+        }
+      })
+
+      console.log('✅ Profile updated for user:', userId, updateData)
+
+      return res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        emailChanged: !!email,
+        user: {
+          id: updatedUser.id,
+          fullName: updatedUser.fullName,
+          email: updatedUser.email,
+          image: updatedUser.image,
+          role: updatedUser.role,
+        }
+      })
+    } catch (error: any) {
+      console.error('Profile update error:', error)
+      return res.status(500).json({ 
+        success: false,
+        message: 'Server error while updating profile' 
+      })
+    }
+  }
+)
+
 // @route   PUT /api/auth/profile-picture
 // @desc    Update user profile picture
 // @access  Private

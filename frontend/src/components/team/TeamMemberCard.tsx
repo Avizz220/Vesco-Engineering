@@ -11,13 +11,14 @@ interface TeamMemberCardProps {
   member: TeamMember
   index: number
   isOwnProfile?: boolean
+  canEdit?: boolean
   canDelete?: boolean
   onEdit?: (member: TeamMember) => void
   onDelete?: (memberId: string) => void
   onViewProjects?: (memberName: string) => void
 }
 
-const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDelete, onViewProjects }: TeamMemberCardProps) => {
+const TeamMemberCard = ({ member, index, isOwnProfile, canEdit, canDelete, onEdit, onDelete, onViewProjects }: TeamMemberCardProps) => {
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
 
@@ -67,12 +68,12 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
         
         {/* Edit and Delete Buttons Grouped Together */}
         <div className="absolute top-3 left-3 flex gap-2 z-10">
-          {/* Edit Button for Own Profile */}
-          {isOwnProfile && onEdit && (
+          {/* Edit Button for Admins or Own Profile */}
+          {canEdit && onEdit && (
             <button
               onClick={() => onEdit(member)}
               className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-blue-50 transition-colors"
-              title="Edit Your Profile"
+              title={isOwnProfile ? "Edit Your Profile" : "Edit Profile"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-blue-600">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -81,12 +82,12 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canDelete, onEdit, onDele
             </button>
           )}
 
-          {/* Delete Button for Admins */}
+          {/* Delete Button for Admins or Own Profile */}
           {canDelete && onDelete && (
             <button
               onClick={() => onDelete(member.id)}
               className="bg-red-500/95 backdrop-blur-sm p-2 rounded-lg shadow-md hover:bg-red-600 transition-colors"
-              title="Delete Profile"
+              title={isOwnProfile ? "Delete Your Profile" : "Delete Profile"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-white">
                 <polyline points="3 6 5 6 21 6"></polyline>

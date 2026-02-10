@@ -114,7 +114,7 @@ export default function TeamPage() {
         submitFormData.append('image', formData.photo)
       }
 
-      // Use different endpoint based on user role
+      // Use different endpoint based on user role and editing status
       let url: string
       let method: string
       
@@ -126,8 +126,12 @@ export default function TeamPage() {
         // Admin creating new member
         url = `${API_URL}/team`
         method = 'POST'
+      } else if (editingMember && user?.email === editingMember.email) {
+        // Regular user editing their own profile
+        url = `${API_URL}/team/my-profile`
+        method = 'PUT'
       } else {
-        // Regular user creating/updating their own profile
+        // Regular user creating their own profile
         url = `${API_URL}/team/my-profile`
         method = 'POST'
       }
@@ -262,7 +266,16 @@ export default function TeamPage() {
     if (!deletingMemberId) return
 
     try {
-      const response = await fetch(`${API_URL}/team/${deletingMemberId}`, {
+      // Find the member being deleted to check if it's the user's own profile
+      const memberToDelete = members.find(m => m.id === deletingMemberId)
+      const isOwnProfile = memberToDelete && user?.email === memberToDelete.email
+
+      // Use appropriate endpoint
+      const url = isOwnProfile 
+        ? `${API_URL}/team/my-profile`
+        : `${API_URL}/team/${deletingMemberId}`
+
+      const response = await fetch(url, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -478,7 +491,8 @@ export default function TeamPage() {
                   member={member}
                   index={index}
                   isOwnProfile={user?.email === member.email}
-                  canDelete={user?.email === member.email}
+                  canEdit={user?.isAdmin || user?.email === member.email}
+                  canDelete={user?.isAdmin || user?.email === member.email}
                   onEdit={handleEditProfile}
                   onDelete={handleDeleteProfile}
                   onViewProjects={handleViewProjects}

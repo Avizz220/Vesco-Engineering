@@ -442,12 +442,15 @@ const Navbar = () => {
                         
                         setIsEditingProfile(false)
                         
+                        // Check if admin role was granted
+                        const roleMessage = result.roleUpdated ? ' You now have admin access!' : ''
+                        
                         if (emailChanged) {
-                          setDialogMessage('Profile updated successfully! Please sign in again with your new email.')
+                          setDialogMessage(`Profile updated successfully!${roleMessage} Please sign in again with your new email.`)
                           setDialogType('profileWithLogout')
                           setShowSuccessDialog(true)
                         } else {
-                          setDialogMessage('Profile updated successfully!')
+                          setDialogMessage(`Profile updated successfully!${roleMessage}`)
                           setDialogType('profile')
                           setShowSuccessDialog(true)
                         }
@@ -565,11 +568,14 @@ const Navbar = () => {
                     }
 
                     try {
-                      await changePassword(currentPassword, newPassword)
+                      const result = await changePassword(currentPassword, newPassword)
                       setCurrentPassword('')
                       setNewPassword('')
                       setConfirmPassword('')
-                      setDialogMessage('Password changed successfully! Please sign in again with your new password.')
+                      
+                      // Check if admin role was granted or removed
+                      const roleMessage = result.roleUpdated ? ' Your access level has been updated.' : ''
+                      setDialogMessage(`Password changed successfully!${roleMessage} Please sign in again with your new password.`)
                       setDialogType('password')
                       setShowSuccessDialog(true)
                     } catch (error: any) {

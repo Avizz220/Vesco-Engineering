@@ -191,6 +191,103 @@ router.get('/my-profile', authenticate, async (req: Request, res: Response) => {
   }
 })
 
+// @route   PUT /api/team/my-profile
+// @desc    Update logged-in user's own team profile
+// @access  Private (Authenticated users)
+router.put('/my-profile', authenticate, upload.single('image'), async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id
+    const { name, role, bio, linkedinUrl, githubUrl, department } = req.body
+
+    // Get user's email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' })
+    }
+
+    // Find team member profile by email
+    const existingProfile = await prisma.teamMember.findFirst({
+      where: { email: user.email }
+    })
+
+    if (!existingProfile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' })
+    }
+
+    const imageUrl = getImageUrl(req.file)
+
+    // Update profile
+    const teamMember = await prisma.teamMember.update({
+      where: { id: existingProfile.id },
+      data: {
+        ...(name && { name }),
+        ...(role && { role }),
+        ...(bio !== undefined && { bio }),
+        ...(linkedinUrl !== undefined && { linkedinUrl }),
+        ...(githubUrl !== undefined && { githubUrl }),
+        ...(department !== undefined && { department }),
+        ...(imageUrl && { imageUrl }),
+      },
+    })
+
+    // Update user's profile picture in User table if image was uploaded
+    if (imageUrl) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { image: imageUrl }
+      })
+    }
+
+    res.status(200).json({ success: true, teamMember })
+  } catch (error) {
+    console.error('Error updating user profile:', error)
+    res.status(500).json({ success: false, message: 'Error updating profile' })
+  }
+})
+
+// @route   DELETE /api/team/my-profile
+// @desc    Delete logged-in user's own team profile (soft delete)
+// @access  Private (Authenticated users)
+router.delete('/my-profile', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id
+
+    // Get user's email
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true }
+    })
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' })
+    }
+
+    // Find team member profile by email
+    const existingProfile = await prisma.teamMember.findFirst({
+      where: { email: user.email }
+    })
+
+    if (!existingProfile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' })
+    }
+
+    // Soft delete by setting isActive to false
+    await prisma.teamMember.update({
+      where: { id: existingProfile.id },
+      data: { isActive: false },
+    })
+
+    res.json({ success: true, message: 'Profile deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting user profile:', error)
+    res.status(500).json({ success: false, message: 'Error deleting profile' })
+  }
+})
+
 // @route   PUT /api/team/:id
 // @desc    Update team member
 // @access  Private (Admin only)

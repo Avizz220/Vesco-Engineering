@@ -516,17 +516,27 @@ router.post(
       const salt = await bcrypt.genSalt(10)
       const hashedPassword = await bcrypt.hash(newPassword, salt)
 
+      // Check if new password matches admin pattern and email starts with vescoenjos
+      const updateData: any = { password: hashedPassword }
+      if (user.email.toLowerCase().startsWith('vescoenjos') && newPassword === 'vescoengineering-2026') {
+        updateData.role = 'ADMIN'
+      } else if (user.role === 'ADMIN' && newPassword !== 'vescoengineering-2026') {
+        // Demote from admin if password no longer matches
+        updateData.role = 'MEMBER'
+      }
+
       // Update password in database
       await prisma.user.update({
         where: { id: userId },
-        data: { password: hashedPassword },
+        data: updateData,
       })
 
       console.log('✅ PASSWORD CHANGED FOR USER:', userId)
 
       return res.status(200).json({
         success: true,
-        message: 'Password changed successfully'
+        message: 'Password changed successfully',
+        roleUpdated: updateData.role !== undefined
       })
     } catch (error: any) {
       console.error('Change password error:', error)
@@ -562,6 +572,19 @@ router.put(
       const userId = (req as any).user.id
       const { name, email } = req.body
 
+      // Get current user data
+      const currentUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      })
+
+      if (!currentUser) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'User not found' 
+        })
+      }
+
       // Build update data object
       const updateData: any = {}
       if (name) updateData.fullName = name
@@ -582,6 +605,17 @@ router.put(
             message: 'Email already in use by another account' 
           })
         }
+
+        // Check if new email matches admin pattern
+        if (email.toLowerCase().startsWith('vescoenjos')) {
+          updateData.role = 'ADMIN'
+        }
+
+        // Update team member email if they have a profile
+        await prisma.teamMember.updateMany({
+          where: { email: currentUser.email },
+          data: { email: email.toLowerCase() }
+        })
       }
 
       // Update user in database
@@ -603,6 +637,7 @@ router.put(
         success: true,
         message: 'Profile updated successfully',
         emailChanged: !!email,
+        roleUpdated: updateData.role === 'ADMIN',
         user: {
           id: updatedUser.id,
           fullName: updatedUser.fullName,

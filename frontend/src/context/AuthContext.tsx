@@ -256,6 +256,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name: data.user.fullName,
       email: data.user.email,
       image: data.user.image,
+      isAdmin: data.user.role === 'ADMIN',
     }
     
     setUser(updatedUser)

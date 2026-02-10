@@ -606,11 +606,29 @@ router.put(
           })
         }
 
-        // Update team member email if they have a profile (using userId)
-        await prisma.teamMember.updateMany({
-          where: { userId: userId },
-          data: { email: email.toLowerCase() }
+        // AUTO-HEAL & SYNC: Update TeamMember profile
+        // 1. Try to find by userId first
+        const teamMemberByUserId = await prisma.teamMember.findFirst({
+          where: { userId: userId }
         })
+
+        if (teamMemberByUserId) {
+          // Linked profile found - just update email
+          await prisma.teamMember.update({
+            where: { id: teamMemberByUserId.id },
+            data: { email: email.toLowerCase() }
+          })
+        } else {
+          // No linked profile - try finding by OLD email (orphaned record)
+          // and LINK IT while updating email
+          await prisma.teamMember.updateMany({
+            where: { email: currentUser.email },
+            data: { 
+              email: email.toLowerCase(),
+              userId: userId // Link account now!
+            }
+          })
+        }
       }
 
       // Update user in database

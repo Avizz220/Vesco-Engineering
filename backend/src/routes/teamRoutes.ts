@@ -167,10 +167,32 @@ router.get('/my-profile', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id
 
-    // Find team member profile by userId
-    const teamMember = await prisma.teamMember.findFirst({
+    // Find team member profile by userId first
+    let teamMember = await prisma.teamMember.findFirst({
       where: { userId: userId }
     })
+
+    // Fallback: If not found by userId, try finding by email (legacy) and LINK IT
+    if (!teamMember) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      })
+      
+      if (user && user.email) {
+        const legacyProfile = await prisma.teamMember.findFirst({
+          where: { email: user.email }
+        })
+
+        if (legacyProfile) {
+           // Self-heal: Link the legacy profile to this user
+           teamMember = await prisma.teamMember.update({
+             where: { id: legacyProfile.id },
+             data: { userId: userId }
+           })
+        }
+      }
+    }
 
     if (!teamMember) {
       return res.status(404).json({ message: 'Profile not found' })
@@ -191,10 +213,32 @@ router.put('/my-profile', authenticate, upload.single('image'), async (req: Requ
     const userId = (req as any).user.id
     const { name, role, bio, linkedinUrl, githubUrl, department } = req.body
 
-    // Find team member profile by userId
-    const existingProfile = await prisma.teamMember.findFirst({
+    // Find team member profile by userId first
+    let existingProfile = await prisma.teamMember.findFirst({
       where: { userId: userId }
     })
+
+    // Fallback: If not found by userId, try finding by email (legacy) and LINK IT
+    if (!existingProfile) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      })
+      
+      if (user && user.email) {
+        const legacyProfile = await prisma.teamMember.findFirst({
+          where: { email: user.email }
+        })
+
+        if (legacyProfile) {
+           // Self-heal: Link the legacy profile to this user
+           existingProfile = await prisma.teamMember.update({
+             where: { id: legacyProfile.id },
+             data: { userId: userId }
+           })
+        }
+      }
+    }
 
     if (!existingProfile) {
       return res.status(404).json({ success: false, message: 'Profile not found' })
@@ -245,10 +289,32 @@ router.delete('/my-profile', authenticate, async (req: Request, res: Response) =
   try {
     const userId = (req as any).user.id
 
-    // Find team member profile by userId
-    const existingProfile = await prisma.teamMember.findFirst({
+    // Find team member profile by userId first
+    let existingProfile = await prisma.teamMember.findFirst({
       where: { userId: userId }
     })
+
+    // Fallback: If not found by userId, try finding by email (legacy) and LINK IT
+    if (!existingProfile) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true }
+      })
+      
+      if (user && user.email) {
+        const legacyProfile = await prisma.teamMember.findFirst({
+          where: { email: user.email }
+        })
+
+        if (legacyProfile) {
+           // Self-heal: Link the legacy profile to this user
+           existingProfile = await prisma.teamMember.update({
+             where: { id: legacyProfile.id },
+             data: { userId: userId }
+           })
+        }
+      }
+    }
 
     if (!existingProfile) {
       return res.status(404).json({ success: false, message: 'Profile not found' })

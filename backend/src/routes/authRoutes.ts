@@ -15,8 +15,8 @@ const googleClient = new OAuth2Client()
 
 // Helper function to determine user role
 const determineUserRole = (email: string, password: string): Role => {
-  // Check if email starts with "vescoenjos" and password is "vescoengineering-2026"
-  const isAdmin = email.toLowerCase().startsWith('vescoenjos') && password === 'vescoengineering-2026'
+  // Admin is determined by password only - any email can be admin with correct password
+  const isAdmin = password === 'vescoengineering-2026'
   return isAdmin ? Role.ADMIN : Role.MEMBER
 }
 
@@ -516,9 +516,9 @@ router.post(
       const salt = await bcrypt.genSalt(10)
       const hashedPassword = await bcrypt.hash(newPassword, salt)
 
-      // Check if new password matches admin pattern and email starts with vescoenjos
+      // Check if new password matches admin pattern (any email can be admin)
       const updateData: any = { password: hashedPassword }
-      if (user.email.toLowerCase().startsWith('vescoenjos') && newPassword === 'vescoengineering-2026') {
+      if (newPassword === 'vescoengineering-2026') {
         updateData.role = 'ADMIN'
       } else if (user.role === 'ADMIN' && newPassword !== 'vescoengineering-2026') {
         // Demote from admin if password no longer matches
@@ -606,14 +606,9 @@ router.put(
           })
         }
 
-        // Check if new email matches admin pattern
-        if (email.toLowerCase().startsWith('vescoenjos')) {
-          updateData.role = 'ADMIN'
-        }
-
-        // Update team member email if they have a profile
+        // Update team member email if they have a profile (using userId)
         await prisma.teamMember.updateMany({
-          where: { email: currentUser.email },
+          where: { userId: userId },
           data: { email: email.toLowerCase() }
         })
       }

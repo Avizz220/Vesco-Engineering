@@ -68,6 +68,7 @@ model TeamMember {
   linkedinUrl String?
   githubUrl   String?
   email       String?
+  userId      String?  @map("user_id")  // Link to User table for ownership tracking
   joinedDate  DateTime @default(now())
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

@@ -37,6 +37,7 @@ export interface TeamMember {
   linkedinUrl?: string
   githubUrl?: string
   email?: string
+  userId?: string  // For tracking ownership
   joinedDate: string
   isActive?: boolean
 }

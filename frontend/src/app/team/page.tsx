@@ -471,9 +471,9 @@ export default function TeamPage() {
                   key={member.id}
                   member={member}
                   index={index}
-                  isOwnProfile={user?.email === member.email}
-                  canEdit={user?.email === member.email}
-                  canDelete={user?.email === member.email}
+                  isOwnProfile={user?.id === member.userId}
+                  canEdit={user?.id === member.userId}
+                  canDelete={user?.id === member.userId}
                   onEdit={handleEditProfile}
                   onDelete={handleDeleteProfile}
                   onViewProjects={handleViewProjects}

@@ -105,15 +105,15 @@ router.post('/my-profile', authenticate, upload.single('image'), async (req: Req
 
     const imageUrl = getImageUrl(req.file)
 
-    // Check if user already has a team profile
+    // Check if user already has a team profile (by userId)
     const existingProfile = await prisma.teamMember.findFirst({
-      where: { email: user.email }
+      where: { userId: userId }
     })
 
     let teamMember
 
     if (existingProfile) {
-      // Update existing profile
+      // Update existing profile and sync email
       teamMember = await prisma.teamMember.update({
         where: { id: existingProfile.id },
         data: {
@@ -123,11 +123,12 @@ router.post('/my-profile', authenticate, upload.single('image'), async (req: Req
           linkedinUrl,
           githubUrl,
           department,
+          email: user.email, // Auto-sync email
           ...(imageUrl && { imageUrl }),
         },
       })
     } else {
-      // Create new profile
+      // Create new profile with userId
       teamMember = await prisma.teamMember.create({
         data: {
           name,
@@ -136,6 +137,7 @@ router.post('/my-profile', authenticate, upload.single('image'), async (req: Req
           linkedinUrl,
           githubUrl,
           email: user.email,
+          userId: userId, // Link to user
           department,
           imageUrl: imageUrl || user.image,
           joinedDate: new Date(),
@@ -165,19 +167,9 @@ router.get('/my-profile', authenticate, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id
 
-    // Get user's email
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true }
-    })
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    // Find team member profile by email
+    // Find team member profile by userId
     const teamMember = await prisma.teamMember.findFirst({
-      where: { email: user.email }
+      where: { userId: userId }
     })
 
     if (!teamMember) {
@@ -199,28 +191,24 @@ router.put('/my-profile', authenticate, upload.single('image'), async (req: Requ
     const userId = (req as any).user.id
     const { name, role, bio, linkedinUrl, githubUrl, department } = req.body
 
-    // Get user's email
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true }
-    })
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' })
-    }
-
-    // Find team member profile by email
+    // Find team member profile by userId
     const existingProfile = await prisma.teamMember.findFirst({
-      where: { email: user.email }
+      where: { userId: userId }
     })
 
     if (!existingProfile) {
       return res.status(404).json({ success: false, message: 'Profile not found' })
     }
 
+    // Get current email from user table for auto-sync
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true }
+    })
+
     const imageUrl = getImageUrl(req.file)
 
-    // Update profile
+    // Update profile and auto-sync email
     const teamMember = await prisma.teamMember.update({
       where: { id: existingProfile.id },
       data: {
@@ -231,6 +219,7 @@ router.put('/my-profile', authenticate, upload.single('image'), async (req: Requ
         ...(githubUrl !== undefined && { githubUrl }),
         ...(department !== undefined && { department }),
         ...(imageUrl && { imageUrl }),
+        ...(currentUser && { email: currentUser.email }), // Auto-sync email
       },
     })
 
@@ -256,19 +245,9 @@ router.delete('/my-profile', authenticate, async (req: Request, res: Response) =
   try {
     const userId = (req as any).user.id
 
-    // Get user's email
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true }
-    })
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' })
-    }
-
-    // Find team member profile by email
+    // Find team member profile by userId
     const existingProfile = await prisma.teamMember.findFirst({
-      where: { email: user.email }
+      where: { userId: userId }
     })
 
     if (!existingProfile) {

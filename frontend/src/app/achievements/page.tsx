@@ -335,7 +335,7 @@ export default function AchievementsPage() {
             </div>
           </div>
           <p className="text-slate-600 max-w-3xl mx-auto text-base sm:text-lg text-center px-2">
-            Competitions we have entered and conquered — showcasing our cross-disciplinary engineering strength.
+            Competitions we have entered and conquered-showcasing our cross-disciplinary engineering strength.
           </p>
         </motion.div>
 

@@ -485,8 +485,8 @@ export default function TeamPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div> && user?.email === member.email}
-                  canDelete={!!user?.isAdmin && user?.email === member.email
+          </div>
+        ) : members.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-600 text-lg">No team members found.</p>
           </div>
@@ -504,8 +504,8 @@ export default function TeamPage() {
                   member={member}
                   index={index}
                   isOwnProfile={user?.id === member.userId}
-                  canEdit={!!user?.isAdmin}
-                  canDelete={!!user?.isAdmin}
+                  canEdit={!!user?.isAdmin && user?.email === member.email}
+                  canDelete={!!user?.isAdmin && user?.email === member.email}
                   onEdit={handleEditProfile}
                   onDelete={handleDeleteProfile}
                   onViewProjects={handleViewProjects}

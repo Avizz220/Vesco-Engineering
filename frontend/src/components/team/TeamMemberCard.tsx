@@ -39,7 +39,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canEdit, canDelete, onEdi
       className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col h-full"
     >
       {/* Member Image */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
+      <div className="relative h-64 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
         {member.imageUrl ? (
           <Image
             src={member.imageUrl.startsWith('http') ? member.imageUrl : `${IMAGE_URL_PREFIX}${member.imageUrl}`}

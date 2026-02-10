@@ -83,8 +83,8 @@ router.post('/', verifyAdmin, upload.single('image'), async (req: Request, res: 
 
 // @route   POST /api/team/my-profile
 // @desc    Create or update logged-in user's team profile
-// @access  Private (Authenticated users)
-router.post('/my-profile', authenticate, upload.single('image'), async (req: Request, res: Response) => {
+// @access  Private (Admin only)
+router.post('/my-profile', verifyAdmin, upload.single('image'), async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id
     const { name, role, bio, linkedinUrl, githubUrl, department } = req.body
@@ -207,8 +207,8 @@ router.get('/my-profile', authenticate, async (req: Request, res: Response) => {
 
 // @route   PUT /api/team/my-profile
 // @desc    Update logged-in user's own team profile
-// @access  Private (Authenticated users)
-router.put('/my-profile', authenticate, upload.single('image'), async (req: Request, res: Response) => {
+// @access  Private (Admin only)
+router.put('/my-profile', verifyAdmin, upload.single('image'), async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id
     const { name, role, bio, linkedinUrl, githubUrl, department } = req.body
@@ -284,8 +284,8 @@ router.put('/my-profile', authenticate, upload.single('image'), async (req: Requ
 
 // @route   DELETE /api/team/my-profile
 // @desc    Delete logged-in user's own team profile (soft delete)
-// @access  Private (Authenticated users)
-router.delete('/my-profile', authenticate, async (req: Request, res: Response) => {
+// @access  Private (Admin only)
+router.delete('/my-profile', verifyAdmin, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id
 

@@ -39,7 +39,7 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canEdit, canDelete, onEdi
       className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 flex flex-col h-full"
     >
       {/* Member Image */}
-      <div className="relative h-56 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
+      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-blue-100 overflow-hidden flex-shrink-0">
         {member.imageUrl ? (
           <Image
             src={member.imageUrl.startsWith('http') ? member.imageUrl : `${IMAGE_URL_PREFIX}${member.imageUrl}`}
@@ -101,28 +101,28 @@ const TeamMemberCard = ({ member, index, isOwnProfile, canEdit, canDelete, onEdi
       </div>
 
       {/* Member Info */}
-      <div className="p-6 flex flex-col h-full">
+      <div className="p-5 flex flex-col h-full">
         {/* Name */}
-        <h3 className="text-2xl font-bold text-gray-900 mb-1 leading-snug min-h-[56px]">
+        <h3 className="text-xl font-bold text-gray-900 mb-1 leading-snug min-h-[48px]">
           {member.name}
         </h3>
 
         {/* Role Subtext */}
-        <p className="text-blue-600 font-semibold mb-3 text-sm min-h-[20px]">
+        <p className="text-blue-600 font-semibold mb-2 text-sm min-h-[18px]">
           {member.role}
         </p>
 
         {/* Bio */}
         {member.bio ? (
-          <p className="text-gray-600 text-sm mb-4 min-h-[64px]">
+          <p className="text-gray-600 text-sm mb-3 min-h-[56px]">
             {member.bio}
           </p>
         ) : (
-          <div className="min-h-[64px] mb-4" />
+          <div className="min-h-[56px] mb-3" />
         )}
 
         {/* Joined Date */}
-        <p className="text-gray-500 text-xs mb-4 min-h-[18px]">
+        <p className="text-gray-500 text-xs mb-3 min-h-[16px]">
           {member.joinedDate
             ? `Joined: ${new Date(member.joinedDate).toLocaleDateString('en-US', {
                 year: 'numeric',

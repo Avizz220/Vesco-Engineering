@@ -102,6 +102,12 @@ export default function TeamPage() {
     setShowConfirmDialog(false)
     
     try {
+      if (!user?.isAdmin) {
+        setDialogMessage('Only admins can manage team profiles.')
+        setShowSuccessDialog(true)
+        return
+      }
+
       const submitFormData = new FormData()
       submitFormData.append('name', formData.name)
       submitFormData.append('role', formData.role)
@@ -114,17 +120,16 @@ export default function TeamPage() {
         submitFormData.append('image', formData.photo)
       }
 
-      // Use my-profile endpoint for all users editing their own profile
       let url: string
       let method: string
       
       if (editingMember) {
-        // User editing their own profile
-        url = `${API_URL}/team/my-profile`
+        // Admin editing a specific member
+        url = `${API_URL}/team/${editingMember.id}`
         method = 'PUT'
       } else {
-        // User creating their own profile
-        url = `${API_URL}/team/my-profile`
+        // Admin creating a new member
+        url = `${API_URL}/team`
         method = 'POST'
       }
       
@@ -140,7 +145,7 @@ export default function TeamPage() {
         throw new Error(data.message || 'Failed to save profile')
       }
 
-      setDialogMessage(editingMember ? 'Profile updated successfully!' : 'Profile created successfully!')
+      setDialogMessage(editingMember ? 'Team member updated successfully!' : 'Team member created successfully!')
       setShowSuccessDialog(true)
       setShowAddModal(false)
       setEditingMember(null)
@@ -255,8 +260,14 @@ export default function TeamPage() {
     if (!deletingMemberId) return
 
     try {
-      // User can only delete their own profile
-      const response = await fetch(`${API_URL}/team/my-profile`, {
+      if (!user?.isAdmin) {
+        setDialogMessage('Only admins can delete team profiles.')
+        setShowSuccessDialog(true)
+        setDeletingMemberId(null)
+        return
+      }
+
+      const response = await fetch(`${API_URL}/team/${deletingMemberId}`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -265,7 +276,7 @@ export default function TeamPage() {
         throw new Error('Failed to delete profile')
       }
 
-      setDialogMessage('Profile deleted successfully!')
+      setDialogMessage('Team member deleted successfully!')
       setShowSuccessDialog(true)
       setDeletingMemberId(null)
       fetchTeamMembers()
@@ -276,9 +287,7 @@ export default function TeamPage() {
     }
   }
 
-  // Check if logged-in user has a profile
-  const userProfile = members.find(m => m.email === user?.email)
-  const canCreateProfile = user && !userProfile
+  const canManageProfiles = !!user?.isAdmin
 
   const groupImages = [
     '/group2.jpeg',
@@ -412,34 +421,20 @@ export default function TeamPage() {
                 Meet Our Team
               </h1>
               <div className="flex-1 flex justify-center md:justify-end w-full md:w-auto">
-                {user && (
+                {canManageProfiles && (
                   <button
                     onClick={() => {
-                      if (userProfile) {
-                        handleEditProfile(userProfile)
-                      } else {
-                        setEditingMember(null)
-                        resetForm()
-                        setFormData(prev => ({ ...prev, email: user?.email || '', name: user?.name || '' }))
-                        setShowAddModal(true)
-                      }
+                      setEditingMember(null)
+                      resetForm()
+                      setShowAddModal(true)
                     }}
                     className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                      {userProfile ? (
-                        <>
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                        </>
-                      ) : (
-                        <>
-                          <line x1="12" y1="5" x2="12" y2="19" />
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </>
-                      )}
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
                     </svg>
-                    {userProfile ? 'Edit My Profile' : 'Create My Profile'}
+                    Add Team Member
                   </button>
                 )}
               </div>
@@ -472,8 +467,8 @@ export default function TeamPage() {
                   member={member}
                   index={index}
                   isOwnProfile={user?.id === member.userId}
-                  canEdit={user?.id === member.userId}
-                  canDelete={user?.id === member.userId}
+                  canEdit={!!user?.isAdmin}
+                  canDelete={!!user?.isAdmin}
                   onEdit={handleEditProfile}
                   onDelete={handleDeleteProfile}
                   onViewProjects={handleViewProjects}
@@ -506,7 +501,7 @@ export default function TeamPage() {
           <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-blue-50">
               <h3 className="text-xl font-semibold text-gray-900">
-                {editingMember ? 'Edit Your Profile' : 'Create Your Profile'}
+                {editingMember ? 'Edit Team Member' : 'Create Team Member'}
               </h3>
               <button
                 onClick={() => {
@@ -824,7 +819,7 @@ export default function TeamPage() {
         }}
         type="confirm"
         title="Confirm Action"
-        message={deletingMemberId ? dialogMessage : (editingMember ? "Are you sure you want to update your profile?" : "Are you sure you want to create your profile?")}
+        message={deletingMemberId ? dialogMessage : (editingMember ? "Are you sure you want to update this team member?" : "Are you sure you want to create this team member?")}
         onConfirm={deletingMemberId ? confirmDelete : confirmAddOrUpdate}
         onCancel={() => {
           setShowConfirmDialog(false)

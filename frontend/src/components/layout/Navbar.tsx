@@ -199,7 +199,7 @@ const Navbar = () => {
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                       referrerPolicy="no-referrer"
                     />
-                    <span className="text-gray-900 font-semibold text-sm whitespace-nowrap">{user?.name}</span>
+                    <span className="text-gray-900 font-semibold text-sm whitespace-nowrap">{user?.name ? user.name.split(' ')[0] : ''}</span>
                   </button>
                   {!user?.isGoogleUser && (
                     <button
@@ -329,7 +329,7 @@ const Navbar = () => {
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                       referrerPolicy="no-referrer"
                     />
-                    <span className="text-black font-medium text-base">{user?.name}</span>
+                    <span className="text-black font-medium text-base">{user?.name ? user.name.split(' ')[0] : ''}</span>
                   </button>
                   <button
                     onClick={() => {

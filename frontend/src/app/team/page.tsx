@@ -114,24 +114,16 @@ export default function TeamPage() {
         submitFormData.append('image', formData.photo)
       }
 
-      // Use different endpoint based on user role and editing status
+      // Use my-profile endpoint for all users editing their own profile
       let url: string
       let method: string
       
-      if (user?.isAdmin && editingMember) {
-        // Admin editing existing member
-        url = `${API_URL}/team/${editingMember.id}`
-        method = 'PUT'
-      } else if (user?.isAdmin && !editingMember) {
-        // Admin creating new member
-        url = `${API_URL}/team`
-        method = 'POST'
-      } else if (editingMember && user?.email === editingMember.email) {
-        // Regular user editing their own profile
+      if (editingMember) {
+        // User editing their own profile
         url = `${API_URL}/team/my-profile`
         method = 'PUT'
       } else {
-        // Regular user creating their own profile
+        // User creating their own profile
         url = `${API_URL}/team/my-profile`
         method = 'POST'
       }
@@ -155,11 +147,8 @@ export default function TeamPage() {
       resetForm()
       fetchTeamMembers()
       
-      // Refresh user profile in navbar if not admin
-      if (!user?.isAdmin) {
-        // This will update the navbar picture
-        window.location.reload()
-      }
+      // Refresh to update the navbar picture
+      window.location.reload()
     } catch (error: any) {
       setDialogMessage(error.message || 'Failed to save profile')
       setShowSuccessDialog(true)
@@ -266,16 +255,8 @@ export default function TeamPage() {
     if (!deletingMemberId) return
 
     try {
-      // Find the member being deleted to check if it's the user's own profile
-      const memberToDelete = members.find(m => m.id === deletingMemberId)
-      const isOwnProfile = memberToDelete && user?.email === memberToDelete.email
-
-      // Use appropriate endpoint
-      const url = isOwnProfile 
-        ? `${API_URL}/team/my-profile`
-        : `${API_URL}/team/${deletingMemberId}`
-
-      const response = await fetch(url, {
+      // User can only delete their own profile
+      const response = await fetch(`${API_URL}/team/my-profile`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -491,8 +472,8 @@ export default function TeamPage() {
                   member={member}
                   index={index}
                   isOwnProfile={user?.email === member.email}
-                  canEdit={user?.isAdmin || user?.email === member.email}
-                  canDelete={user?.isAdmin || user?.email === member.email}
+                  canEdit={user?.email === member.email}
+                  canDelete={user?.email === member.email}
                   onEdit={handleEditProfile}
                   onDelete={handleDeleteProfile}
                   onViewProjects={handleViewProjects}

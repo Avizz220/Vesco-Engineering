@@ -124,12 +124,18 @@ export default function TeamPage() {
       let method: string
       
       if (editingMember) {
-        // Admin editing a specific member
-        url = `${API_URL}/team/${editingMember.id}`
-        method = 'PUT'
+        // Use my-profile endpoint for updating own profile
+        if (user.email === editingMember.email) {
+          url = `${API_URL}/team/my-profile`
+          method = 'PUT'
+        } else {
+          // Admin editing a specific member (if needed in future, though currently hidden by UI rules)
+          url = `${API_URL}/team/${editingMember.id}`
+          method = 'PUT'
+        }
       } else {
-        // Admin creating a new member
-        url = `${API_URL}/team`
+        // Creating new profile - assume it's for the logged in admin
+        url = `${API_URL}/team/my-profile`
         method = 'POST'
       }
       
@@ -267,7 +273,17 @@ export default function TeamPage() {
         return
       }
 
-      const response = await fetch(`${API_URL}/team/${deletingMemberId}`, {
+      // Check if trying to delete another user's profile
+      const memberToDelete = members.find(m => m.id === deletingMemberId)
+      if (memberToDelete && memberToDelete.email !== user.email) {
+        setDialogMessage('You can only delete your own profile.')
+        setShowSuccessDialog(true)
+        setDeletingMemberId(null)
+        return
+      }
+
+      // Use my-profile endpoint for self-deletion
+      const response = await fetch(`${API_URL}/team/my-profile`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -288,6 +304,8 @@ export default function TeamPage() {
   }
 
   const canManageProfiles = !!user?.isAdmin
+  // Find current admin's profile
+  const userProfile = members.find(m => m.email === user?.email)
 
   const groupImages = [
     '/group2.jpeg',
@@ -424,17 +442,36 @@ export default function TeamPage() {
                 {canManageProfiles && (
                   <button
                     onClick={() => {
-                      setEditingMember(null)
-                      resetForm()
-                      setShowAddModal(true)
+                      if (userProfile) {
+                        handleEditProfile(userProfile)
+                      } else {
+                        setEditingMember(null)
+                        resetForm()
+                        // Pre-fill email and name from user session
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          email: user?.email || '', 
+                          name: user?.name || '' 
+                        }))
+                        setShowAddModal(true)
+                      }
                     }}
                     className="bg-black text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2 w-full md:w-auto justify-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
+                      {userProfile ? (
+                        <>
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </>
+                      ) : (
+                         <>
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                        </>
+                      )}
                     </svg>
-                    Add Team Member
+                    {userProfile ? 'Edit My Profile' : 'Create My Profile'}
                   </button>
                 )}
               </div>
@@ -448,8 +485,8 @@ export default function TeamPage() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : members.length === 0 ? (
+          </div> && user?.email === member.email}
+                  canDelete={!!user?.isAdmin && user?.email === member.email
           <div className="text-center py-20">
             <p className="text-gray-600 text-lg">No team members found.</p>
           </div>

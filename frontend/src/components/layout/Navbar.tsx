@@ -92,7 +92,7 @@ const Navbar = () => {
   const navLinks = [
     { href: '/', label: 'Home', protected: false },
     { href: '/projects', label: 'Projects', protected: false },
-    { href: '/achievements', label: 'Achievements', protected: false },
+    { href: '/achievements', label: 'Achievements', protected: false, hidden: true },
     { href: '/courses', label: 'Courses', protected: true, hidden: true },
     { href: '/team', label: 'Team', protected: false, hidden: true },
     { href: '/#services', label: 'Services', protected: false },

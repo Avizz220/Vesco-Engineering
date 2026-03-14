@@ -204,12 +204,12 @@ const Hero = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
-            <Link
+            {/* <Link
               href="/team"
               className="bg-transparent border-2 border-blue-400 text-blue-400 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto justify-center"
             >
               Meet the Team
-            </Link>
+            </Link> */}
           </motion.div>
         </div>
       </div>

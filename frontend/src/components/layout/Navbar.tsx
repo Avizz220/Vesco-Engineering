@@ -94,7 +94,7 @@ const Navbar = () => {
     { href: '/projects', label: 'Projects', protected: false },
     { href: '/achievements', label: 'Achievements', protected: false },
     { href: '/courses', label: 'Courses', protected: true, hidden: true },
-    { href: '/team', label: 'Team', protected: false },
+    { href: '/team', label: 'Team', protected: false, hidden: true },
     { href: '/#services', label: 'Services', protected: false },
     { href: '/contact', label: 'Contact', protected: false },
   ]

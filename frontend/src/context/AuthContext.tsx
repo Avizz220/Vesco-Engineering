@@ -25,8 +25,8 @@ interface AuthContextType {
   signUp: (name: string, email: string, password: string) => Promise<void>
   signInWithGoogle: (response: any) => Promise<void>
   logout: () => Promise<void>
-  updateProfile: (updates: Partial<User>) => Promise<void>
-  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  updateProfile: (updates: Partial<User>) => Promise<any>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<any>
   refreshUserProfile: () => Promise<void>
 }
 

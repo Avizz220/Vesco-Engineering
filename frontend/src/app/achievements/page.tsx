@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
 import ImageCropper from '@/components/ui/ImageCropper'
-import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
+import STATIC_ACHIEVEMENTS from '@/data/achievements'
 
 interface Achievement {
   id: string
@@ -28,8 +28,8 @@ export default function AchievementsPage() {
   const itemsPerPage = 3
   const [showAddAchievementModal, setShowAddAchievementModal] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [achievementsList, setAchievementsList] = useState<Achievement[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [achievementsList, setAchievementsList] = useState<Achievement[]>(STATIC_ACHIEVEMENTS)
+  const [isLoading, setIsLoading] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [dialogMessage, setDialogMessage] = useState('')
@@ -55,51 +55,10 @@ export default function AchievementsPage() {
     photo: null as File | null,
   })
 
-  // Fetch achievements from backend
+  // Static achievements mode
   useEffect(() => {
-    fetchAchievements()
-    fetchAdminUsers()
+    // Achievements loaded directly from STATIC_ACHIEVEMENTS
   }, [])
-
-  const fetchAdminUsers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/admins`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      })
-      if (response.ok) {
-        const admins = await response.json()
-        setAdminUsers(admins)
-      }
-    } catch (error) {
-      console.error('Error fetching admin users:', error)
-    }
-  }
-
-  const fetchAchievements = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`${API_URL}/achievements`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      })
-      const data = await response.json()
-
-      if (data.success) {
-        setAchievementsList(data.achievements)
-      }
-    } catch (error) {
-      console.error('Error fetching achievements:', error)
-      setDialogMessage('Failed to load achievements')
-      setShowErrorDialog(true)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -149,28 +108,12 @@ export default function AchievementsPage() {
 
   const confirmDeleteAchievement = async () => {
     if (!confirmAction || confirmAction.index === undefined) return
-    
     const index = confirmAction.index
-    const achievementId = achievementsList[index].id
-    try {
-      const response = await fetch(`${API_URL}/achievements/${achievementId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-
-      if (response.ok) {
-        setAchievementsList(prev => prev.filter((_, i) => i !== index))
-        setDialogMessage('Achievement deleted successfully!')
-        setShowSuccessDialog(true)
-      }
-    } catch (error) {
-      console.error('Error deleting achievement:', error)
-      setDialogMessage('Failed to delete achievement')
-      setShowErrorDialog(true)
-    } finally {
-      setShowConfirmDialog(false)
-      setConfirmAction(null)
-    }
+    setAchievementsList(prev => prev.filter((_, i) => i !== index))
+    setDialogMessage('Achievement deleted successfully!')
+    setShowSuccessDialog(true)
+    setShowConfirmDialog(false)
+    setConfirmAction(null)
   }
 
   const handleSubmitAchievement = async (e: React.FormEvent) => {
@@ -183,68 +126,50 @@ export default function AchievementsPage() {
     try {
       if (editingIndex !== null) {
         // Update existing achievement
-        const achievementId = achievementsList[editingIndex].id
-        const formData = new FormData()
-        formData.append('title', newAchievement.title)
-        formData.append('description', newAchievement.description)
-        formData.append('categories', JSON.stringify(newAchievement.categories))
-        formData.append('participants', JSON.stringify(newAchievement.participants))
-        formData.append('competition', newAchievement.competition)
-        formData.append('date', newAchievement.date)
-        if (newAchievement.linkedinUrl) {
-          formData.append('linkedinUrl', newAchievement.linkedinUrl)
-        }
-        if (newAchievement.photo) {
-          formData.append('image', newAchievement.photo)
-        }
-
-        const response = await fetch(`${API_URL}/achievements/${achievementId}`, {
-          method: 'PUT',
-          credentials: 'include',
-          body: formData,
+        setAchievementsList(prev => {
+          const updated = [...prev]
+          const cur = updated[editingIndex]
+          let imageUrl = cur.imageUrl
+          if (newAchievement.photo) {
+            imageUrl = URL.createObjectURL(newAchievement.photo)
+          }
+          updated[editingIndex] = {
+            ...cur,
+            title: newAchievement.title,
+            description: newAchievement.description,
+            categories: newAchievement.categories,
+            participants: newAchievement.participants,
+            competition: newAchievement.competition,
+            date: newAchievement.date,
+            linkedinUrl: newAchievement.linkedinUrl,
+            imageUrl: imageUrl || '/projects/MealIO/Screenshot 2026-10-12 114846.png',
+            updatedAt: new Date().toISOString(),
+          }
+          return updated
         })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to update achievement')
-        }
 
         setDialogMessage('Achievement updated successfully!')
         setShowSuccessDialog(true)
         setEditingIndex(null)
-        await fetchAchievements()
       } else {
         // Add new achievement
-        const formData = new FormData()
-        formData.append('title', newAchievement.title)
-        formData.append('description', newAchievement.description)
-        formData.append('categories', JSON.stringify(newAchievement.categories))
-        formData.append('participants', JSON.stringify(newAchievement.participants))
-        formData.append('competition', newAchievement.competition)
-        formData.append('date', newAchievement.date)
-        if (newAchievement.linkedinUrl) {
-          formData.append('linkedinUrl', newAchievement.linkedinUrl)
-        }
-        if (newAchievement.photo) {
-          formData.append('image', newAchievement.photo)
-        }
-
-        const response = await fetch(`${API_URL}/achievements`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to create achievement')
+        const newItem: Achievement = {
+          id: Date.now().toString(),
+          title: newAchievement.title,
+          description: newAchievement.description,
+          categories: newAchievement.categories,
+          participants: newAchievement.participants,
+          competition: newAchievement.competition,
+          date: newAchievement.date,
+          imageUrl: newAchievement.photo ? URL.createObjectURL(newAchievement.photo) : '/projects/MealIO/Screenshot 2026-10-12 114846.png',
+          linkedinUrl: newAchievement.linkedinUrl,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
 
+        setAchievementsList(prev => [newItem, ...prev])
         setDialogMessage('Achievement created successfully!')
         setShowSuccessDialog(true)
-        await fetchAchievements()
       }
       
       setShowAddAchievementModal(false)
@@ -388,7 +313,7 @@ export default function AchievementsPage() {
                 <div className="relative w-full overflow-hidden bg-slate-100 aspect-[4/3]">
                   {achievement.imageUrl ? (
                     <Image
-                      src={achievement.imageUrl.startsWith('http') ? achievement.imageUrl : `${IMAGE_URL_PREFIX}${achievement.imageUrl}`}
+                      src={achievement.imageUrl}
                       alt={achievement.title}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
@@ -926,7 +851,7 @@ export default function AchievementsPage() {
               <div className="relative w-full h-64 md:h-80 lg:h-96 bg-slate-100">
                 {selectedAchievement.imageUrl ? (
                   <Image
-                    src={selectedAchievement.imageUrl.startsWith('http') ? selectedAchievement.imageUrl : `${IMAGE_URL_PREFIX}${selectedAchievement.imageUrl}`}
+                    src={selectedAchievement.imageUrl}
                     alt={selectedAchievement.title}
                     fill
                     className="object-cover"

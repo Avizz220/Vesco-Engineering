@@ -8,7 +8,6 @@ import { Project } from '@/types'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
 import ImageCropper from '@/components/ui/ImageCropper'
-import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 import STATIC_PROJECTS from '@/data/projects'
 
 export default function ProjectsPage() {
@@ -42,13 +41,7 @@ export default function ProjectsPage() {
     youtubeLink: '',
   })
 
-  // Fetch projects from backend
-  useEffect(() => {
-    fetchProjects()
-    fetchAdminUsers()
-  }, [])
-
-  // Check for project ID from team page navigation
+  // Check for project ID from featured projects or other navigation
   useEffect(() => {
     const openProjectId = sessionStorage.getItem('openProjectId')
     if (openProjectId && projectsList.length > 0) {
@@ -60,62 +53,6 @@ export default function ProjectsPage() {
       }
     }
   }, [projectsList])
-
-  const fetchAdminUsers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/admins`, {
-        cache: 'no-store',
-      })
-      if (response.ok) {
-        const admins = await response.json()
-        setAdminUsers(admins)
-      }
-    } catch {
-      // Static site mode: admins offline
-    }
-  }
-
-  const fetchProjects = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`${API_URL}/projects`, {
-        cache: 'no-store',
-      })
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
-          const transformedProjects = data.projects.map((project: any) => ({
-            id: project.id,
-            title: project.title,
-            description: project.description,
-            technologies: Array.isArray(project.technologies) ? project.technologies : [],
-            imageUrl: project.imageUrl 
-              ? (project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`)
-              : '/projects/robotics.jpg',
-            category: project.category,
-            contributors: Array.isArray(project.contributors) ? project.contributors : [],
-            liveUrl: project.liveUrl,
-            githubUrl: project.githubUrl,
-            linkedInUrl: project.linkedInUrl,
-            createdAt: project.createdAt,
-            updatedAt: project.updatedAt,
-          }))
-          transformedProjects.sort((a: any, b: any) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          })
-          setProjectsList(transformedProjects)
-          return
-        }
-      }
-      // If API returned empty or invalid, keep static projects
-      setProjectsList(STATIC_PROJECTS)
-    } catch {
-      // Backend is offline - static mode active, seamlessly load STATIC_PROJECTS
-      setProjectsList(STATIC_PROJECTS)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleEditProject = (project: Project, index: number) => {
     setNewProject({
@@ -139,28 +76,12 @@ export default function ProjectsPage() {
 
   const confirmDeleteProject = async () => {
     if (!confirmAction || confirmAction.index === undefined) return
-    
     const index = confirmAction.index
-    const projectId = projectsList[index].id
-    try {
-      const response = await fetch(`${API_URL}/projects/${projectId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-
-      if (response.ok) {
-        setProjectsList(prev => prev.filter((_, i) => i !== index))
-        setDialogMessage('Project deleted successfully!')
-        setShowSuccessDialog(true)
-      }
-    } catch (error) {
-      console.error('Error deleting project:', error)
-      setDialogMessage('Failed to delete project')
-      setShowErrorDialog(true)
-    } finally {
-      setShowConfirmDialog(false)
-      setConfirmAction(null)
-    }
+    setProjectsList(prev => prev.filter((_, i) => i !== index))
+    setDialogMessage('Project deleted successfully!')
+    setShowSuccessDialog(true)
+    setShowConfirmDialog(false)
+    setConfirmAction(null)
   }
 
   const registeredUsers = [
@@ -169,20 +90,14 @@ export default function ProjectsPage() {
     'Rachel Green', 'Kevin Zhang', 'Olivia White', 'Ryan Black', 'Anna Johnson'
   ]
 
-  // Get unique areas from existing projects' technologies and categories
+  // Get unique main categories from existing projects
   const projectAreas = useMemo(() => {
     const allAreas = new Set<string>()
     projectsList.forEach(project => {
-      // Add category
-      if (project.category) allAreas.add(project.category)
-      // Add all technologies
-      if (Array.isArray(project.technologies)) {
-        project.technologies.forEach(tech => allAreas.add(tech))
+      if (project.category && project.category.trim()) {
+        allAreas.add(project.category.trim())
       }
     })
-    // Add some default options if no projects exist yet
-    const defaultAreas = ['IoT', 'Web Development', 'Mobile Application', 'AI/ML', 'Robotics', 'Electronics', 'Software', 'Aerospace', 'Manufacturing']
-    defaultAreas.forEach(area => allAreas.add(area))
     return Array.from(allAreas).sort()
   }, [projectsList])
 
@@ -240,72 +155,53 @@ export default function ProjectsPage() {
   const confirmSubmitProject = async () => {
     try {
       if (editingIndex !== null) {
-        // Update existing project
-        const projectId = projectsList[editingIndex].id
-        const formData = new FormData()
-        formData.append('title', newProject.title)
-        formData.append('description', newProject.description)
-        formData.append('technologies', JSON.stringify(newProject.relatedAreas))
-        formData.append('contributors', JSON.stringify(newProject.contributors))
-        formData.append('category', newProject.relatedAreas[0] || 'Other')
-        formData.append('githubUrl', newProject.githubLink || '')
-        formData.append('linkedInUrl', newProject.linkedInLink || '')
-        formData.append('liveUrl', newProject.youtubeLink || '')
-        if (newProject.photo) {
-          formData.append('image', newProject.photo)
-        }
-
-        const response = await fetch(`${API_URL}/projects/${projectId}`, {
-          method: 'PUT',
-          credentials: 'include',
-          body: formData,
+        // Update existing project in static state
+        setProjectsList(prev => {
+          const updated = [...prev]
+          const cur = updated[editingIndex]
+          let imageUrl = cur.imageUrl
+          if (newProject.photo) {
+            imageUrl = URL.createObjectURL(newProject.photo)
+          }
+          updated[editingIndex] = {
+            ...cur,
+            title: newProject.title,
+            description: newProject.description,
+            technologies: newProject.relatedAreas,
+            contributors: newProject.contributors,
+            category: newProject.relatedAreas[0] || cur.category || 'Other',
+            githubUrl: newProject.githubLink,
+            linkedInUrl: newProject.linkedInLink,
+            liveUrl: newProject.youtubeLink,
+            imageUrl: imageUrl || '/projects/robotics.jpg',
+            updatedAt: new Date().toISOString(),
+          }
+          return updated
         })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to update project')
-        }
 
         setDialogMessage('Project updated successfully!')
         setShowSuccessDialog(true)
         setEditingIndex(null)
-        await fetchProjects()
-        // Reset to page 1 to see the updated project
-        setCurrentPage(1)
       } else {
-        // Add new project to backend with FormData for file upload
-        const formData = new FormData()
-        formData.append('title', newProject.title)
-        formData.append('description', newProject.description)
-        formData.append('technologies', JSON.stringify(newProject.relatedAreas))
-        formData.append('contributors', JSON.stringify(newProject.contributors))
-        formData.append('category', newProject.relatedAreas[0] || 'Other')
-        formData.append('githubUrl', newProject.githubLink || '')
-        formData.append('linkedInUrl', newProject.linkedInLink || '')
-        formData.append('liveUrl', newProject.youtubeLink || '')
-        formData.append('featured', 'false')
-        if (newProject.photo) {
-          formData.append('image', newProject.photo)
+        // Add new project to static state
+        const newProjObj: Project = {
+          id: Date.now().toString(),
+          title: newProject.title,
+          description: newProject.description,
+          technologies: newProject.relatedAreas,
+          contributors: newProject.contributors,
+          category: newProject.relatedAreas[0] || 'Other',
+          imageUrl: newProject.photo ? URL.createObjectURL(newProject.photo) : '/projects/robotics.jpg',
+          githubUrl: newProject.githubLink,
+          linkedInUrl: newProject.linkedInLink,
+          liveUrl: newProject.youtubeLink,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
 
-        const response = await fetch(`${API_URL}/projects`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to create project')
-        }
-
+        setProjectsList(prev => [newProjObj, ...prev])
         setDialogMessage('Project created successfully!')
         setShowSuccessDialog(true)
-        
-        // Refresh projects list and reset to page 1 to see the new project
-        await fetchProjects()
         setCurrentPage(1)
       }
       
@@ -332,13 +228,9 @@ export default function ProjectsPage() {
   const categories = useMemo(() => {
     const allCategories = new Set<string>(['All'])
     projectsList.forEach(project => {
-      // Add main category
-      if (project.category) {
-        allCategories.add(project.category)
-      }
-      // Add technologies as categories too
-      if (Array.isArray(project.technologies)) {
-        project.technologies.forEach(tech => allCategories.add(tech))
+      // Add only the one main field (category) per project
+      if (project.category && project.category.trim()) {
+        allCategories.add(project.category.trim())
       }
     })
     return Array.from(allCategories).sort((a, b) => {
@@ -350,10 +242,7 @@ export default function ProjectsPage() {
 
   const filteredProjects = useMemo(() => {
     if (selectedCategory === 'All') return projectsList
-    return projectsList.filter(p => 
-      p.category === selectedCategory || 
-      (Array.isArray(p.technologies) && p.technologies.includes(selectedCategory))
-    )
+    return projectsList.filter(p => p.category === selectedCategory)
   }, [selectedCategory, projectsList])
 
   // Pagination calculations

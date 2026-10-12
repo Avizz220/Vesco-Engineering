@@ -8,8 +8,9 @@ import TeamMemberCard from '@/components/team/TeamMemberCard'
 import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
 import ImageCropper from '@/components/ui/ImageCropper'
-import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 import STATIC_PROJECTS from '@/data/projects'
+
+import STATIC_TEAM_MEMBERS from '@/data/team'
 
 type Department = 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
 
@@ -19,8 +20,8 @@ interface CategorizedMembers {
 
 export default function TeamPage() {
   const { user } = useAuth()
-  const [members, setMembers] = useState<TeamMember[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [members, setMembers] = useState<TeamMember[]>(STATIC_TEAM_MEMBERS)
+  const [isLoading, setIsLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
   const [showProjectsModal, setShowProjectsModal] = useState(false)
@@ -51,7 +52,6 @@ export default function TeamPage() {
 
   useEffect(() => {
     fetchTeamMembers()
-    fetchAdminUsers()
   }, [])
 
   useEffect(() => {
@@ -62,36 +62,9 @@ export default function TeamPage() {
     return () => clearInterval(interval)
   }, [showSlideshow])
 
-  const fetchAdminUsers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/admins`)
-      if (response.ok) {
-        const admins = await response.json()
-        setAdminUsers(admins)
-      }
-    } catch (error) {
-      console.error('Error fetching admin users:', error)
-    }
-  }
-
-  const fetchTeamMembers = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`${API_URL}/team`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setMembers(data)
-      }
-    } catch (err) {
-      console.error('Error fetching team members:', err)
-    } finally {
-      setIsLoading(false)
-    }
+  const fetchTeamMembers = () => {
+    setMembers(STATIC_TEAM_MEMBERS)
+    setIsLoading(false)
   }
 
   const handleAddOrUpdateProfile = async (e: React.FormEvent) => {
@@ -121,43 +94,49 @@ export default function TeamPage() {
         submitFormData.append('image', formData.photo)
       }
 
-      let url: string
-      let method: string
-      
       if (editingMember) {
-        // Use my-profile endpoint for updating own profile
-        if (user.email === editingMember.email) {
-          url = `${API_URL}/team/my-profile`
-          method = 'PUT'
-        } else {
-          // Admin editing a specific member (if needed in future, though currently hidden by UI rules)
-          url = `${API_URL}/team/${editingMember.id}`
-          method = 'PUT'
-        }
+        setMembers(prev => prev.map(m => {
+          if (m.id === editingMember.id) {
+            let photoUrl = m.imageUrl
+            if (formData.photo) {
+              photoUrl = URL.createObjectURL(formData.photo)
+            }
+            return {
+              ...m,
+              name: formData.name,
+              role: formData.role,
+              department: formData.department as Department,
+              bio: formData.bio,
+              linkedinUrl: formData.linkedinUrl,
+              githubUrl: formData.githubUrl,
+              email: formData.email,
+              imageUrl: photoUrl,
+            }
+          }
+          return m
+        }))
+        setDialogMessage('Team member updated successfully!')
       } else {
-        // Creating new profile - assume it's for the logged in admin
-        url = `${API_URL}/team/my-profile`
-        method = 'POST'
+        const newMember: TeamMember = {
+          id: Date.now().toString(),
+          name: formData.name,
+          role: formData.role,
+          department: formData.department as Department,
+          bio: formData.bio,
+          linkedinUrl: formData.linkedinUrl,
+          githubUrl: formData.githubUrl,
+          email: formData.email,
+          imageUrl: formData.photo ? URL.createObjectURL(formData.photo) : '/team/member1.jpg',
+          joinedDate: new Date().toISOString(),
+        }
+        setMembers(prev => [...prev, newMember])
+        setDialogMessage('Team member created successfully!')
       }
       
-      const response = await fetch(url, {
-        method,
-        credentials: 'include',
-        body: submitFormData,
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to save profile')
-      }
-
-      setDialogMessage(editingMember ? 'Team member updated successfully!' : 'Team member created successfully!')
       setShowSuccessDialog(true)
       setShowAddModal(false)
       setEditingMember(null)
       resetForm()
-      fetchTeamMembers()
       
       // Refresh to update the navbar picture
       window.location.reload()
@@ -184,18 +163,7 @@ export default function TeamPage() {
 
   const handleViewProjects = async (memberName: string) => {
     try {
-      let projectsSource: Project[] = STATIC_PROJECTS
-      try {
-        const response = await fetch(`${API_URL}/projects`, { cache: 'no-store' })
-        if (response.ok) {
-          const data = await response.json()
-          if (Array.isArray(data.projects) && data.projects.length > 0) {
-            projectsSource = data.projects
-          }
-        }
-      } catch {
-        // Backend offline: use STATIC_PROJECTS
-      }
+      const projectsSource: Project[] = STATIC_PROJECTS
 
       // Get the member's user ID by matching email
       const member = members.find(m => m.name === memberName)
@@ -288,20 +256,10 @@ export default function TeamPage() {
         return
       }
 
-      // Use my-profile endpoint for self-deletion
-      const response = await fetch(`${API_URL}/team/my-profile`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete profile')
-      }
-
+      setMembers(prev => prev.filter(m => m.id !== deletingMemberId))
       setDialogMessage('Team member deleted successfully!')
       setShowSuccessDialog(true)
       setDeletingMemberId(null)
-      fetchTeamMembers()
     } catch (error: any) {
       setDialogMessage(error.message || 'Failed to delete profile')
       setShowSuccessDialog(true)
@@ -779,7 +737,7 @@ export default function TeamPage() {
                         {project.imageUrl ? (
                           <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
                             <Image
-                              src={project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`}
+                              src={project.imageUrl}
                               alt={project.title}
                               fill
                               className="object-cover"

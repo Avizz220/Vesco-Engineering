@@ -4,30 +4,15 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
-import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
-
-interface Course {
-  id: string
-  title: string
-  category: string
-  instructor: string
-  duration: string
-  level: string
-  price: string
-  description: string
-  imageUrl: string | null
-  learningOutcomes: string[]
-  createdAt: string
-  updatedAt: string
-}
+import STATIC_COURSES, { Course } from '@/data/courses'
 
 export default function CoursesPage() {
   const { user } = useAuth()
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [showAddCourseModal, setShowAddCourseModal] = useState(false)
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
-  const [coursesList, setCoursesList] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
+  const [coursesList, setCoursesList] = useState<Course[]>(STATIC_COURSES)
+  const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 3
   const [showDialog, setShowDialog] = useState(false)
@@ -48,27 +33,10 @@ export default function CoursesPage() {
     photo: null as File | null,
   })
 
-  // Fetch courses from API
+  // Static mode
   useEffect(() => {
-    fetchCourses()
+    // Courses loaded from STATIC_COURSES
   }, [])
-
-  const fetchCourses = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`${API_URL}/courses`, {
-        credentials: 'include',
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setCoursesList(data)
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
   const handleEditCourse = (course: Course) => {
     setEditingCourse(course)
     setNewCourse({
@@ -87,28 +55,11 @@ export default function CoursesPage() {
 
   const handleDeleteCourse = async (course: Course) => {
     setConfirmMessage(`Are you sure you want to delete "${course.title}"?`)
-    setConfirmAction(() => async () => {
-      try {
-        const response = await fetch(`${API_URL}/courses/${course.id}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        })
-
-        if (response.ok) {
-          setDialogType('success')
-          setDialogMessage('Course deleted successfully!')
-          setShowDialog(true)
-          fetchCourses()
-        } else {
-          setDialogType('error')
-          setDialogMessage('Failed to delete course')
-          setShowDialog(true)
-        }
-      } catch (error) {
-        setDialogType('error')
-        setDialogMessage('Error deleting course')
-        setShowDialog(true)
-      }
+    setConfirmAction(() => () => {
+      setCoursesList(prev => prev.filter(c => c.id !== course.id))
+      setDialogType('success')
+      setDialogMessage('Course deleted successfully!')
+      setShowDialog(true)
     })
     setShowConfirmDialog(true)
   }
@@ -127,61 +78,72 @@ export default function CoursesPage() {
       : `Are you sure you want to add "${newCourse.name}"?`
 
     setConfirmMessage(confirmMsg)
-    setConfirmAction(() => async () => {
+    setConfirmAction(() => () => {
       try {
-        const formData = new FormData()
-        formData.append('title', newCourse.name)
-        formData.append('description', newCourse.description)
-        formData.append('instructor', newCourse.conductedBy)
-        formData.append('duration', newCourse.duration)
-        formData.append('price', newCourse.courseFee)
-        formData.append('category', newCourse.category)
-        formData.append('level', newCourse.level)
-        
         const outcomes = newCourse.learningOutcomes
           .split(',')
           .map(s => s.trim())
           .filter(s => s.length > 0)
-        formData.append('learningOutcomes', JSON.stringify(outcomes))
-        
-        if (newCourse.photo) {
-          formData.append('image', newCourse.photo)
-        }
 
-        const url = editingCourse
-          ? `${API_URL}/courses/${editingCourse.id}`
-          : `${API_URL}/courses`
-        
-        const response = await fetch(url, {
-          method: editingCourse ? 'PUT' : 'POST',
-          credentials: 'include',
-          body: formData,
-        })
-
-        if (response.ok) {
+        if (editingCourse) {
+          setCoursesList(prev => prev.map(c => {
+            if (c.id === editingCourse.id) {
+              let img = c.imageUrl
+              if (newCourse.photo) {
+                img = URL.createObjectURL(newCourse.photo)
+              }
+              return {
+                ...c,
+                title: newCourse.name,
+                description: newCourse.description,
+                instructor: newCourse.conductedBy,
+                duration: newCourse.duration,
+                price: newCourse.courseFee,
+                category: newCourse.category,
+                level: newCourse.level,
+                learningOutcomes: outcomes,
+                imageUrl: img,
+                updatedAt: new Date().toISOString(),
+              }
+            }
+            return c
+          }))
           setDialogType('success')
-          setDialogMessage(editingCourse ? 'Course updated successfully!' : 'Course added successfully!')
-          setShowDialog(true)
-          setShowAddCourseModal(false)
-          setEditingCourse(null)
-          setNewCourse({
-            name: '',
-            description: '',
-            conductedBy: '',
-            duration: '',
-            learningOutcomes: '',
-            courseFee: '',
-            category: '',
-            level: '',
-            photo: null,
-          })
-          fetchCourses()
+          setDialogMessage('Course updated successfully!')
         } else {
-          const error = await response.json()
-          setDialogType('error')
-          setDialogMessage(error.message || 'Failed to save course')
-          setShowDialog(true)
+          const newCourseItem: Course = {
+            id: Date.now().toString(),
+            title: newCourse.name,
+            description: newCourse.description,
+            instructor: newCourse.conductedBy,
+            duration: newCourse.duration,
+            price: newCourse.courseFee,
+            category: newCourse.category,
+            level: newCourse.level,
+            learningOutcomes: outcomes,
+            imageUrl: newCourse.photo ? URL.createObjectURL(newCourse.photo) : null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+          setCoursesList(prev => [newCourseItem, ...prev])
+          setDialogType('success')
+          setDialogMessage('Course added successfully!')
         }
+
+        setShowDialog(true)
+        setShowAddCourseModal(false)
+        setEditingCourse(null)
+        setNewCourse({
+          name: '',
+          description: '',
+          conductedBy: '',
+          duration: '',
+          learningOutcomes: '',
+          courseFee: '',
+          category: '',
+          level: '',
+          photo: null,
+        })
       } catch (error) {
         setDialogType('error')
         setDialogMessage('Error saving course')
@@ -286,7 +248,7 @@ export default function CoursesPage() {
               >
                 <div className="relative w-full overflow-hidden bg-slate-100 aspect-[4/3]">
                   <Image
-                    src={course.imageUrl ? (course.imageUrl.startsWith('http') ? course.imageUrl : `${IMAGE_URL_PREFIX}${course.imageUrl}`) : defaultImage}
+                    src={course.imageUrl || defaultImage}
                     alt={course.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"

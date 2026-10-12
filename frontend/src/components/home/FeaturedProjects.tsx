@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
 import STATIC_PROJECTS from '@/data/projects'
 
 interface Project {
@@ -57,81 +56,7 @@ const FeaturedProjects = () => {
     router.push('/projects')
   }
 
-  // Fetch featured projects from backend
-  useEffect(() => {
-    const fetchFeaturedProjects = async () => {
-      try {
-        console.log('🔍 Fetching projects from:', `${API_URL}/projects`)
-        const response = await fetch(`${API_URL}/projects`)
-        const data = await response.json()
 
-        console.log('📊 API Response:', data)
-
-        if (data.success) {
-          // Transform projects to handle image URLs properly
-          const transformedProjects = data.projects.map((p: any) => {
-            let imageUrl = null
-            if (p.imageUrl) {
-              // If it's a full URL (Cloudinary), use as-is
-              if (p.imageUrl.startsWith('http')) {
-                imageUrl = p.imageUrl
-              } else {
-                // Relative path, prepend backend URL
-                imageUrl = IMAGE_URL_PREFIX ? `${IMAGE_URL_PREFIX}${p.imageUrl}` : p.imageUrl
-              }
-            }
-            
-            return {
-              id: p.id,
-              title: p.title,
-              description: p.description,
-              category: p.category,
-              imageUrl,
-              featured: p.featured
-            }
-          })
-          
-          console.log('🎨 Transformed projects:', transformedProjects)
-          
-          // Filter out ALL seed/default projects - be very strict
-          const seedProjectKeywords = [
-            'autonomous robot',
-            'smart home',
-            'e-commerce',
-            'autonomous inspection',
-            'drone',
-            'sample',
-            'test',
-            'demo'
-          ]
-          
-          const realProjects = transformedProjects.filter((p: any) => {
-            const titleLower = p.title.toLowerCase()
-            const descLower = p.description.toLowerCase()
-            
-            // Check if title or description contains any seed keywords
-            const hasSeedKeyword = seedProjectKeywords.some(keyword => 
-              titleLower.includes(keyword) || descLower.includes(keyword)
-            )
-            
-            return !hasSeedKeyword
-          })
-          
-          // Display up to 10 real user-added projects
-          const projectsToDisplay = realProjects.slice(0, 10)
-          
-          console.log('✅ Real projects to display:', projectsToDisplay.length)
-          setProjects(projectsToDisplay)
-        }
-      } catch (error) {
-        console.error('❌ Error fetching featured projects:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchFeaturedProjects()
-  }, [])
 
   // Show loading state or render empty div during loading
   if (isLoading) {

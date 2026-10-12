@@ -29,12 +29,13 @@ const ProjectModal = ({ project, isOpen, onClose, adminUsers = [] }: ProjectModa
   }
 
   const getContributorNames = (contributors: string[]) => {
+    if (!contributors || contributors.length === 0) return []
     if (contributors[0] === 'all') {
-      return adminUsers.map(admin => admin.fullName)
+      return adminUsers.length > 0 ? adminUsers.map(admin => admin.fullName) : ['All Team Admins']
     }
     return contributors
-      .map(id => adminUsers.find(admin => admin.id === id)?.fullName || 'Unknown')
-      .filter(name => name !== 'Unknown')
+      .map(id => adminUsers.find(admin => admin.id === id)?.fullName || id)
+      .filter(name => name && name !== 'Unknown')
   }
 
   const contributorNames = project.contributors ? getContributorNames(project.contributors) : []
@@ -116,14 +117,14 @@ const ProjectModal = ({ project, isOpen, onClose, adminUsers = [] }: ProjectModa
                 {contributorNames.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                      Contributors {project.contributors[0] === 'all' && <span className="text-sm text-gray-500 font-normal">(All Team Admins)</span>}
+                      Contributors {project.contributors?.[0] === 'all' && <span className="text-sm text-gray-500 font-normal">(All Team Admins)</span>}
                     </h3>
                     <div className="flex flex-wrap gap-3">
                       {contributorNames.map((name, idx) => (
                         <span
                           key={idx}
                           className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                            project.contributors[0] === 'all' 
+                            project.contributors?.[0] === 'all' 
                               ? 'bg-gradient-to-r from-sky-500 to-primary-600 text-white'
                               : 'bg-primary-100 text-primary-800'
                           }`}

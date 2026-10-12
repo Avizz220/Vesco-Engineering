@@ -1,0 +1,16 @@
+Project Title: RuGrow – IoT-Based Smart Plant Growing System (Version 1.0.0)
+
+Project Category: Embedded Systems, IoT & Machine Learning
+
+Project Description:
+RuGrow is an innovative IoT-based automated plant-growing system designed as an alternative to traditional greenhouses. It integrates ESP32-S3, Arduino-based linear actuator control, environmental sensors, and Azure AI Custom Vision for plant recognition, fruit detection, and disease identification. The system automatically manages watering, temperature, humidity, and artificial lighting based on real-time sensor data, with live monitoring through the RuGrow App.
+
+Contributors: Project Team Members
+
+Related Areas: ESP32-S3, Arduino Uno, Embedded C/C++, IoT, CNC V4 Shield, Linear Actuators, Environmental Sensors, Azure AI Custom Vision, Machine Learning, Image Processing, Automation
+
+Created Date / Last Updated: Enter your actual project dates.
+
+ GitHub
+ LinkedIn - https://lnkd.in/p/gSHrp865
+ YouTube - https://youtu.be/uHmxOS7jr5s?si=yD5XBm7BjXX6NTsC

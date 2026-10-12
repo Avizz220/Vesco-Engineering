@@ -33,13 +33,13 @@ const ProjectCard = ({ project, index, onViewDetails, onEdit, onDelete, showAdmi
   }
 
   const getContributorNames = (contributors: string[]) => {
+    if (!contributors || contributors.length === 0) return []
     if (contributors[0] === 'all') {
-      // Return all admin names when "all" is selected
-      return adminUsers.map(admin => admin.fullName)
+      return adminUsers.length > 0 ? adminUsers.map(admin => admin.fullName) : ['All Team Admins']
     }
     return contributors
-      .map(id => adminUsers.find(admin => admin.id === id)?.fullName || 'Unknown')
-      .filter(name => name !== 'Unknown')
+      .map(id => adminUsers.find(admin => admin.id === id)?.fullName || id)
+      .filter(name => name && name !== 'Unknown')
   }
 
   const contributorNames = project.contributors ? getContributorNames(project.contributors) : []

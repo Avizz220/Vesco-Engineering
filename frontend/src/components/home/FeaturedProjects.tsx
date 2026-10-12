@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
+import STATIC_PROJECTS from '@/data/projects'
 
 interface Project {
   id: string
@@ -18,8 +19,17 @@ interface Project {
 const FeaturedProjects = () => {
   const router = useRouter()
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [projects, setProjects] = useState<Project[]>(
+    STATIC_PROJECTS.map((p) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      category: p.category,
+      imageUrl: p.imageUrl || null,
+      featured: true,
+    }))
+  )
+  const [isLoading, setIsLoading] = useState(false)
   
   const MAX_DESCRIPTION_WORDS = 50
 

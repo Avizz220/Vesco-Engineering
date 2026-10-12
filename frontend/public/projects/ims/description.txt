@@ -1,0 +1,11 @@
+Project Title:
+Internship Management System
+
+Project Category:
+Web-Based Internship Management, Student Placement, and Administration Platform
+
+Project Description:The Internship Management System is a web-based platform developed to digitize and streamline internship-related activities for the Faculty of Engineering and the Engineering Education Center.
+
+The system provides a centralized platform for managing students, staff members, company partnerships, internship opportunities, applications, approvals, official letters, documents, and reports. It reduces manual paperwork, improves communication between students, companies, and administrators, and provides a more organized and transparent internship management process.
+
+The application consists of a secure Spring Boot REST API backend and a Next.js frontend. It includes role-based access control, JWT authentication, staff administration, student management, company management, internship application workflows, document processing, letter generation, and reporting functionality.

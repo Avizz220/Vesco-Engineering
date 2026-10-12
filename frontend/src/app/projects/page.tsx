@@ -9,18 +9,19 @@ import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
 import ImageCropper from '@/components/ui/ImageCropper'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
+import STATIC_PROJECTS from '@/data/projects'
 
 export default function ProjectsPage() {
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 3
+  const itemsPerPage = 6
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { user } = useAuth()
   const [showAddProjectModal, setShowAddProjectModal] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [projectsList, setProjectsList] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [projectsList, setProjectsList] = useState<Project[]>(STATIC_PROJECTS)
+  const [isLoading, setIsLoading] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [dialogMessage, setDialogMessage] = useState('')
@@ -64,16 +65,13 @@ export default function ProjectsPage() {
     try {
       const response = await fetch(`${API_URL}/auth/admins`, {
         cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
       })
       if (response.ok) {
         const admins = await response.json()
         setAdminUsers(admins)
       }
-    } catch (error) {
-      console.error('Error fetching admin users:', error)
+    } catch {
+      // Static site mode: admins offline
     }
   }
 
@@ -82,42 +80,38 @@ export default function ProjectsPage() {
       setIsLoading(true)
       const response = await fetch(`${API_URL}/projects`, {
         cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
       })
-      const data = await response.json()
-
-      if (data.success) {
-        const transformedProjects = data.projects.map((project: any) => ({
-          id: project.id,
-          title: project.title,
-          description: project.description,
-          technologies: Array.isArray(project.technologies) ? project.technologies : [],
-          // Handle both Cloudinary URLs (full path) and local uploads (relative path)
-          imageUrl: project.imageUrl 
-            ? (project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`)
-            : '/api/placeholder/400/300',
-          category: project.category,
-          contributors: Array.isArray(project.contributors) ? project.contributors : [],
-          liveUrl: project.liveUrl,
-          githubUrl: project.githubUrl,
-          linkedInUrl: project.linkedInUrl,
-          createdAt: project.createdAt,
-          updatedAt: project.updatedAt,
-        }))
-        
-        // Sort projects by creation date (newest first)
-        transformedProjects.sort((a: any, b: any) => {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        })
-        
-        setProjectsList(transformedProjects)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && Array.isArray(data.projects) && data.projects.length > 0) {
+          const transformedProjects = data.projects.map((project: any) => ({
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            technologies: Array.isArray(project.technologies) ? project.technologies : [],
+            imageUrl: project.imageUrl 
+              ? (project.imageUrl.startsWith('http') ? project.imageUrl : `${IMAGE_URL_PREFIX}${project.imageUrl}`)
+              : '/projects/robotics.jpg',
+            category: project.category,
+            contributors: Array.isArray(project.contributors) ? project.contributors : [],
+            liveUrl: project.liveUrl,
+            githubUrl: project.githubUrl,
+            linkedInUrl: project.linkedInUrl,
+            createdAt: project.createdAt,
+            updatedAt: project.updatedAt,
+          }))
+          transformedProjects.sort((a: any, b: any) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          })
+          setProjectsList(transformedProjects)
+          return
+        }
       }
-    } catch (error) {
-      console.error('Error fetching projects:', error)
-      setDialogMessage('Failed to load projects')
-      setShowErrorDialog(true)
+      // If API returned empty or invalid, keep static projects
+      setProjectsList(STATIC_PROJECTS)
+    } catch {
+      // Backend is offline - static mode active, seamlessly load STATIC_PROJECTS
+      setProjectsList(STATIC_PROJECTS)
     } finally {
       setIsLoading(false)
     }

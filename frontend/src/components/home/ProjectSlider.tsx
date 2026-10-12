@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import roboticImg from "@/assets/robotic.jpg"
-import { API_URL, IMAGE_URL_PREFIX } from "@/lib/api"
+import STATIC_PROJECTS from "@/data/projects"
 
 interface Project {
   id: string
@@ -25,8 +25,17 @@ const cardVariants = {
 
 export default function ProjectSlider() {
   const router = useRouter()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [projects] = useState<Project[]>(
+    STATIC_PROJECTS.map((p) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      imageUrl: p.imageUrl || roboticImg.src,
+      technologies: p.technologies,
+      githubUrl: p.githubUrl,
+      liveUrl: p.liveUrl,
+    }))
+  )
   const [index, setIndex] = useState(0)
   const length = projects.length
 
@@ -45,67 +54,6 @@ export default function ProjectSlider() {
     router.push("/projects")
   }
 
-  // Fetch real projects from API
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setIsLoading(true)
-        const response = await fetch(`${API_URL}/projects`, {
-          cache: "no-store",
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        })
-        const data = await response.json()
-
-        if (data.success && data.projects.length > 0) {
-          const transformedProjects = data.projects.map((project: any) => ({
-            id: project.id,
-            title: project.title,
-            description: project.description,
-            imageUrl: project.imageUrl
-              ? project.imageUrl.startsWith("http")
-                ? project.imageUrl
-                : `${IMAGE_URL_PREFIX}${project.imageUrl}`
-              : roboticImg.src,
-            technologies: Array.isArray(project.technologies) ? project.technologies : [],
-            githubUrl: project.githubUrl,
-            liveUrl: project.liveUrl,
-          }))
-
-          const seedProjectKeywords = [
-            "autonomous robot",
-            "smart home",
-            "e-commerce",
-            "autonomous inspection",
-            "drone",
-            "sample",
-            "test",
-            "demo",
-          ]
-
-          const realProjects = transformedProjects.filter((project: Project) => {
-            const titleLower = project.title.toLowerCase()
-            const descLower = project.description.toLowerCase()
-            return !seedProjectKeywords.some(
-              (keyword) => titleLower.includes(keyword) || descLower.includes(keyword)
-            )
-          })
-
-          setProjects(realProjects)
-          setIndex(0)
-        }
-      } catch (error) {
-        console.error('Error fetching projects:', error)
-        // Keep fallback projects if fetch fails
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchProjects()
-  }, [])
-
   const current = useMemo(() => projects[index], [index, projects])
 
   useEffect(() => {
@@ -117,7 +65,7 @@ export default function ProjectSlider() {
 
   const goTo = (i: number) => setIndex((i + length) % length)
 
-  if (isLoading || projects.length === 0) {
+  if (projects.length === 0) {
     return null
   }
 

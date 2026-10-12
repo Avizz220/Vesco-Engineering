@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext'
 import Dialog from '@/components/ui/Dialog'
 import ImageCropper from '@/components/ui/ImageCropper'
 import { API_URL, IMAGE_URL_PREFIX } from '@/lib/api'
+import STATIC_PROJECTS from '@/data/projects'
 
 type Department = 'Computer Engineering' | 'Electrical Engineering' | 'Mechanical Engineering'
 
@@ -183,37 +184,42 @@ export default function TeamPage() {
 
   const handleViewProjects = async (memberName: string) => {
     try {
-      const response = await fetch(`${API_URL}/projects`)
-      if (response.ok) {
-        const data = await response.json()
-        const projects = data.projects || []
-        
-        // Get the member's user ID by matching email
-        const member = members.find(m => m.name === memberName)
-        const adminUser = adminUsers.find(admin => admin.email === member?.email)
-        
-        // Filter projects where the member is a contributor
-        const memberProjects = projects.filter((project: Project) => {
-          if (!project.contributors || !Array.isArray(project.contributors)) return false
-          
-          // If 'all' is selected, this member contributed to this project
-          if (project.contributors[0] === 'all') return true
-          
-          // Check if member's user ID is in contributors list
-          if (adminUser) {
-            return project.contributors.includes(adminUser.id)
+      let projectsSource: Project[] = STATIC_PROJECTS
+      try {
+        const response = await fetch(`${API_URL}/projects`, { cache: 'no-store' })
+        if (response.ok) {
+          const data = await response.json()
+          if (Array.isArray(data.projects) && data.projects.length > 0) {
+            projectsSource = data.projects
           }
-          
-          return false
-        })
-
-        setSelectedMemberName(memberName)
-        setSelectedMemberProjects(memberProjects)
-        setShowAllProjects(false)
-        setShowProjectsModal(true)
+        }
+      } catch {
+        // Backend offline: use STATIC_PROJECTS
       }
+
+      // Get the member's user ID by matching email
+      const member = members.find(m => m.name === memberName)
+      const adminUser = adminUsers.find(admin => admin.email === member?.email)
+      
+      // Filter projects where the member is a contributor
+      const memberProjects = projectsSource.filter((project: Project) => {
+        if (!project.contributors || !Array.isArray(project.contributors)) return false
+        if (project.contributors[0] === 'all') return true
+        if (adminUser && project.contributors.includes(adminUser.id)) return true
+        if (project.contributors.includes(memberName)) return true
+        return false
+      })
+
+      setSelectedMemberName(memberName)
+      setSelectedMemberProjects(memberProjects.length > 0 ? memberProjects : projectsSource)
+      setShowAllProjects(false)
+      setShowProjectsModal(true)
     } catch (error) {
-      console.error('Error fetching projects:', error)
+      console.error('Error displaying projects:', error)
+      setSelectedMemberName(memberName)
+      setSelectedMemberProjects(STATIC_PROJECTS)
+      setShowAllProjects(false)
+      setShowProjectsModal(true)
     }
   }
 

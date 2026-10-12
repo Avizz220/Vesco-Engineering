@@ -1,0 +1,29 @@
+Project Title:
+MealIO – Automated Robot for Domestic Food Preparation
+
+Project Category:
+Embedded Systems Design Project
+
+Project Description:
+MealIO is a smart domestic cooking robot designed to automate ingredient dispensing, stirring, liquid control, and key meal preparation tasks. It integrates ESP32-S3 and Arduino control, sensors, a touchscreen interface, and a Flutter mobile app, supported by Proteus simulation and SolidWorks 3D design.
+
+Contributors:
+Team project
+
+Related Areas:
+ESP32-S3, Arduino Uno, MicroPython, Embedded C/C++, Proteus, SolidWorks
+
+Created Date:
+[Enter actual date]
+
+Last Updated:
+[Enter actual date]
+
+GitHub Link:
+[Add link if available]
+
+LinkedIn Link:
+https://lnkd.in/p/gM8Bi7rP
+
+YouTube Link:
+https://youtu.be/UJhQOITn-Qk?si=xuZ46UStweB7ZU8F

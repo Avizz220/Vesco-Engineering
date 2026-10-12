@@ -4,10 +4,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useState } from 'react'
-import roboticImg from '@/assets/robotic.jpg'
-import eieImg from '@/assets/eie.jpg'
-import arduinoImg from '@/assets/arduino.jpg'
-import aerospaceImg from '@/assets/aerospace.jpg'
 
 const Hero = () => {
   return (
@@ -19,7 +15,7 @@ const Hero = () => {
       </div>
 
       {/* Animated Floating Images - More Prominent */}
-      {/* Robotics Image - Top Right */}
+      {/* MealIO Image - Top Right */}
       <motion.div
         initial={{ opacity: 0.5 }}
         animate={{ opacity: 0.5 }}
@@ -39,8 +35,8 @@ const Hero = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent rounded-2xl shadow-2xl overflow-hidden border-2 border-orange-500/30">
             <Image
-              src={roboticImg}
-              alt="Robotics Project"
+              src="/projects/MealIO/Screenshot 2026-10-12 114846.png"
+              alt="MealIO Project"
               fill
               className="object-cover"
               sizes="320px"
@@ -51,7 +47,7 @@ const Hero = () => {
         </motion.div>
       </motion.div>
 
-      {/* EIE Image - Bottom Left */}
+      {/* ElecHub Image - Bottom Left */}
       <motion.div
         initial={{ opacity: 0.5 }}
         animate={{ opacity: 0.5 }}
@@ -72,8 +68,8 @@ const Hero = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent rounded-2xl shadow-2xl overflow-hidden border-2 border-amber-500/30">
             <Image
-              src={eieImg}
-              alt="Engineering Innovation"
+              src="/projects/Elechub/Screenshot 2026-10-12 121221.png"
+              alt="ElecHub Platform"
               fill
               className="object-cover"
               sizes="288px"
@@ -84,7 +80,7 @@ const Hero = () => {
         </motion.div>
       </motion.div>
 
-      {/* Arduino Image - Center Right */}
+      {/* RuGrow Image - Center Right */}
       <motion.div
         initial={{ opacity: 0.45 }}
         animate={{ opacity: 0.45 }}
@@ -105,8 +101,8 @@ const Hero = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-transparent rounded-full shadow-2xl overflow-hidden border-2 border-orange-400/30">
             <Image
-              src={arduinoImg}
-              alt="Arduino Projects"
+              src="/projects/RuGrow/Screenshot 2026-10-12 115720.png"
+              alt="RuGrow Project"
               fill
               className="object-cover"
               sizes="256px"
@@ -117,7 +113,7 @@ const Hero = () => {
         </motion.div>
       </motion.div>
 
-      {/* Aerospace Image - Top Left */}
+      {/* BrandoraX Image - Center Left */}
       <motion.div
         initial={{ opacity: 0.4 }}
         animate={{ opacity: 0.4 }}
@@ -138,8 +134,8 @@ const Hero = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-transparent rounded-2xl shadow-2xl overflow-hidden border-2 border-amber-400/30">
             <Image
-              src={aerospaceImg}
-              alt="Aerospace Projects"
+              src="/projects/BandoraX/Screenshot 2026-10-12 120331.png"
+              alt="BrandoraX Project"
               fill
               className="object-cover"
               sizes="224px"

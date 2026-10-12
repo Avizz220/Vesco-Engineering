@@ -1,0 +1,19 @@
+Project Title: ELEC-HUB – Integrated Electrical Installation Design Platform
+
+Project Category: Electrical Engineering & Web-Based Design Software
+
+Project Description:
+ELEC-HUB is an integrated electrical installation design platform developed by undergraduates of the Department of Electrical and Information Engineering, Faculty of Engineering, University of Ruhuna. It brings load calculations, BS 7671-based circuit breaker and cable selection with documented verification, standard-symbol single-line diagrams, 3D cable installation visualisation, engineer’s estimates, and project management into one environment. Designed to make electrical design faster, more transparent, and accessible to engineers and students across Sri Lanka. Launching soon.
+
+Contributors: Project Development Team – Department of Electrical and Information Engineering, University of Ruhuna
+
+Related Areas: Electrical Installation Design, BS 7671, Load Calculations, Circuit Breaker Selection, Cable Sizing, Single-Line Diagrams, 3D Visualisation, 
+
+Created Date / Last Updated: Enter actual project dates.
+
+Project Links: 
+ GitHub 
+ LinkedIn - https://lnkd.in/p/gYh-aVZM
+ YouTube - https://youtu.be/mR8PdD_89KQ?si=V_WeSij0OBiD5f8S
+
+Project Status: Coming Soon

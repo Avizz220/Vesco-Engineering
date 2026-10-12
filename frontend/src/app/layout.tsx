@@ -42,6 +42,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script async src="https://accounts.google.com/gsi/client"></script>
+        <link rel="preload" href="/elechub.mp4" as="video" type="video/mp4" />
       </head>
       <body className={`${inter.variable} ${poppins.variable} font-sans antialiased`}>
         <Providers>

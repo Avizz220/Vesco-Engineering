@@ -75,7 +75,7 @@ export default function ProjectSlider() {
       <div className="absolute -left-16 -top-16 h-48 w-48 rounded-full bg-blue-500/15 blur-3xl" />
       <div className="absolute -right-10 top-6 h-40 w-40 rounded-full bg-cyan-400/15 blur-3xl" />
 
-      <div className="relative mx-auto px-4 sm:px-6 max-w-6xl">
+      <div className="relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl xl:max-w-[1400px]">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div>
             <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-blue-200">Featured Work</p>
@@ -107,8 +107,8 @@ export default function ProjectSlider() {
         </div>
 
         <div className="relative">
-          <div className="grid md:grid-cols-2 gap-4 sm:gap-6 items-center">
-            <div className="order-2 md:order-1">
+          <div className="grid lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-center">
+            <div className="order-2 lg:order-1 lg:col-span-5">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.title}
@@ -150,8 +150,8 @@ export default function ProjectSlider() {
               </AnimatePresence>
             </div>
 
-            <div className="order-1 md:order-2">
-              <div className="relative aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-white/5">
+            <div className="order-1 lg:order-2 lg:col-span-7">
+              <div className="relative aspect-[16/9] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-950/40">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={current.imageUrl}
@@ -164,8 +164,8 @@ export default function ProjectSlider() {
                       src={current.imageUrl}
                       alt={current.title}
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover object-center"
+                      sizes="(max-width: 1024px) 100vw, 60vw"
                       unoptimized={current.imageUrl.includes('localhost:5000')}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
@@ -174,7 +174,7 @@ export default function ProjectSlider() {
                     />
                   </motion.div>
                 </AnimatePresence>
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
               </div>
             </div>
           </div>
